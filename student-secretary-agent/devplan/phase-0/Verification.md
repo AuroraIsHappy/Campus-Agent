@@ -28,9 +28,25 @@
 - **证据**：`SELECT id,assignee,status,result FROM tasks` + spike stdout。
 ### 证据
 ```
-（待填）
+[spike][PASS] Kanban roundtrip works   (exit code 0)
+
+dispatch_once result (verbatim, buckets truncated):
+  DispatchResult(reclaimed=0, promoted=0,
+    spawned=[('t_0ce2a4ec','default','<hermes-kanban>/boards/campus-spike/workspaces/t_0ce2a4ec')],
+    skipped_unspawnable=[], skipped_unassigned=[], auto_assigned_default=[],
+    skipped_nonspawnable=['t_2675603e'],   # att1 leftover (assignee='tester'), NOT this run
+    crashed=[], auto_blocked=[], timed_out=[], stale=[], respawn_guarded=[], rate_limited=[], skipped_locked=False)
+
+SELECT id, assignee, status, result FROM tasks  (board='campus-spike'):
+  ('t_2675603e', 'tester',  'ready', None)   <- att1 leftover
+  ('t_0ce2a4ec', 'default', 'done',  None)   <- V0-2 PASS
+
+note: `result` column = None; summary/metadata land in task metadata, not the result column.
+      status == 'done' is the Verification pass criterion  ->  PASS.
+env: branch phase-0, student-secretary-agent/.venv (py3.13.12), hermes-agent==0.18.0
+run: 2026-07-07
 ```
-- 状态：⏳
+- 状态：✅
 
 ---
 
