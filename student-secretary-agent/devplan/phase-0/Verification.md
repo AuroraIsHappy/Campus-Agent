@@ -111,9 +111,24 @@ env: branch phase-0, .venv py3.13.12  | run: 2026-07-07
 - **证据**：gateway 日志 + 收发记录。
 ### 证据
 ```
-（待填）
+BLOCKED (autonomous) — platform supported but gateway not configured; needs awake user.
+
+diagnostics (all run, headless):
+  $ hermes send --list            -> "No messaging platforms configured or no channels discovered yet."
+  $ hermes gateway status         -> "Gateway is not running"
+  $ hermes gateway setup --help   -> "usage: hermes gateway setup [-h]"  (ZERO args = pure interactive TTY wizard, no --platform/--from-env/--yes/headless mode)
+  introspect hermes_cli.platforms.PLATFORMS  -> keys include 'feishu','qqbot','wecom','dingtalk','weixin',...  (QQ+飞书 ARE supported)
+  introspect hermes_cli.gateway._PLATFORMS   -> keys: mattermost,signal,weixin,bluebubbles,qqbot,yuanbao
+
+why blocked (3 fix paths all need the awake user):
+  1. `hermes gateway setup` is interactive-only (TTY wizard) — cannot run headless while user sleeps.
+  2. blind-writing ~/.hermes/config.yaml for qqbot/feishu: schema unknown + qqbot/feishu are NOT bot-token platforms (unlike telegram/discord/slack/signal they need the live event gateway, not just `hermes send`).
+  3. running a live gateway to trigger channel discovery = brings QQ/飞书 bots online at 03:00 (outward-facing) with no user-confirmed safe test target for the required send/receive.
+credentials: ~/.hermes/.env has GLM/QQ/飞书 keys (per prior session; rotate on wake). Missing step = the one-time interactive `hermes gateway setup` to wire platforms + first gateway run for channel discovery.
+unblock (for awake user): run `hermes gateway setup`, pick qqbot + feishu, point at .env keys, then `hermes gateway run` once for channel discovery, then `hermes send --to qqbot:<chat> "test"` / `feishu:<chat> "test"`.
+env: branch phase-0, .venv py3.13.12, hermes-agent==0.18.0  | run: 2026-07-07
 ```
-- 状态：⏳
+- 状态：⛔阻塞（自主执行；需用户醒着跑 setup）
 
 ---
 
