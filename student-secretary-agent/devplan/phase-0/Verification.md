@@ -82,9 +82,26 @@ env: branch phase-0, .venv py3.13.12, hermes-agent==0.18.0  | run: 2026-07-07
 - **证据**：调用日志 + JSON 片段。
 ### 证据
 ```
-（待填）
+cli-hub install 3mf:  Installed 3MF (cli-anything-3mf)
+  (prereqs in .venv: cli-anything-hub==0.4.0 via uv pip; pip==26.1.2 via uv pip — cli-hub's internal `python -m pip` needs pip which uv-venvs lack by default)
+
+test artifact: hand-crafted minimal 3MF (stdlib zipfile; [Content_Types].xml + _rels/.rels + 3D/3dmodel.model; tetrahedron 4 verts/4 tris), 980 bytes. (trimesh 3mf export would need networkx+lxml, so hand-crafted instead.)
+
+agent call --json:
+  $ cli-anything-3mf --json info v04_tetra.3mf   (exit 0)
+  { "file":"v04_tetra.3mf", "unit":"millimeter",
+    "objects":[ { "vertex_count":4, "face_count":4,
+      "bounding_box":{"min":[0,0,0],"max":[2,1.732,1.633],"size":[2,1.732,1.633]},
+      "watertight":true, "volume_mm3":0.9428, "surface_area_mm2":6.9281, "id":"1", "name":"" } ] }
+
+programmatic parse (>=1 field hit):
+  from cli_anything.threemf.core import parser
+  d = parser.parse_3mf(v04_tetra.3mf)   # ThreeMFData
+  m = d.meshes[0]                        # MeshData
+  -> len(m.vertices)=4, len(m.triangles)=4, m.object_id=1, d.unit='millimeter'   PARSE OK
+env: branch phase-0, .venv py3.13.12  | run: 2026-07-07
 ```
-- 状态：⏳
+- 状态：✅
 
 ---
 
