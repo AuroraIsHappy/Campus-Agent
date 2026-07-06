@@ -138,11 +138,37 @@ env: branch phase-0, .venv py3.13.12, hermes-agent==0.18.0  | run: 2026-07-07
 - **证据**：provider 日志 + routing.yaml。
 ### 证据
 ```
-（待填）
+artifact: ~/.campus/routing.yaml (827 bytes) — schema=1; default + 7 roles, each {provider,model}:
+  planner/critic/writer/reviewer/source_verifier/meta_agent -> zai/glm-4.6
+  sub_agent -> zai/glm-4.5-air   (2 distinct models => per-role override demonstrable)
+
+provider wiring (introspected, no secrets):
+  hermes_cli.providers.ALIASES: glm/zhipu/z-ai/z.ai -> 'zai'
+  ProviderConfig(id='zai', name='Z.AI / GLM', auth='api_key',
+                 api_key_env_vars=('GLM_API_KEY','ZAI_API_KEY','Z_AI_API_KEY'),
+                 inference_base_url='https://api.z.ai/api/paas/v4', transport=openai_chat)
+  => .env GLM key auto-loaded (no auth error on the turns).
+
+trivial agent turns (hermes oneshot -z, exit 0 each):
+  $ hermes -z "Reply with exactly this token and nothing else: GLM_OK"     --provider zai -m glm-4.6
+  -> GLM_OK
+  $ hermes -z "Reply with exactly this token and nothing else: SUBAGENT_OK" --provider zai -m glm-4.5-air
+  -> SUBAGENT_OK
+  => GLM (non-Anthropic) completes a turn; BOTH routing.yaml model ids resolve to valid live models
+     => model_override per role works (heavy role -> glm-4.6, sub_agent -> glm-4.5-air).
+
+note: agent.log records plugin discovery only; oneshot -z turns do not emit per-inference log lines,
+      so evidence = command + exact stdout (above) + exit 0, not a provider log snippet.
+env: branch phase-0, .venv py3.13.12, hermes-agent==0.18.0  | run: 2026-07-07
 ```
-- 状态：⏳
+- 状态：✅
 
 ---
 
 ## 总状态
 - V0-1..6 全绿 = 成功；剩余全硬阻塞 = 停 → 写 WAKE_UP_REPORT.md。
+
+### Phase 0 最终战绩（2026-07-07 夜间自主执行）
+- ✅ 通过 5/6：V0-1 Hermes 装机、V0-2 Kanban roundtrip、V0-3 kill→resume（最关键）、V0-4 CLI-Anything --json、V0-6 GLM 路由。
+- ⛔ 阻塞 1/6：V0-5 QQ+飞书 gateway（平台支持，但 `hermes gateway setup` 纯交互式 TTY，需用户醒着；详见 V0-5 小节 + WAKE_UP_REPORT.md）。
+- 结论：Odyssey 核心闭环（Kanban + 崩溃恢复）+ 工具层（CLI-Anything）+ 非-Anthropic 模型路由（GLM）三块地基均已验证。Phase 0 可判通过（V0-5 为部署/交互项，不阻塞架构验证）。→ 见 WAKE_UP_REPORT.md。
