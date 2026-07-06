@@ -56,9 +56,23 @@ run: 2026-07-07
 - **证据**：kill 前后 task_runs diff + 最终 status=done。
 ### 证据
 ```
-（待填）
+spike_resume exit 0  ([spike-resume][PASS] crash -> auto-reclaim -> resume -> done)
+
+flow (board='campus-spike-resume', task t_afa1bee2):
+  tick1: spawn_fn returns dead stand-in pid 9999999 (_pid_alive=False) -> dispatcher records worker_pid; task=running (run R1)
+  tick2: detect_crashed_workers (HERMES_KANBAN_CRASH_GRACE_SECONDS=0 -> 30s grace bypassed) sees pid 9999999 not alive -> reclaim (R1 outcome=crashed, task->ready, 'crashed' event); SAME tick spawn loop respawns (R2) -> spawn_fn completes -> done (R2 outcome=completed).
+
+task_runs (the >=2 attempts hard evidence):
+  SELECT id,status,outcome FROM task_runs WHERE task_id='t_afa1bee2' ORDER BY id:
+    (1, 'crashed', 'crashed')    <- run1: worker crashed, auto-reclaimed
+    (2, 'done',   'completed')   <- run2: resumed and completed
+
+task_events kinds: ['created','claimed','spawned','crashed','claimed','completed']
+final task status: 'done'
+note: fork-free spike — dead pid as stand-in for a crashed worker (exact condition a real crash leaves). Reclaim machinery (detect_crashed_workers->_pid_alive->_end_run->recompute_ready->claim_task->spawn) ran for real; reclaim via crash path (result.crashed), not TTL-stale (result.reclaimed=0) — by design.
+env: branch phase-0, .venv py3.13.12, hermes-agent==0.18.0  | run: 2026-07-07
 ```
-- 状态：⏳
+- 状态：✅
 
 ---
 
