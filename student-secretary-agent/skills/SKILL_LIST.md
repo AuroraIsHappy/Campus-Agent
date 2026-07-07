@@ -2,19 +2,30 @@
 
 > **接入机制**：Hermes 原生兼容 agentskills.io，`hermes skills install <identifier-or-URL>` 一条装上（落 `~/.hermes/skills/`，不入 git）；自写 campus skill 放本目录，经 `~/.hermes/config.yaml` 的 `skills.external_dirs` 挂载（入 git，curator-exempt）。发现 = 纯目录扫描，drop 进去 + `hermes reload-skills` 即可用。完整计划见 `~/.claude/plans/skill-skill-list-md-goal-md-skill-fizzy-cray.md`。
 
-## 接入进度（2026-07-07）
+## 接入进度（2026-07-07，Wave 2+3 + html-ppt 安装后复核）
 | wave | skill | 状态 |
 |---|---|---|
 | 0 | find-skills | ✅ installed |
 | 0 | skill-creator | ✅ installed |
 | 0 | mcp-builder | ⛔ Hermes 安全扫描判 dangerous（误报但硬封），跳过待人工 vet |
 | 0 | campus-demo-c（自写，本目录） | ✅ external_dirs 挂载，`-s` 加载验证通过（V1-8 关） |
-| 1 | docx, pptx, xlsx, pdf | ⏳ 待装 |
-| 2 | academic-search, read-arxiv-paper, firecrawl, html-ppt | ⏳ 待装（html-ppt 已有 local） |
-| 2 | academic-researcher, academic-research-skills, parallel-deep-research | ⏳ 装后对比精简（5→3） |
-| 2 | web-access | ⏳ 与 firecrawl 2 选 1 |
-| 3 | obsidian, notion, graphipy, translate, travel-planner | ⏳ 待装 |
+| 1 | docx, pptx, xlsx, pdf | ✅ installed（`skills list` 复核：4 个均 enabled） |
+| 1 | html-ppt | ⛔ dangerous verdict（283 findings，含 `traversal` 主题 HTML `href` 重写），`--force` 不绕过；即此前 `skills list` 缺失之因 |
+| 2 | academic-search | ✅ installed |
+| 2 | read-arxiv-paper | ✅ installed |
+| 2 | firecrawl | ❌ Could not fetch from any source（短 id + full URL 均失败，上游不可达） |
+| 2 | academic-researcher | ✅ installed |
+| 2 | academic-research-skills | ✅ installed（SAFE，多文件：py + data + skill-card） |
+| 2 | parallel-deep-research | ⛔ caution verdict + 2 findings（含 `privilege_escalation` `Bash(parallel-cli:*)`），BLOCKED，未 --force |
+| 2 | web-access | ✅ installed（firecrawl ❌ 后接管文档/网页抓取，CDP proxy） |
+| 3 | baoyu-translate | ✅ installed（references + TS scripts） |
+| 3 | notion-api | ✅ installed（block-types / filters / property references） |
+| 3 | obsidian-vault | ❌ Could not fetch from any source（短 id + full URL 均失败，上游不可达） |
+| 3 | travel-planner | ⛔ dangerous verdict（persistence：自动改 `~/.claude/settings.json`），`--force` 不绕过 |
+| 3 | graphify | ⛔ dangerous verdict（17 findings，含 `supply_chain` pip-install），`--force` 不绕过 |
 | — | tsinghua-learn | ⏸ deferred（第③类自定义，需学校 + 登录） |
+
+> **本批小结（Wave 2+3：7 ✅ / 3 ⛔ / 2 ❌；另 html-ppt Wave1 ⛔）**：研究栈实装 academic-search / read-arxiv-paper / academic-researcher / academic-research-skills（4）；web-access 替代失败的 firecrawl；知识/生活实装 baoyu-translate / notion-api。⛔ 四项（html-ppt / parallel-deep-research / travel-planner / graphify）被 Hermes 安全扫描封（3 个 dangerous 硬封 + 1 个 caution 可 --force 但未绕），均未 --force。❌ 两项（firecrawl / obsidian-vault）上游 skills.sh 条目不可达，留人工复查或换源。
 
 > **GOAL.md 缺口**（后续 phase 补）：flashcard 生成 / 邮件草稿收发 / Zotero 文献管理。
 > **冗余精简**：研究栈 5→3，web 抓取 2→1。
