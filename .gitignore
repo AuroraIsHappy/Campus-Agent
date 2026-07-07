@@ -16,3 +16,7 @@ __pycache__/
 htmlcov/
 *.egg-info/
 .venv/
+
+# --- Claude Code (local harness config, not committed) ---
+.claude/
+CLAUDE.md
