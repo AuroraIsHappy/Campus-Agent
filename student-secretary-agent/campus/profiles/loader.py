@@ -15,10 +15,11 @@ __all__ = ["ProfileLoader", "DEFAULT_ROUTING_PATH", "ROLES"]
 
 DEFAULT_ROUTING_PATH = os.path.expanduser("~/.campus/routing.yaml")
 
-# The 9 Phase-2 roles (architecture §4.2).
+# The registered roles (architecture §4.2). Phase 2 shipped 9; Phase 3 adds
+# `email` (Demo A outreach drafter, B1 plaintext, no sending).
 ROLES = (
     "planner", "critic", "researcher", "source_verifier", "source_ranker",
-    "writer", "reviewer", "scheduler", "meta_agent",
+    "writer", "reviewer", "scheduler", "meta_agent", "email",
 )
 
 
