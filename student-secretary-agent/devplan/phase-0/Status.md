@@ -4,10 +4,10 @@
 > 这是给"醒来的我/用户"看的状态文件。每完成/阻塞一步就更新。
 
 ## 当前阶段
-- ✅ Phase 0 了结：V0-1..V0-4 + V0-6 通过；V0-5 阻塞（需用户醒着）。
-- 下一步：写 WAKE_UP_REPORT.md，等用户醒来 review。
+- 🟡 Phase 0 了结：V0-1..V0-4 + V0-6 通过；V0-5 部分通过（飞书 ✅ 收发通 / QQ ⛔ 暂缓）。
+- 下一步：QQ 排查（消息打不通）；后续测试走飞书；进 Phase 1.5/2。
 - ✅ 已完成：V0-1、V0-2、V0-3、V0-4、V0-6
-- ⛔ 阻塞：V0-5（QQ+飞书，需用户醒着交互 setup）
+- 🟡 部分通过：V0-5（飞书 ✅ websocket；QQ ⛔ 暂缓，待排查）
 
 ## 进度
 | ID | 状态 | 备注 |
@@ -17,7 +17,7 @@
 | V0-2 Kanban roundtrip | ✅ | att2 通过：assignee="default" → task `t_0ce2a4ec` status=done；spike exit 0。详见 Verification.md |
 | V0-3 kill→恢复 | ✅ | spike_resume 通过：crash→reclaim→resume→done；task_runs=2（crashed+completed）+ crashed event。最关键项已过。详见 Verification.md |
 | V0-4 CLI-Anything | ✅ | cli-hub install 3mf + cli-anything-3mf --json info 输出合法 JSON 并解析（vertices=4/triangles=4）。详见 Verification.md |
-| V0-5 QQ+飞书 | ⛔阻塞 | 平台支持(qqbot/feishu)+密钥在 ~/.hermes/.env，但 gateway 从未 setup；hermes gateway setup 纯交互式 TTY 向导(headless 跑不了)，channel discovery 需先跑过 live gateway(外发)。详见 Verification.md |
+| V0-5 QQ+飞书 | 🟡部分 | 用户实测(2026-07-07)：飞书 ✅ 收发通(websocket plugin)；QQ ⛔ 消息打不通暂缓。后续测试飞书优先。详见 Verification.md |
 | V0-6 GLM 路由 | ✅ | 写 ~/.campus/routing.yaml（角色→{provider,model}，全 GLM/zai）；glm-4.6→GLM_OK、glm-4.5-air→SUBAGENT_OK 两轮 hermes -z 通过。非-Anthropic provider 抽象可按角色指派模型 ✓。详见 Verification.md |
 
 ## 决策日志（自主判断记录在此，不叫醒用户）

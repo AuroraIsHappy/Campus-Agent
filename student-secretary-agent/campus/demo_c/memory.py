@@ -54,3 +54,31 @@ def log_progress(goal_slug: str, day: int, status: str, note: str = "") -> Dict:
 
 def show() -> Dict:
     return _read_json(MEMORY, {"preferences": [], "goals": []})
+
+
+def _main():
+    import argparse
+    ap = argparse.ArgumentParser(description="Long-term memory + progress for Demo C.")
+    ap.add_argument("--remember", metavar="k=v",
+                    help="append a preference, e.g. --remember learning=linux")
+    ap.add_argument("--show", action="store_true", help="print ~/.campus/memory.json")
+    ap.add_argument("--goal", help="register a long-term goal")
+    args = ap.parse_args()
+    if args.show:
+        print(json.dumps(show(), ensure_ascii=False, indent=2))
+    elif args.goal:
+        print(json.dumps(set_goal(args.goal), ensure_ascii=False, indent=2))
+    elif args.remember:
+        pref: Dict[str, Any] = {}
+        if "=" in args.remember:
+            k, v = args.remember.split("=", 1)
+            pref[k.strip()] = v.strip()
+        else:
+            pref["note"] = args.remember
+        print(json.dumps(remember(pref), ensure_ascii=False, indent=2))
+    else:
+        ap.print_help()
+
+
+if __name__ == "__main__":
+    _main()

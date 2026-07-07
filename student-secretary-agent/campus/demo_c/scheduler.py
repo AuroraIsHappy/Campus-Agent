@@ -29,6 +29,30 @@ def build_plan(resource: Resource, goal: str, days: int = 30,
                 slot_time=slot_time, slot_minutes=slot_minutes, days=tasks)
 
 
+def suggest_topics(resource: Resource, goal: str, days: int = 30,
+                   model: str = "glm-4.6"):
+    """Ask GLM for a progressive day-by-day outline (LLM, non-deterministic).
+
+    Returns a list of short topic strings, or None if the model didn't comply
+    (caller then falls back to the deterministic 'Part N' layout). Kept separate
+    from build_plan so build_plan stays pure / free / unit-testable.
+    """
+    from ._llm import ask_llm, extract_json
+    prompt = (
+        "You are a study-plan designer. Break the resource below into a {n}-day "
+        "beginner-friendly progressive outline (one short topic per day, difficulty "
+        "increasing across days). Return ONLY minified JSON, no prose, no code fence, "
+        'exactly: {{"topics":["day1 topic","day2 topic",...]}}\n'
+        "Resource: {title} ({url})\nLearning goal: {goal}"
+    ).format(n=days, title=resource.title, url=resource.url, goal=goal)
+    text, _ = ask_llm(prompt, model=model)
+    data = extract_json(text)
+    if isinstance(data, dict) and isinstance(data.get("topics"), list):
+        topics = [str(t).strip() for t in data["topics"] if str(t).strip()]
+        return topics or None
+    return None
+
+
 def _main():
     ap = argparse.ArgumentParser(description="Build an N-day study plan for a resource.")
     ap.add_argument("title")
@@ -38,11 +62,15 @@ def _main():
     ap.add_argument("--time", default="20:00")
     ap.add_argument("--minutes", type=int, default=20)
     ap.add_argument("--weekdays-only", action="store_true")
+    ap.add_argument("--outline", action="store_true",
+                    help="ask GLM for a progressive chapter outline (costs 1 LLM call)")
     args = ap.parse_args()
     res = Resource(title=args.title, url=args.url)
+    topics = (suggest_topics(res, args.goal or args.title, days=args.days)
+              if args.outline else None)
     plan = build_plan(res, goal=args.goal or args.title, days=args.days,
                       slot_time=args.time, slot_minutes=args.minutes,
-                      weekdays_only=args.weekdays_only)
+                      weekdays_only=args.weekdays_only, topics=topics)
     print(plan.to_markdown())
 
 
