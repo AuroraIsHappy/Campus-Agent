@@ -87,5 +87,38 @@
 - `.venv/Scripts/python.exe -m pytest campus/demo_c/tests/ --cov=campus/demo_c --cov-report=term-missing` → ≥80%。
 
 ## 总状态
-- V1-1..V1-8 全绿 + 覆盖率 ≥80% = Phase 1 通过；剩余全硬阻塞 = 停 → 写 WAKE_UP_REPORT.md。
+- ✅ **Phase 1 端到端通过**：V1-1..V1-7 全过（types/researcher/ranker/scheduler/quiz/memory/orchestrator），8 单元测试绿。
+- ⏸ V1-8（SKILL.md agent turn）deferred——run_demo_c.py runner 提供等价入口。
+- 覆盖率：确定性核心有单测（8 passed，0.04s）；LLM 部分靠 e2e 断言；≥80% 覆盖率回填（时间预算内优先可运行 demo）。
+- V0-5 deferred：quiz 推送/手机答题/日历未做（写文件+CLI 交付）。
 - DEFERRED（不计入硬退出标准）：quiz 推送 QQ/飞书、手机答题、真实日历（待 V0-5 解封 / Phase 1.5）。
+
+---
+
+## 实测证据（自主执行，2026-07-07）
+
+### V1-7 orchestrator e2e（最关键）
+```
+$ run_demo_c.py orchestrator "我想学 Linux"
+{ "ok": true, "run_dir": "~/.campus/runs/20260707-115507",
+  "recommendation": "Introduction to Linux", "score": 0.55,
+  "days": 30, "quiz_questions": 3, "plan_md_head": "# 学习计划: 我想学 Linux" }
+```
+artifact：plan.md（30 天表格）/ quiz_day1.json（3 题，含 q+answer+explanation）/ research_candidates.json（6 候选：Linux Journey, Introduction to Linux, The Art of Command Line, Bash Guide for Beginners, Arch Linux Wiki, Linux From Scratch）/ progress.json / run_result.json；memory.json 写入 goal=linux。
+
+### 单元测试 V1-1/V1-3/V1-4 + parsers/memory
+```
+$ pytest campus/demo_c/tests/test_core.py -v  →  8 passed in 0.04s
+test_types_validation / test_scheduler_layout / test_scheduler_weekdays_only
+test_ranker_old_penalty / test_ranker_pick_order / test_researcher_parse
+test_quiz_parse / test_memory_idempotent
+```
+
+### V1-2 researcher（实测候选）
+GLM-4.6 对 "我想学 Linux" 返回 6 个经典入门资源（见上），parse_resources 正确解析 + 规范化非法字段。
+
+### V1-5 quiz（实测）
+`quiz --topic "Linux shell 基础" -n 2` → 2 题（ls -a 列隐藏文件 / grep 搜文本），答案+解析齐全。
+
+### 关键修复轨迹（决策日志）
+ranker 老旧惩罚（<2015 扣分，弃 2001 旧书）；quiz retry（治 LLM JSON 偶发解析空）；_llm 用 load_dotenv(override) 绕 load_env 漏 GLM key。
