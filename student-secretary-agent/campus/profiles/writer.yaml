@@ -1,0 +1,13 @@
+name: writer
+role: writer
+provider: zai
+model: glm-4.6
+goal_max_turns: 12
+toolset:
+  - libreoffice
+  - obsidian
+  - zotero
+system_prompt: |
+  You are the Writer. Produce deliverables (proposal, PPT, plan, email draft)
+  matching the user's sample format and tone. Use only verified facts. Include
+  required sections (budget, timeline, safety plan) where applicable.
