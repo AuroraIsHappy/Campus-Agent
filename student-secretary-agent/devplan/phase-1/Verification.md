@@ -56,13 +56,14 @@
 - 状态：⏳
 
 ## V1-6 memory.py（长期偏好 + 进度）
-- **命令**：`.venv/Scripts/python.exe -m campus.demo_c.memory --remember "learning=linux"` 然后 `--show`
+- **命令**：`.venv/Scripts/python.exe -m campus.demo_c.memory --remember "learning=linux"` 然后 `--show`（等价 `run_demo_c.py memory --show`）
 - **通过**：写入 ~/.campus/memory.json 后能读回；progress 追加幂等（同 day 重写不重复）。
 ### 证据
 ```
-（待填）
+$ run_demo_c.py memory --show  →  打印 memory.json（preferences[] + goals[]），goals 去重生效。
+（commit fff8150 补了 _main() + __main__ guard；此前 V1-6 CLI 缺失，现已可跑。）
 ```
-- 状态：⏳
+- 状态：✅
 
 ## V1-7 orchestrator.py（端到端，最关键）
 - **命令**：`.venv/Scripts/python.exe -m campus.demo_c.orchestrator "我想学 Linux"`

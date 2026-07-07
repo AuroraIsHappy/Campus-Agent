@@ -128,7 +128,18 @@ credentials: ~/.hermes/.env has GLM/QQ/飞书 keys (per prior session; rotate on
 unblock (for awake user): run `hermes gateway setup`, pick qqbot + feishu, point at .env keys, then `hermes gateway run` once for channel discovery, then `hermes send --to qqbot:<chat> "test"` / `feishu:<chat> "test"`.
 env: branch phase-0, .venv py3.13.12, hermes-agent==0.18.0  | run: 2026-07-07
 ```
-- 状态：⛔阻塞（自主执行；需用户醒着跑 setup）
+- 状态：🟡 部分通过（2026-07-07 用户实测）
+
+### 用户实测更新（2026-07-07：飞书 ✅ / QQ ⛔ 暂缓）
+```
+用户醒着跑了 `hermes gateway setup`，配 QQ + 飞书两渠道（凭据已在 ~/.hermes/.env）。
+- ✅ 飞书 PASS：connection_mode=websocket，收发双向通。
+  `hermes send --to feishu:<chatID> "test"` 手机端收到；反向手机发 bot 也收到。
+  走 bundled plugin plugins/platforms/feishu/adapter.py::interactive_setup（自动加载）。
+- ⛔ QQ 暂缓：消息仍打不通（根因待查：q.qq.com 沙箱/上线态、AppID/Secret 权限、或握手）。
+- 后续测试路径：飞书优先（每日 quiz / 秘书日志推送走 FEISHU_HOME_CHANNEL）。
+env: branch phase-1, .venv py3.13.12, hermes-agent==0.18.0  | run: 2026-07-07
+```
 
 ---
 
