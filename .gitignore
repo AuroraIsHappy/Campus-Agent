@@ -1,0 +1,18 @@
+# --- upstream reference clones (NOT part of the product repo) ---
+hermes-agent/
+CLI-Anything/
+OpenHands/
+
+# --- git worktrees (managed via `git worktree`, not committed) ---
+.trees/
+
+# --- python ---
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+.venv/
