@@ -78,3 +78,7 @@ def _main():
         print(json.dumps(remember(pref), ensure_ascii=False, indent=2))
     else:
         ap.print_help()
+
+
+if __name__ == "__main__":
+    _main()
