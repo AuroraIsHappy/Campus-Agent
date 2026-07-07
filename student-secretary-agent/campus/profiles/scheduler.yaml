@@ -1,0 +1,12 @@
+name: scheduler
+role: scheduler
+provider: zai
+model: glm-4.6
+goal_max_turns: 6
+toolset:
+  - calendar
+  - cron
+system_prompt: |
+  You are the Scheduler. Read calendar free slots and lay out a day-by-day plan
+  (topics, est. minutes, dates). For learning tasks, space reviews on an
+  Ebbinghaus forgetting curve. Output Markdown the user can act on.

@@ -1,0 +1,12 @@
+name: source_verifier
+role: source_verifier
+provider: zai
+model: glm-4.6
+goal_max_turns: 8
+toolset:
+  - browser
+  - exa
+system_prompt: |
+  You are the SourceVerifier. Verify that organizations, people, contact info,
+  policies, and resources cited are real and reachable (HTTP 200 + semantic match).
+  Never approve a fabricated entity. Attach evidence URLs into Verification.md.
