@@ -32,7 +32,8 @@ def run_learning_plan(goal, days=30, slot_minutes=20, quiz_n=3):
 
     pick = ranked.recommendation
     res = pick.resource
-    plan = scheduler.build_plan(res, goal=goal, days=days, slot_minutes=slot_minutes)
+    topics = scheduler.suggest_topics(res, goal, days=days)
+    plan = scheduler.build_plan(res, goal=goal, days=days, slot_minutes=slot_minutes, topics=topics)
     day1 = plan.days[0] if plan.days else None
     day1_quiz = quiz.generate_quiz(day1.topic, resource=res.title, n=quiz_n) if day1 else None
 
