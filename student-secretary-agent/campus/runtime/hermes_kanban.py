@@ -83,6 +83,39 @@ class HermesKanbanAdapter:
     def recompute_ready(self) -> int:
         return self._k.recompute_ready(self.conn)
 
+    def escalate(self, task_id: str, reason: str = "") -> None:
+        """Supervisor escalation (A-F4): persist status='awaiting_human' + reason.
+
+        Hermes' ``tasks.status`` is freeform TEXT; ``awaiting_human`` is never
+        picked up by ``dispatch_once`` (only ready/todo are), so the task halts for
+        a human. Mirrors ``InMemoryKanban.escalate`` (campus/runtime/in_memory.py).
+        Not on ``KanbanPort`` (Phase 2 kept escalate as an impl-level helper);
+        ``Supervisor._escalate`` getattr-probes it. No send happens here -- the
+        email is already draft-only (decision B1); this just parks the task.
+
+        The ``tasks`` table has no ``metadata`` column; summary/metadata live in
+        the ``result`` TEXT column (JSON). We merge the escalation reason there.
+        """
+        import json
+        row = self.conn.execute(
+            "SELECT result FROM tasks WHERE id=?", (task_id,)
+        ).fetchone()
+        data: dict = {}
+        if row is not None and row[0]:
+            try:
+                parsed = json.loads(row[0])
+                data = parsed if isinstance(parsed, dict) else {}
+            except Exception:
+                data = {}
+        if reason:
+            data["escalation"] = reason
+        self.conn.execute(
+            "UPDATE tasks SET status=?, result=? WHERE id=?",
+            ("awaiting_human",
+             json.dumps(data, ensure_ascii=False), task_id),
+        )
+        self.conn.commit()
+
     # --- introspection (best-effort; e2e asserts via raw SQL on self.conn) -
     def _row_to_task(self, row) -> Task:
         keys = row.keys() if hasattr(row, "keys") else []

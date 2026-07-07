@@ -71,3 +71,48 @@ def test_hermes_roundtrip_and_kill_resume():
         "SELECT kind FROM task_events WHERE task_id=? ORDER BY id", (tid,)
     ).fetchall()]
     assert "crashed" in kinds and "completed" in kinds, kinds
+
+
+def test_escalate_persists_awaiting_human():
+    """P3-T3: HermesKanbanAdapter.escalate writes status=awaiting_human + reason."""
+    import json
+    adapter = HermesKanbanAdapter(board=BOARD)
+    conn = adapter.conn
+    tid = adapter.create_task(
+        title="phase3 escalate probe", assignee="default",
+        body="awaiting human confirm before any send (B1)")
+    adapter.escalate(tid, reason="human confirm before send (B1)")
+
+    # raw SQL: status + escalation reason persisted on the real Hermes DB
+    # (tasks table has no metadata column; summary/metadata live in `result` JSON)
+    row = conn.execute(
+        "SELECT status, result FROM tasks WHERE id=?", (tid,)).fetchone()
+    assert row is not None
+    assert row[0] == "awaiting_human", row[0]
+    data = json.loads(row[1]) if row[1] else {}
+    assert data.get("escalation", "").startswith("human confirm"), data
+
+    # and visible through the adapter's own Task view
+    t = adapter.get_task(tid)
+    assert t.status == "awaiting_human"
+    assert t.is_terminal  # AWAITING_HUMAN is terminal (ports.py:69)
+
+
+def test_escalate_merges_into_existing_result():
+    """escalate preserves an existing result JSON and adds the escalation key."""
+    import json
+    adapter = HermesKanbanAdapter(board=BOARD)
+    conn = adapter.conn
+    tid = adapter.create_task(title="merge probe", assignee="default", body="x")
+    # simulate a prior artifact already stored in `result`
+    conn.execute("UPDATE tasks SET result=? WHERE id=?",
+                 ('{"summary": "draft proposal"}', tid))
+    conn.commit()
+    adapter.escalate(tid, reason="escalate merge")
+
+    row = conn.execute(
+        "SELECT status, result FROM tasks WHERE id=?", (tid,)).fetchone()
+    assert row[0] == "awaiting_human"
+    data = json.loads(row[1])
+    assert data.get("summary") == "draft proposal"
+    assert data.get("escalation") == "escalate merge"
