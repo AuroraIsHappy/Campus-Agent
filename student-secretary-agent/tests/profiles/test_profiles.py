@@ -59,3 +59,20 @@ def test_get_augments_resolved_model(loader):
 
 def test_unknown_role_uses_default(loader):
     assert loader.resolve("nonexistent_role") == ("zai", "glm-4.6")
+
+
+def test_load_routing_from_file(tmp_path):
+    rf = tmp_path / "routing.yaml"
+    rf.write_text(
+        "default:\n  provider: zai\n  model: glm-4.6\n"
+        "roles:\n  planner:\n    provider: zai\n    model: glm-4.6\n",
+        encoding="utf-8")
+    loader = ProfileLoader(routing_path=str(rf))
+    assert loader.resolve("planner") == ("zai", "glm-4.6")
+    assert loader.resolve("scheduler") == ("zai", "glm-4.6")   # default fallback
+
+
+def test_missing_routing_file_uses_profile_defaults():
+    loader = ProfileLoader(routing_path="/nonexistent/routing.yaml")
+    # falls back to the planner.yaml own defaults
+    assert loader.resolve("planner") == ("zai", "glm-4.6")
