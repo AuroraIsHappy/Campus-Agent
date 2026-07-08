@@ -19,10 +19,10 @@ def offline_resources(goal: str) -> list[Resource]:
 
 
 def run_learning_plan_offline(goal: str, days: int = 30, slot_minutes: int = 20, quiz_n: int = 3) -> dict:
-    from campus.demo_c.orchestrator import RUNS
+    from campus.runtime.paths import runs_dir
 
     ts = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
-    out_dir = os.path.join(RUNS, f"demo_c-offline-{ts}")
+    out_dir = os.path.join(runs_dir(), f"demo_c-offline-{ts}")
     os.makedirs(out_dir, exist_ok=True)
     candidates = offline_resources(goal)
     ranked = ranker.rank(candidates, goal)

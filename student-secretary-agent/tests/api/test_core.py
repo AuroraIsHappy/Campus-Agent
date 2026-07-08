@@ -104,6 +104,33 @@ def test_runs_shape():
     assert "runs" in r.json() and isinstance(r.json()["runs"], list)
 
 
+def test_agent_routes_fake_backend_shape(monkeypatch):
+    base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..",
+                                        ".campus-test", uuid.uuid4().hex))
+    monkeypatch.setenv("CAMPUS_HOME", base)
+    c = client()
+    r = c.post("/agent/run", json={"message": "我想学 Linux，帮我安排 30 天计划"})
+    assert r.status_code == 200
+    j = r.json()
+    assert j["ok"] is True
+    assert j["intent"] == "learning_plan"
+    assert j["domain"] == "learning"
+    assert j["selected_workflow"] == "demo_c_learning_plan"
+    rid = j["run_id"]
+    assert c.get("/agent/runs").json()["runs"]
+    detail = c.get(f"/agent/runs/{rid}").json()
+    assert detail["ok"] is True and detail["id"] == rid
+
+
+def test_settings_status_shape():
+    r = client().get("/settings/status")
+    assert r.status_code == 200
+    j = r.json()
+    assert j["ok"] is True
+    assert "campus_home" in j
+    assert "llm" in j and "skills" in j and "notion" in j
+
+
 def test_push():
     r = client().post("/push", json={"channel": "feishu", "message": "hi"})
     assert r.status_code == 200
@@ -272,3 +299,24 @@ def test_default_backends_offline_demo_smoke(monkeypatch):
     assert digest["ok"] is True
     assert digest["source_mode"] in {"real", "fallback_offline", "offline"}
     assert digest["note_path"] and os.path.exists(digest["note_path"])
+
+
+def test_default_agent_run_writes_foundation_stores(monkeypatch):
+    base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..",
+                                        ".campus-test", uuid.uuid4().hex))
+    monkeypatch.setenv("CAMPUS_HOME", base)
+    c = TestClient(create_app(with_scheduler=False))
+    r = c.post("/agent/run", json={"message": "我想学 Linux，帮我安排 3 天计划",
+                                   "mode": "offline",
+                                   "context": {"days": 3}}).json()
+    assert r["ok"] is True
+    assert r["domain"] == "learning"
+    run_id = r["run_id"]
+    detail = c.get(f"/agent/runs/{run_id}").json()
+    assert detail["ok"] is True
+    assert detail["status"] == "done"
+    names = {a["name"] for a in detail["artifacts"]}
+    assert {"Plan.md", "Status.md", "Verification.md", "run_result.json", "artifact_manifest.json"} <= names
+    assert os.path.exists(os.path.join(base, "state", "runs.json"))
+    tasks = c.get("/tasks").json()["tasks"]
+    assert any(t["run_id"] == run_id for t in tasks)

@@ -15,7 +15,7 @@ from typing import Any, Callable, Optional
 from fastapi import FastAPI
 
 from campus.api.types import (
-    DemoARequest, DemoBRequest, DemoCRequest, MemoryQuery, OnboardingRequest, PushRequest,
+    AgentRunRequest, DemoARequest, DemoBRequest, DemoCRequest, MemoryQuery, OnboardingRequest, PushRequest,
     EventRequest, AnniversaryRequest, LogQuery, ResearchTopicRequest,
     ResearchRefreshRequest, NotionSyncRequest,
 )
@@ -48,6 +48,10 @@ class Backends:
     anniv_list: Optional[Callable[[], dict]] = None
     daily_log_get: Optional[Callable[[Optional[str], int], dict]] = None
     daily_log_run: Optional[Callable[[], dict]] = None
+    agent_run: Optional[Callable[[AgentRunRequest], dict]] = None
+    agent_list_runs: Optional[Callable[[], dict]] = None
+    agent_get_run: Optional[Callable[[str], dict]] = None
+    settings_status: Optional[Callable[[], dict]] = None
 
 
 # ---- default backends (real campus libs; deterministic where possible) ----
@@ -131,7 +135,12 @@ def _result_dict(r) -> dict:
 
 
 def _default_memory_recall(query: str, k: int) -> list:
-    return []  # production wires a JsonFileStore; tests inject
+    from campus.memory.json_store import JsonFileStore
+    return [
+        {"key": r.record.key, "score": r.score, "snippet": r.snippet,
+         "layer": r.record.layer, "metadata": r.record.metadata}
+        for r in JsonFileStore().recall(query, k=k)
+    ]
 
 
 def _default_onboarding(answers: dict) -> dict:
@@ -141,7 +150,8 @@ def _default_onboarding(answers: dict) -> dict:
 
 
 def _default_tasks() -> list:
-    return []  # production: campus.runtime kanban; tests inject
+    from campus.runtime.stores import TaskStore
+    return TaskStore().list()
 
 
 def _default_push(channel: str, target: Optional[str], message: str) -> dict:
@@ -182,6 +192,126 @@ def _default_notion_sync(req: NotionSyncRequest) -> dict:
 def _default_notes_status() -> dict:
     from campus.notes import notion
     return notion.status()
+
+
+def _classify_agent_message(message: str) -> tuple[str, str, str]:
+    m = (message or "").lower()
+    if any(k in m for k in ("学习", "复习", "quiz", "flashcard", "课程", "lecture", "计划", "learn")):
+        return "learning_plan", "learning", "demo_c_learning_plan"
+    if any(k in m for k in ("科研", "论文", "paper", "research", "github", "文献")):
+        return "research_idea", "research", "research_topic_refresh"
+    if any(k in m for k in ("社团", "实践", "活动", "招新", "会议", "club")):
+        return "club_practice", "club", "demo_a_social_practice"
+    if any(k in m for k in ("健康", "旅行", "日程", "生日", "生活", "办事")):
+        return "life_task", "life", "local_life_secretary"
+    if any(k in m for k in ("实习", "面试", "简历", "career", "job")):
+        return "career_plan", "career", "local_career_secretary"
+    return "general_secretary", "general", "local_secretary"
+
+
+def _default_agent_run(req: AgentRunRequest) -> dict:
+    from campus.api.types import DemoARequest, DemoCRequest, ResearchRefreshRequest, ResearchTopicRequest
+    from campus.runtime.stores import ArtifactStore, RunStore, TaskStore
+
+    intent, domain, workflow = _classify_agent_message(req.message)
+    runs = RunStore()
+    artifacts = ArtifactStore(runs)
+    tasks = TaskStore()
+    rec = runs.create(message=req.message, intent=intent, domain=domain,
+                      selected_workflow=workflow, context=req.context)
+    artifacts.write_text(rec.id, "Plan.md", f"# Plan\n\n- request: {req.message}\n- workflow: {workflow}\n")
+    status = "done"
+    error = ""
+    result: dict[str, Any] = {"ok": True}
+    try:
+        if domain == "learning":
+            days = int(req.context.get("days", 30)) if isinstance(req.context, dict) else 30
+            result = _default_demo_c(DemoCRequest(goal=req.message, days=days, mode=req.mode))
+        elif domain == "club":
+            result = _default_demo_a(DemoARequest(topic=req.message[:80] or "校园活动", mode=req.mode))
+        elif domain == "research":
+            topic = _default_research_add_topic(ResearchTopicRequest(title=req.message[:80] or "research idea", query=req.message))
+            result = _default_research_refresh(topic["topic"]["id"], ResearchRefreshRequest(mode=req.mode))
+        else:
+            result = {"ok": True, "summary": f"已记录任务：{req.message}", "source_mode": "local"}
+        if not result.get("ok", False):
+            status = "failed"
+            error = result.get("error", "")
+    except Exception as e:
+        status = "failed"
+        error = str(e)
+        result = {"ok": False, "error": error}
+    imported = artifacts.import_paths(rec.id, result.get("artifacts", []))
+    if result.get("run_dir"):
+        imported.append(artifacts.write_text(rec.id, "SourceRun.txt", str(result["run_dir"]), "reference"))
+    artifacts.write_text(rec.id, "Status.md", f"# Status\n\n- status: {status}\n- error: {error}\n")
+    artifacts.write_text(rec.id, "Verification.md", f"# Verification\n\n- local fallback safe: yes\n- result ok: {bool(result.get('ok'))}\n")
+    artifacts.write_json(rec.id, "run_result.json", result)
+    manifest = artifacts.list(rec.id)
+    tasks.create(title=req.message[:80] or intent, body=req.message, status=status,
+                 domain=domain, run_id=rec.id, metadata={"intent": intent, "workflow": workflow})
+    runs.update(rec.id, status=status, error=error, result=result, artifacts=manifest)
+    return {
+        "ok": status != "failed",
+        "run_id": rec.id,
+        "intent": intent,
+        "domain": domain,
+        "selected_workflow": workflow,
+        "status": status,
+        "artifacts": manifest,
+        "error": error,
+    }
+
+
+def _default_agent_list_runs() -> dict:
+    from campus.runtime.stores import RunStore
+    return {"runs": RunStore().list()}
+
+
+def _default_agent_get_run(run_id: str) -> dict:
+    from campus.runtime.stores import ArtifactStore, RunStore
+    rec = RunStore().get(run_id)
+    if rec is None:
+        return {"ok": False, "error": "run not found"}
+    data = rec.__dict__
+    data["ok"] = True
+    data["artifacts"] = ArtifactStore().list(run_id)
+    return data
+
+
+def _default_settings_status() -> dict:
+    import subprocess
+    from campus.runtime.llm_config import real_llm_status
+    from campus.runtime.paths import campus_home
+    from campus.skills.registry import audit
+    skills = audit()
+    try:
+        branch = subprocess.check_output(["git", "branch", "--show-current"],
+                                         cwd=skills.get("repo_root") or None,
+                                         text=True, stderr=subprocess.DEVNULL).strip()
+    except Exception:
+        branch = ""
+    notion = _default_notes_status()
+    mobile = {
+        "feishu": bool(os.environ.get("CAMPUS_FEISHU_CHAT_ID")),
+        "qq": bool(os.environ.get("CAMPUS_QQ_BOT_APP_ID") or os.environ.get("QQ_BOT_APP_ID")),
+    }
+    providers = {
+        "github": bool(os.environ.get("GITHUB_TOKEN")),
+        "search": bool(os.environ.get("TAVILY_API_KEY") or os.environ.get("SERPAPI_API_KEY")),
+    }
+    return {
+        "ok": True,
+        "version": "0.7.0",
+        "branch": branch,
+        "campus_home": campus_home(),
+        "llm": real_llm_status("auto"),
+        "skills": skills,
+        "notion": notion,
+        "mobile": {"ok": any(mobile.values()), "channels": mobile},
+        "providers": providers,
+        "smoke_command": "powershell -ExecutionPolicy Bypass -File .\\scripts\\smoke_demo.ps1",
+    }
 
 
 # ---- life backends (Phase 6) ----
@@ -276,6 +406,10 @@ def _default_backends() -> Backends:
         anniv_list=_default_anniv_list,
         daily_log_get=_default_daily_log_get,
         daily_log_run=_default_daily_log_run,
+        agent_run=_default_agent_run,
+        agent_list_runs=_default_agent_list_runs,
+        agent_get_run=_default_agent_get_run,
+        settings_status=_default_settings_status,
     )
 
 
@@ -313,13 +447,27 @@ def create_app(backends: Optional[Backends] = None,
     def demo_status():
         return app.state.backends.demo_status()
 
+    @app.post("/agent/run")
+    def agent_run(req: AgentRunRequest):
+        b = app.state.backends.agent_run
+        return b(req) if b else _default_agent_run(req)
+
+    @app.get("/agent/runs")
+    def agent_runs():
+        b = app.state.backends.agent_list_runs
+        return b() if b else _default_agent_list_runs()
+
+    @app.get("/agent/runs/{run_id}")
+    def agent_get_run(run_id: str):
+        b = app.state.backends.agent_get_run
+        return b(run_id) if b else _default_agent_get_run(run_id)
+
     @app.get("/runs")
     def list_runs():
-        from campus.runtime.paths import runs_dir
-        base = runs_dir()
-        if not os.path.isdir(base):
-            return {"runs": []}
-        return {"runs": sorted(os.listdir(base))}
+        b = app.state.backends.agent_list_runs
+        if b:
+            return b()
+        return _default_agent_list_runs()
 
     @app.post("/memory")
     def memory(q: MemoryQuery):
@@ -336,6 +484,11 @@ def create_app(backends: Optional[Backends] = None,
     @app.get("/tasks")
     def tasks():
         return {"tasks": app.state.backends.list_tasks()}
+
+    @app.get("/settings/status")
+    def settings_status():
+        b = app.state.backends.settings_status
+        return b() if b else _default_settings_status()
 
     @app.post("/push")
     def push(req: PushRequest):

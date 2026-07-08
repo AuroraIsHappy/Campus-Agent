@@ -28,6 +28,12 @@ class DemoCRequest(BaseModel):
     mode: str = "offline"  # offline | auto | real
 
 
+class AgentRunRequest(BaseModel):
+    message: str
+    mode: str = "offline"  # offline | auto | real
+    context: dict = {}
+
+
 class MemoryQuery(BaseModel):
     query: str
     k: int = 5

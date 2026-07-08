@@ -20,12 +20,20 @@ __all__ = ["JsonFileStore", "DEFAULT_MEMORY_PATH"]
 DEFAULT_MEMORY_PATH = os.path.expanduser("~/.campus/memory.json")
 
 
+def _default_memory_path() -> str:
+    try:
+        from campus.runtime.paths import campus_home
+        return os.path.join(campus_home(), "memory.json")
+    except Exception:
+        return DEFAULT_MEMORY_PATH
+
+
 class JsonFileStore:
     """File-backed memory store. Composes an ``InMemoryStore`` for query logic."""
 
     def __init__(self, path: Optional[str] = None,
                  embedder: Optional[EmbedderPort] = None) -> None:
-        self.path = path or DEFAULT_MEMORY_PATH
+        self.path = path or _default_memory_path()
         self._store = InMemoryStore(embedder=embedder or HashEmbedder())
         self._load()
 

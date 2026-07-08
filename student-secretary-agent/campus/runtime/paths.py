@@ -10,3 +10,7 @@ def campus_home() -> str:
 
 def runs_dir() -> str:
     return os.path.join(campus_home(), "runs")
+
+
+def state_dir() -> str:
+    return os.path.join(campus_home(), "state")
