@@ -42,10 +42,10 @@
 - ✅ COST-T1 `campus/meta_agent/cost.py`（角色分档 CHEAP/MID/STRONG + DEFAULT_ROLE_TIER + TIER_MULT + tier_for/estimate_cost/route_table + BudgetGate）
 - ✅ COST-T2 `tests/meta_agent/test_cost.py` → **8 passed**（P5-COST1 全绿：分档单调、route_table 合并、预算闸超限拒）
 
-### 6. 收尾
-- ⏳ DOC-T1 `README.md` + `requirements.txt`
-- ⏳ V-T1 全量回归 + 覆盖率每文件 ≥80%（P5-COV + P5-BASE）
-- ⏳ V-T2 `Verification.md` 落档 + Status 全 ✅ → 删 /loop cron → M5
+### 6. 收尾 ✅ DONE
+- ✅ DOC-T1 `README.md`（conda 运行器+pip+前端+移动开通+routing+架构+红线）+ `requirements.txt`
+- ✅ V-T1 全量回归 **206 passed** + phase-5 覆盖率 **91%**（每文件 ≥80%；P5-COV + P5-BASE 绿）
+- ✅ V-T2 `Verification.md` 落档 + Status 全 ✅ → 删 /loop cron → **M5 达成**
 
 ## 当前进度指针
-**下一步**：FE-T1（frontend/ scaffold：vite+react+ts+tailwind；用 ultracode Workflow 并行建组件）。已完成 Demo B + 成本 + API + 移动（**4/5 块，200 passed** 全量）。仅剩前端 + 文档收尾。
+**✅ M5 达成** — 全部 6 块完成。206 passed / phase-5 覆盖率 91%（每文件 ≥80%）/ 前端 build 0 错 / README+requirements 齐。/loop cron 已停。真实 LLM/真渠道 e2e 留用户手动验收。
