@@ -244,6 +244,29 @@ export const api = {
     jpost<{ ok: boolean; jobs: { id: string; title: string; company: string; city: string; fit: number; reason: string }[]; run_id: string }>("/career/jobs/search", body),
   saveJob: (job: Record<string, unknown>) => jpost<{ ok: boolean; jobs: Record<string, unknown>[] }>("/career/jobs/save", { job }),
   savedJobs: () => jget<{ jobs: Record<string, unknown>[] }>("/career/jobs"),
-  interviewPlan: (body: { role: string; days?: number; background?: string }) =>
-    jpost<{ ok: boolean; role: string; plan: { day: number; focus: string; task: string; minutes: number }[]; questions: string[]; run_id: string }>("/career/interview_plan", body),
+  interviewPlan: (body: { role: string; days?: number; background?: string; mode?: string }) =>
+    jpost<{ ok: boolean; role: string; plan: { day: number; focus: string; task: string; minutes: number }[]; questions: string[]; run_id: string; source_mode?: string }>("/career/interview_plan", body),
+  // Phase 8: interview practice + reflect
+  interviewPractice: (body: { role: string; question?: string; answer?: string; background?: string }) =>
+    jpost<{ ok: boolean; score: number; rubric: string[]; improvement_cues: string[]; model_answer_outline: string[]; follow_ups: string[]; run_id: string }>("/career/interview/practice", body),
+  interviewReflect: (body: { role: string; reflection: string; practice_run_id?: string; tags?: string }) =>
+    jpost<{ ok: boolean; reflection: Record<string, unknown>; reflections_total: number; run_id: string }>("/career/interview/reflect", body),
+  // Phase 8: Ebbinghaus daily quiz
+  quizDaily: (body: { topic?: string; count?: number }) =>
+    jpost<{ ok: boolean; topic: string; questions: { id: string; question: string; answer: string; review_node_id?: string }[]; due_review_count: number; total_review_nodes: number; run_id: string }>("/learning/quiz/daily", body),
+  // Phase 8: export status
+  exportStatus: () => jget<{ ok: boolean; formats: Record<string, { available: boolean; library: string }>; any_available: boolean }>("/club/export_status"),
+  // Phase 8: auto-learn
+  submitCorrection: (runId: string, body: { domain?: string; original?: string; corrected: string; reason?: string }) =>
+    jpost<{ ok: boolean; correction: Record<string, unknown>; total_corrections: number }>(`/agent/runs/${runId}/correction`, body),
+  listCorrections: (includeProcessed = true) =>
+    jget<{ corrections: Record<string, unknown>[]; total: number }>(`/agent/corrections?include_processed=${includeProcessed}`),
+  triggerAutoLearn: (useLlm = true) =>
+    jpost<{ ok: boolean; processed: number; preferences_written: number; skills_created: number; skills_updated: number; knowledge_written: number }>(`/admin/auto-learn?use_llm=${useLlm}`, {}),
+  listAutoSkills: () => jget<{ skills: string[] }>("/agent/skills"),
+  // Phase 8: agent name
+  getAgentName: () => jget<{ ok: boolean; name: string; config: Record<string, unknown> }>("/agent/name"),
+  setAgentName: (name: string) => jpost<{ ok: boolean; name: string }>("/agent/name", { name }),
+  // Phase 8: Notion list
+  notionList: (limit = 20) => jget<{ ok: boolean; notes: Record<string, unknown>[]; source?: string }>(`/notes/notion/list?limit=${limit}`),
 };

@@ -1,7 +1,7 @@
 {
   "name": "campus-frontend",
   "private": true,
-  "version": "0.5.0",
+  "version": "0.8.0",
   "type": "module",
   "description": "Campus-Agent standalone frontend (React+Vite+TS+Tailwind). Talks to campus/api; never touches Hermes internals.",
   "scripts": {

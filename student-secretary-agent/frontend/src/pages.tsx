@@ -897,18 +897,53 @@ export function CareerPage() {
 export function SettingsPage() {
   const [status, setStatus] = useState<SettingsStatus | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  useEffect(() => { api.settingsStatus().then(setStatus).catch((e: Error) => setErr(e.message)); }, []);
+  const [agentName, setAgentName] = useState("Campus");
+  const [nameInput, setNameInput] = useState("");
+  const [autoLearnReport, setAutoLearnReport] = useState<string | null>(null);
+  useEffect(() => {
+    api.settingsStatus().then(setStatus).catch((e: Error) => setErr(e.message));
+    api.getAgentName().then(r => { setAgentName(r.name); setNameInput(r.name); }).catch(() => {});
+  }, []);
+  const saveName = () => {
+    api.setAgentName(nameInput).then(r => setAgentName(r.name)).catch((e: Error) => setErr(e.message));
+  };
+  const runAutoLearn = () => {
+    setAutoLearnReport("running...");
+    api.triggerAutoLearn(false).then(r => {
+      setAutoLearnReport(`processed: ${r.processed} | preferences: ${r.preferences_written} | skills: ${r.skills_created + r.skills_updated} | knowledge: ${r.knowledge_written}`);
+    }).catch((e: Error) => setAutoLearnReport(`error: ${e.message}`));
+  };
+  const mobile = status?.mobile as { ok: boolean; channels?: { feishu?: { ok?: boolean; configured?: boolean }; qq?: { ok?: boolean; configured?: boolean } } } | undefined;
   return (
     <>
       <PageHeader title="设置" subtitle="本地路径、LLM、skills、Notion、移动推送和外部 provider readiness。" />
       <Err e={err} />
+      <div className="mb-6 rounded-xl border border-campus-200 bg-campus-50/50 p-5">
+        <h3 className="mb-3 font-semibold text-campus-800">Agent 名称</h3>
+        <div className="flex gap-2">
+          <input
+            value={nameInput}
+            onChange={e => setNameInput(e.target.value)}
+            className="flex-1 rounded-lg border border-ink-200 px-3 py-2 text-sm focus:border-campus-400 focus:outline-none"
+            placeholder="给你的秘书起个名字"
+          />
+          <button onClick={saveName} className="rounded-lg bg-campus-600 px-4 py-2 text-sm font-medium text-white hover:bg-campus-700 transition">保存</button>
+        </div>
+        <p className="mt-2 text-xs text-ink-700/60">当前名称「{agentName}」会显示在侧边栏。改名后刷新页面生效。</p>
+      </div>
+      <div className="mb-6 rounded-xl border border-ink-200 bg-white p-5">
+        <h3 className="mb-3 font-semibold text-ink-800">Auto-Learn（从用户纠正学习）</h3>
+        <p className="mb-3 text-sm text-ink-700/70">回顾用户对 run 产物的修正，自动写入偏好记忆或创建/更新 skill。每日定时运行，也可手动触发。</p>
+        <button onClick={runAutoLearn} className="rounded-lg bg-ink-800 px-4 py-2 text-sm font-medium text-white hover:bg-ink-900 transition">手动触发 Auto-Learn</button>
+        {autoLearnReport && <p className="mt-2 text-sm text-ink-700/80">{autoLearnReport}</p>}
+      </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <Card title="CAMPUS_HOME">
           <pre className="overflow-x-auto text-xs">{status?.campus_home || "loading"}</pre>
           <p className="mt-2 text-sm text-ink-700/70">branch {status?.branch || "unknown"} · v{status?.version || ""}</p>
         </Card>
         <Card title="LLM">
-          <p className="text-lg font-semibold">{status?.llm.ok ? "ready" : "offline fallback"}</p>
+          <p className="text-lg font-semibold">{status?.llm.ok ? "✅ ready" : "⚪ offline fallback"}</p>
           <p className="text-sm text-ink-700/70">{status?.llm.error || "真实模型可用"}</p>
         </Card>
         <Card title="Skills">
@@ -916,12 +951,15 @@ export function SettingsPage() {
           <p className="text-sm text-ink-700/70">missing: {status?.skills.missing_core.join(", ") || "none"}</p>
         </Card>
         <Card title="Notion">
-          <p className="text-lg font-semibold">{status?.notion.ok ? "ready" : "local mirror"}</p>
+          <p className="text-lg font-semibold">{status?.notion.ok ? "✅ ready" : "⚪ local mirror"}</p>
           <p className="text-sm text-ink-700/70">{status?.notion.local_mirror_dir}</p>
         </Card>
         <Card title="Mobile">
-          <p className="text-lg font-semibold">{status?.mobile.ok ? "configured" : "not configured"}</p>
-          <p className="text-sm text-ink-700/70">{JSON.stringify(status?.mobile.channels || {})}</p>
+          <p className="text-lg font-semibold">{status?.mobile.ok ? "✅ configured" : "⚪ not configured"}</p>
+          <div className="mt-1 text-sm text-ink-700/70">
+            <p>飞书: {mobile?.channels?.feishu?.ok ? "✅" : mobile?.channels?.feishu?.configured ? "⚠️ auth" : "⚪"}</p>
+            <p>QQ: {mobile?.channels?.qq?.ok ? "✅" : mobile?.channels?.qq?.configured ? "⚠️ auth" : "⚪"}</p>
+          </div>
         </Card>
         <Card title="Smoke">
           <pre className="whitespace-pre-wrap text-xs">{status?.smoke_command}</pre>
