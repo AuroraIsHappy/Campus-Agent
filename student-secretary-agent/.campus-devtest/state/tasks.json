@@ -735,5 +735,50 @@
     },
     "created_at": 1783540480,
     "updated_at": 1783540480
+  },
+  {
+    "id": "task_1783543090_076a21a2",
+    "title": "GitHub trending: linux learning",
+    "body": "{\"ok\": true, \"source_mode\": \"fallback_offline\", \"source_error\": \"\", \"summary\": \"为 linux learning 生成 3 个本地 fallback 项目候选。\", \"items\": [{\"name\": \"linux-learning-starter\", \"url\": \"https://github.com/example/starter\", \"language\": \"Python\", \"stars\": 1240, \"reason\": \"适合作为入门工程模板\"}, {\"name\": \"linux-learning-rag\", \"url\": \"https://github.com/example/rag\", \"language\": \"Python\", \"stars\": 980, \"reason\": \"包含检索、评测和本地运行示例\"}, {\"name\": \"linux-learning-eval\", \"url\": \"https://github.com/example/eval\", \"language\": \"Python\", \"stars\": 720, \"reason\": \"适合做论文/项目复现实验\"}], \"questions\": [\"项目是否活跃？\", \"README 是否可复现？\", \"license 是否允许使用？\"]}",
+    "status": "done",
+    "domain": "research",
+    "run_id": "run_20260709_043810_8301c281",
+    "due": "",
+    "metadata": {
+      "intent": "github_trending",
+      "workflow": "research_github_trending"
+    },
+    "created_at": 1783543090,
+    "updated_at": 1783543090
+  },
+  {
+    "id": "task_1783543099_5af7f62f",
+    "title": "帮我找学Linux的GitHub项目",
+    "body": "帮我找学Linux的GitHub项目",
+    "status": "done",
+    "domain": "research",
+    "run_id": "run_20260709_043819_d35c73c4",
+    "due": "",
+    "metadata": {
+      "intent": "research_idea",
+      "workflow": "research_topic_refresh"
+    },
+    "created_at": 1783543099,
+    "updated_at": 1783543099
+  },
+  {
+    "id": "task_1783543100_ce86851b",
+    "title": "daily 每日复习 quiz",
+    "body": "{\"ok\": true, \"topic\": \"daily\", \"questions\": [{\"id\": \"dq1\", \"question\": \"请解释/回忆：OS card 1\", \"answer\": \"围绕 OS card 1 给出定义、例子和一个易错点。\", \"rubric\": [\"定义准确\", \"有具体例子\", \"能说明易错点\"], \"review_node_id\": \"task_1783529691_c667b9ca\"}, {\"id\": \"dq2\", \"question\": \"请解释/回忆：OS card 2\", \"answer\": \"围绕 OS card 2 给出定义、例子和一个易错点。\", \"rubric\": [\"定义准确\", \"有具体例子\", \"能说明易错点\"], \"review_node_id\": \"task_1783529691_f99b297b\"}, {\"id\": \"dq3\", \"question\": \"请解释/回忆：OS card 1\", \"answer\": \"围绕 OS card 1 给出定义、例子和一个易错点。\", \"rubric\": [\"定义准确\", \"有具体例子\", \"能说明易错点\"], \"review_node_id\": \"task_1783529691_14bf6e91\"}, {\"id\": \"dq4\", \"question\": \"请解释/回忆：OS card 2\", \"answer\": \"围绕 OS card 2 给出定义、例子和一个易错点。\", \"rubric\": [\"定义准确\", \"有具体例子\", \"能说明易错点\"], \"review_node_id\": \"task_1783529691_13ffdfe2\"}, {\"id\": \"dq5\", \"question\": \"请解释/回忆：OS card 1\", \"answer\": \"围绕 OS card 1 给出定义、例子和一个易错点。\", \"rubric\": [\"定义准确\", \"有具体例子\", \"能说明易错点\"], \"review_node_id\": \"task_1783529768_29784564\"}], \"source_mode\": \"local\", \"due_review_count\": 0, \"total_review_nodes\": 8}",
+    "status": "done",
+    "domain": "learning",
+    "run_id": "run_20260709_043820_72028479",
+    "due": "",
+    "metadata": {
+      "intent": "quiz_daily",
+      "workflow": "learning_quiz_daily"
+    },
+    "created_at": 1783543100,
+    "updated_at": 1783543100
   }
 ]

@@ -3011,5 +3011,339 @@
     "context": {},
     "created_at": 1783540480,
     "updated_at": 1783540480
+  },
+  "run_20260709_043254_ad9d7b52": {
+    "id": "run_20260709_043254_ad9d7b52",
+    "message": "总结桌面上那个数据结构讲义",
+    "intent": "lecture_summary",
+    "domain": "learning",
+    "selected_workflow": "demo_b_lecture_pipeline",
+    "status": "running",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_043254_ad9d7b52",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_043254_ad9d7b52\\Plan.md",
+        "kind": "document",
+        "created_at": 1783542774
+      }
+    ],
+    "error": "",
+    "result": {},
+    "context": {},
+    "created_at": 1783542774,
+    "updated_at": 1783542774
+  },
+  "run_20260709_043254_0682f9f7": {
+    "id": "run_20260709_043254_0682f9f7",
+    "message": "总结桌面上那个数据结构讲义",
+    "intent": "meta_long",
+    "domain": "learning",
+    "selected_workflow": "meta_agent_long",
+    "status": "running",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_043254_0682f9f7",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_043254_0682f9f7\\Plan.md",
+        "kind": "document",
+        "created_at": 1783542774
+      }
+    ],
+    "error": "",
+    "result": {},
+    "context": {},
+    "created_at": 1783542774,
+    "updated_at": 1783542774
+  },
+  "run_20260709_043810_8301c281": {
+    "id": "run_20260709_043810_8301c281",
+    "message": "GitHub trending: linux learning",
+    "intent": "github_trending",
+    "domain": "research",
+    "selected_workflow": "research_github_trending",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_043810_8301c281",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_043810_8301c281\\Plan.md",
+        "kind": "document",
+        "created_at": 1783543090
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_043810_8301c281\\Status.md",
+        "kind": "document",
+        "created_at": 1783543090
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_043810_8301c281\\Verification.md",
+        "kind": "document",
+        "created_at": 1783543090
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_043810_8301c281\\run_result.json",
+        "kind": "json",
+        "created_at": 1783543090
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_043810_8301c281\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783543090
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "source_mode": "fallback_offline",
+      "source_error": "",
+      "summary": "为 linux learning 生成 3 个本地 fallback 项目候选。",
+      "items": [
+        {
+          "name": "linux-learning-starter",
+          "url": "https://github.com/example/starter",
+          "language": "Python",
+          "stars": 1240,
+          "reason": "适合作为入门工程模板"
+        },
+        {
+          "name": "linux-learning-rag",
+          "url": "https://github.com/example/rag",
+          "language": "Python",
+          "stars": 980,
+          "reason": "包含检索、评测和本地运行示例"
+        },
+        {
+          "name": "linux-learning-eval",
+          "url": "https://github.com/example/eval",
+          "language": "Python",
+          "stars": 720,
+          "reason": "适合做论文/项目复现实验"
+        }
+      ],
+      "questions": [
+        "项目是否活跃？",
+        "README 是否可复现？",
+        "license 是否允许使用？"
+      ]
+    },
+    "context": {},
+    "created_at": 1783543090,
+    "updated_at": 1783543090
+  },
+  "run_20260709_043819_d35c73c4": {
+    "id": "run_20260709_043819_d35c73c4",
+    "message": "帮我找学Linux的GitHub项目",
+    "intent": "research_idea",
+    "domain": "research",
+    "selected_workflow": "research_topic_refresh",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_043819_d35c73c4",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_043819_d35c73c4\\Plan.md",
+        "kind": "document",
+        "created_at": 1783543099
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_043819_d35c73c4\\Status.md",
+        "kind": "document",
+        "created_at": 1783543099
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_043819_d35c73c4\\Verification.md",
+        "kind": "document",
+        "created_at": 1783543099
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_043819_d35c73c4\\run_result.json",
+        "kind": "json",
+        "created_at": 1783543099
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_043819_d35c73c4\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783543099
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "mode": "offline",
+      "source_mode": "offline",
+      "source_error": "",
+      "topic_id": "linux-github-1783543099",
+      "topic": {
+        "id": "linux-github-1783543099",
+        "title": "帮我找学Linux的GitHub项目",
+        "query": "帮我找学Linux的GitHub项目",
+        "keywords": [],
+        "cadence": "daily",
+        "created_at": 1783543099
+      },
+      "summary": "本次为 帮我找学Linux的GitHub项目 找到 2 篇候选论文，建议先读综述再读方法论文。",
+      "papers": [
+        {
+          "title": "帮我找学Linux的GitHub项目: A Practical Survey",
+          "url": "https://arxiv.org/abs/0000.00001",
+          "authors": [
+            "Offline Demo"
+          ],
+          "year": 2026,
+          "venue": "arXiv",
+          "abstract": "Survey-style overview for 帮我找学Linux的GitHub项目, useful as a first reading map.",
+          "source": "offline",
+          "score": 0.91,
+          "reasons": [
+            "主题匹配",
+            "适合快速建立背景"
+          ]
+        },
+        {
+          "title": "Recent Methods for 帮我找学Linux的GitHub项目",
+          "url": "https://arxiv.org/abs/0000.00002",
+          "authors": [
+            "Offline Demo"
+          ],
+          "year": 2025,
+          "venue": "arXiv",
+          "abstract": "Method-focused paper candidates around 帮我找学Linux的GitHub项目.",
+          "source": "offline",
+          "score": 0.86,
+          "reasons": [
+            "方法导向",
+            "便于整理笔记"
+          ]
+        }
+      ],
+      "questions": [
+        "这篇论文解决的核心问题是什么？",
+        "方法和已有工作相比新增了什么假设？",
+        "哪些结论可以转化成你的研究笔记或实验计划？"
+      ],
+      "created_at": 1783543099,
+      "note_path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\notes\\research\\linux-github-1783543099.md"
+    },
+    "context": {},
+    "created_at": 1783543099,
+    "updated_at": 1783543099
+  },
+  "run_20260709_043820_72028479": {
+    "id": "run_20260709_043820_72028479",
+    "message": "daily 每日复习 quiz",
+    "intent": "quiz_daily",
+    "domain": "learning",
+    "selected_workflow": "learning_quiz_daily",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_043820_72028479",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_043820_72028479\\Plan.md",
+        "kind": "document",
+        "created_at": 1783543100
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_043820_72028479\\Status.md",
+        "kind": "document",
+        "created_at": 1783543100
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_043820_72028479\\Verification.md",
+        "kind": "document",
+        "created_at": 1783543100
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_043820_72028479\\run_result.json",
+        "kind": "json",
+        "created_at": 1783543100
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_043820_72028479\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783543100
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "topic": "daily",
+      "questions": [
+        {
+          "id": "dq1",
+          "question": "请解释/回忆：OS card 1",
+          "answer": "围绕 OS card 1 给出定义、例子和一个易错点。",
+          "rubric": [
+            "定义准确",
+            "有具体例子",
+            "能说明易错点"
+          ],
+          "review_node_id": "task_1783529691_c667b9ca"
+        },
+        {
+          "id": "dq2",
+          "question": "请解释/回忆：OS card 2",
+          "answer": "围绕 OS card 2 给出定义、例子和一个易错点。",
+          "rubric": [
+            "定义准确",
+            "有具体例子",
+            "能说明易错点"
+          ],
+          "review_node_id": "task_1783529691_f99b297b"
+        },
+        {
+          "id": "dq3",
+          "question": "请解释/回忆：OS card 1",
+          "answer": "围绕 OS card 1 给出定义、例子和一个易错点。",
+          "rubric": [
+            "定义准确",
+            "有具体例子",
+            "能说明易错点"
+          ],
+          "review_node_id": "task_1783529691_14bf6e91"
+        },
+        {
+          "id": "dq4",
+          "question": "请解释/回忆：OS card 2",
+          "answer": "围绕 OS card 2 给出定义、例子和一个易错点。",
+          "rubric": [
+            "定义准确",
+            "有具体例子",
+            "能说明易错点"
+          ],
+          "review_node_id": "task_1783529691_13ffdfe2"
+        },
+        {
+          "id": "dq5",
+          "question": "请解释/回忆：OS card 1",
+          "answer": "围绕 OS card 1 给出定义、例子和一个易错点。",
+          "rubric": [
+            "定义准确",
+            "有具体例子",
+            "能说明易错点"
+          ],
+          "review_node_id": "task_1783529768_29784564"
+        }
+      ],
+      "source_mode": "local",
+      "due_review_count": 0,
+      "total_review_nodes": 8
+    },
+    "context": {},
+    "created_at": 1783543100,
+    "updated_at": 1783543100
   }
 }
