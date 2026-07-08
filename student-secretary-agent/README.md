@@ -33,12 +33,35 @@ python -m pytest tests/ campus/demo_c/tests/ \
 ### 3. 跑 Demo B（讲义 → 复习计划 + quiz）
 
 ```bash
-# 启动 API（前端消费）
+# 启动 API（前端消费）。注意：模块级 app 默认不启后台提醒循环。
 python -m uvicorn campus.api.server:app --port 8000
 
 # 或直接跑 pipeline（产物落 ~/.campus/runs/demo_b-<ts>/）
 python -c "from campus.demo_b.pipeline import run_demo_b; r=run_demo_b('<讲义目录>', '2026-08-15', free_minutes=300, start_date='2026-08-01'); print(r.ok, r.kg_nodes, r.plan_days)"
 ```
+
+### 3b. 跑生活功能（日程 / 生日纪念日 / 每日秘书日志，Phase 6）
+
+```bash
+# 方式一：带后台提醒循环的 API（每 60s 自动检查到期并推送）
+python -c "import uvicorn; from campus.api.server import create_app; app=create_app(with_scheduler=True); uvicorn.run(app, port=8000)"
+
+# 方式二：不开循环，手动触发一次「今日提醒 + 秘书日志」
+python -c "from campus.life.engine import run_daily; from campus.memory.json_store import JsonFileStore; r=run_daily(memory=JsonFileStore()); print('reminders_sent:', r.reminders_sent, '| log:', r.log.date if r.log else None)"
+
+# 方式三：纯 Python 直接操作（不经 API，方便调试）
+python -c "
+from campus.life import CalendarEvent, Anniversary, BIRTHDAY, calendar_store, anniversaries
+from campus.memory.json_store import JsonFileStore
+m = JsonFileStore()
+calendar_store.add_event(CalendarEvent(id='', title='高数课', start='2026-07-09T08:00', location='教三301', rrule='WEEKLY'))
+anniversaries.add_anniversary(m, Anniversary(id='', name='小明', date='07-09', kind=BIRTHDAY))
+print('事件:', len(calendar_store.list_events()), '| 生日:', len(anniversaries.list_anniversaries(m)))
+print('-> 打开前端「生活」页或 GET http://localhost:8000/calendar 查看')
+"
+```
+
+> 后台循环调用真实推送（`campus.mobile.cli.push`）需要先配好飞书/QQ 渠道（见下「移动推送」）。未配渠道时推送会返回失败但**不影响秘书日志写入**。
 
 ### 4. 前端
 
@@ -57,7 +80,7 @@ npm i -D electron concurrently wait-on
 npm run electron:dev
 ```
 
-页面：仪表盘 / 新手引导 / 讲义复习(Demo B) / 任务看板 / 人格 / 记忆。前端**只**经 `campus/api` 取数，绝不直连 Hermes 内部——Hermes 可自由升级。
+页面：仪表盘 / 新手引导 / 讲义复习(Demo B) / **生活(日程·生日·秘书日志)** / 任务看板 / 人格 / 记忆。前端**只**经 `campus/api` 取数，绝不直连 Hermes 内部——Hermes 可自由升级。
 
 ---
 
