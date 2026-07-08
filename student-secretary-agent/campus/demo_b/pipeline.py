@@ -100,14 +100,14 @@ def run_demo_b(path: str, exam_date: str, *,
     # 3. resources (B-F3 / B-Q1)
     candidates = _rs.search_resources(topic, searcher=searcher)
 
-    # 4. review plan (B-F4 / B-Q3) + day-1 quiz (B-F5)
+    # 4. review plan (B-F4 / B-Q3). Only day-1 gets a live quiz (B-F5) -- saves
+    #    N model calls vs generating a quiz for every day; other days carry topics/content.
     plan = _rp.build_review_plan(kg, exam_date=exam_date, free_minutes=free_minutes,
                                  start_date=start_date, slot_minutes=slot_minutes,
-                                 quiz_fn=quiz_fn)
+                                 quiz_fn=None)
     day1 = plan.days[0] if plan.days else None
-    day1_quiz = (day1.quiz if day1 and day1.quiz
-                 else _quiz.generate_quiz(topic, day1.content if day1 else "",
-                                          quiz_fn=quiz_fn, day=1))
+    day1_quiz = _quiz.generate_quiz(topic, (day1.content if day1 else ""),
+                                    quiz_fn=quiz_fn, n=3, day=1)
 
     # 5. quality gates (B-F*/B-Q*)
     checks = _ck.all_checks(results=results, kg=kg, candidates=candidates,
