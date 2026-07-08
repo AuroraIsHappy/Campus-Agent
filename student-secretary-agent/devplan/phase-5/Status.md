@@ -26,12 +26,12 @@
 - ✅ API-T1 `campus/api/{__init__,types,server}.py`（FastAPI + 注入 Backends）
 - ✅ API-T2 路由 /health /demo_b/run /runs /memory /onboarding /profile /tasks /push + `tests/api/test_core.py` → **8 passed**（TestClient 确定性，P5-API1）
 
-### 3. 前端
-- ⏳ FE-T1 `frontend/` scaffold（vite+react+ts+tailwind）+ `package.json`
-- ⏳ FE-T2 `frontend/src/api/` client + types（对齐 campus/api）
-- ⏳ FE-T3 五页面+Campus 皮肤（Onboarding/Dashboard/DemoB/Kanban/Persona/Memory）
-- ⏳ FE-T4 `frontend/electron/main.ts` 壳
-- ⏳ FE-T5 `npm run build` 0 错（P5-FE）
+### 3. 前端 ✅ DONE
+- ✅ FE-T1 `frontend/` scaffold（vite+react18+ts5+tailwind3）+ `package.json`（lean deps，无 electron 默认依赖）
+- ✅ FE-T2 `frontend/src/api.ts` typed client（对齐 campus/api 8 路由）
+- ✅ FE-T3 六页面+Campus 皮肤（Dashboard/Onboarding/DemoB/Kanban/Persona/Memory；indigo-on-slate skin）
+- ✅ FE-T4 `frontend/electron/main.cjs` 壳（可选，非 build 依赖）
+- ✅ FE-T5 `npm run build` → **0 错**（tsc + vite build；33 modules，dist/css 11.8kB + js 152.5kB，717ms；P5-FE 绿）
 
 ### 4. 移动适配 ✅ DONE
 - ✅ MOB-T1 `campus/mobile/{__init__,ports,feishu}.py`（PushPort + PushReceipt + FeishuPusher 真 subprocess `hermes send --to feishu:`）

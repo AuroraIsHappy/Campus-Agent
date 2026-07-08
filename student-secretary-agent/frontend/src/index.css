@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Campus skin base */
+:root {
+  color-scheme: light;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply font-sans antialiased;
+}
+
+@layer components {
+  .campus-card {
+    @apply rounded-xl border border-ink-200 bg-white p-5 shadow-sm;
+  }
+  .campus-btn {
+    @apply inline-flex items-center gap-2 rounded-lg bg-campus-600 px-4 py-2 text-sm
+      font-medium text-white transition hover:bg-campus-700 disabled:opacity-50;
+  }
+  .campus-btn-ghost {
+    @apply inline-flex items-center gap-2 rounded-lg border border-ink-200 bg-white
+      px-4 py-2 text-sm font-medium text-ink-700 transition hover:bg-ink-100;
+  }
+  .campus-input {
+    @apply w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm
+      outline-none focus:border-campus-500 focus:ring-2 focus:ring-campus-200;
+  }
+  .campus-chip {
+    @apply inline-flex items-center rounded-full bg-campus-50 px-2.5 py-0.5
+      text-xs font-medium text-campus-700;
+  }
+}

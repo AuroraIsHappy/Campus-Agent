@@ -1,0 +1,22 @@
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+// Dev server proxies /api -> the Campus FastAPI (campus.api.server) on :8000.
+// In production, serve the built dist/ behind the same API origin.
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 5173,
+    proxy: {
+      "/api": { target: "http://localhost:8000", changeOrigin: true },
+      "/demo_b": { target: "http://localhost:8000", changeOrigin: true },
+      "/memory": { target: "http://localhost:8000", changeOrigin: true },
+      "/onboarding": { target: "http://localhost:8000", changeOrigin: true },
+      "/profile": { target: "http://localhost:8000", changeOrigin: true },
+      "/tasks": { target: "http://localhost:8000", changeOrigin: true },
+      "/push": { target: "http://localhost:8000", changeOrigin: true },
+      "/runs": { target: "http://localhost:8000", changeOrigin: true },
+    },
+  },
+  build: { outDir: "dist", sourcemap: true },
+});
