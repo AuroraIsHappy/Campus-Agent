@@ -141,6 +141,11 @@ def sync_digest(digest: dict, mode: str = "local") -> dict:
 
 
 def _create_notion_page(digest: dict) -> str:
+    """Create a Notion page from a research digest (legacy, single-paragraph).
+
+    Kept for backward compatibility with ``sync_digest``. New callers should use
+    ``create_rich_page`` which supports multiple blocks.
+    """
     token = _token()
     db = _db_id()
     title = (digest.get("topic") or {}).get("title") or digest.get("topic_id") or "Research digest"
@@ -156,6 +161,32 @@ def _create_notion_page(digest: dict) -> str:
              "paragraph": {"rich_text": [{"type": "text", "text": {"content": summary[:2000]}}]}},
         ],
     }
+    return _post_page(body)
+
+
+def create_rich_page(title: str, summary: str, children: list[dict]) -> str:
+    """Create a Notion page with multiple content blocks (Phase 9).
+
+    ``children`` is a list of Notion block objects (from
+    ``campus.notes.notion_blocks.markdown_to_notion_blocks``). Returns the page URL.
+    """
+    token = _token()
+    db = _db_id()
+    body = {
+        "parent": {"database_id": db},
+        "properties": {
+            "Name": {"title": [{"text": {"content": (title or "Untitled")[:2000]}}]},
+            "Summary": {"rich_text": [{"text": {"content": (summary or "")[:2000]}}]},
+        },
+        "children": (children or [])[:100],  # Notion hard cap
+    }
+    return _post_page(body)
+
+
+def _post_page(body: dict) -> str:
+    """POST a page-creation body to Notion and return the page URL."""
+    token = _token()
+    db = _db_id()
     req = urllib.request.Request(
         "https://api.notion.com/v1/pages",
         data=json.dumps(body).encode("utf-8"),
@@ -166,6 +197,76 @@ def _create_notion_page(digest: dict) -> str:
         },
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=20) as resp:
+    with urllib.request.urlopen(req, timeout=30) as resp:
         payload = json.loads(resp.read().decode("utf-8"))
     return payload.get("url", "")
+
+
+def sync_lecture_result(result: dict, mode: str = "local") -> dict:
+    """Export a Demo B lecture result (KG + plan + mind map) to Notion + local.
+
+    ``result`` is the Demo B run result dict carrying ``run_dir``, ``topic``,
+    ``kg_summary``, ``plan_md``, ``mindmap_md``. Reads the run-dir artifacts if
+    the inline fields are absent. Builds a rich multi-block Notion page.
+
+    Returns ``{ok, local_path, notion_ok, notion_page, error, status}``.
+    """
+    from campus.notes.notion_blocks import markdown_to_notion_blocks
+
+    run_dir = result.get("run_dir", "")
+    topic = result.get("topic") or "课程讲义总结"
+
+    # gather content: prefer inline fields, fall back to run-dir files
+    def _read(name: str) -> str:
+        p = os.path.join(run_dir, name)
+        try:
+            with open(p, encoding="utf-8") as f:
+                return f.read()
+        except Exception:
+            return ""
+
+    plan_md = result.get("plan_md") or _read("plan.md")
+    mindmap_md = result.get("mindmap_md") or _read("mindmap.md")
+    kg_summary = result.get("kg_summary") or _read("kg.json")
+
+    # build a single Markdown document
+    doc_lines = [f"# {topic}", ""]
+    if kg_summary:
+        doc_lines += ["## 知识图谱", "```json", kg_summary[:4000], "```", ""]
+    if mindmap_md:
+        doc_lines += ["## 复习思维导图", mindmap_md, ""]
+    if plan_md:
+        doc_lines += ["## 复习计划", plan_md, ""]
+    full_md = "\n".join(doc_lines)
+
+    # local mirror
+    base = _base()
+    os.makedirs(base, exist_ok=True)
+    local_path = os.path.join(base, f"{_slug(topic)}-lecture-{int(time.time())}.md")
+    with open(local_path, "w", encoding="utf-8") as f:
+        f.write(full_md)
+
+    st = status()
+    notion_page = ""
+    notion_error = ""
+    notion_ok = False
+    if mode == "notion" and not st["ok"]:
+        notion_error = "Notion token/database not configured; wrote local Markdown mirror."
+    elif mode == "notion" and st["ok"]:
+        try:
+            children = markdown_to_notion_blocks(full_md)
+            notion_page = create_rich_page(f"讲义总结：{topic}",
+                                           f"知识图谱 + 复习思维导图 + 复习计划（{topic}）",
+                                           children)
+            notion_ok = bool(notion_page)
+        except Exception as e:
+            notion_error = str(e)[:300]
+
+    return {
+        "ok": True,
+        "local_path": local_path,
+        "notion_ok": notion_ok,
+        "notion_page": notion_page,
+        "error": notion_error,
+        "status": st,
+    }

@@ -16,6 +16,7 @@ import os
 from campus.demo_b import (
     extractors as _ex, knowledge_graph as _kg, resource_search as _rs,
     review_planner as _rp, quiz as _quiz, checkers as _ck,
+    mindmap as _mm,
 )
 from campus.demo_b.types import RunResult, to_dict
 
@@ -70,12 +71,14 @@ def _write_verification(run_dir, checks, rate, kg, candidates, plan, ids) -> str
     return p
 
 
-def run_demo_b(path: str, exam_date: str, *,
+def run_demo_b(path: str, exam_date: str = "",
+               *,
                free_minutes: int = 120, start_date: str | None = None,
                topic: str | None = None, slot_minutes: int = 20,
                extract_fn=None, searcher=None, quiz_fn=None,
                memory=None, run_dir: str | None = None,
-               extractors=None) -> RunResult:
+               extractors=None,
+               export_notion: bool = False) -> RunResult:
     """Drive Demo B end-to-end. Returns RunResult.
 
     For deterministic testing pass ``extractors`` (fake table) / ``searcher`` /
@@ -133,6 +136,13 @@ def run_demo_b(path: str, exam_date: str, *,
            json.dumps(to_dict(day1_quiz), ensure_ascii=False, indent=2))
     _write(os.path.join(run_dir, "research_candidates.json"),
            json.dumps([r.__dict__ for r in candidates], ensure_ascii=False, indent=2))
+
+    # Phase 9: build review mind map from the KG (GOAL.md 复习思维导图)
+    mm = _mm.build_mindmap(kg)
+    _write(os.path.join(run_dir, "mindmap.md"), mm["markdown"])
+    _write(os.path.join(run_dir, "mindmap.mmd"), mm["mermaid"])
+    _write(os.path.join(run_dir, "mindmap.json"), mm["tree"])
+
     ver = _write_verification(run_dir, checks, rate, kg, candidates, plan,
                               {"topic": topic})
 
@@ -146,6 +156,17 @@ def run_demo_b(path: str, exam_date: str, *,
     )
     _write(os.path.join(run_dir, "run_result.json"),
            json.dumps(_jsonable(result), ensure_ascii=False, indent=2))
+
+    # Phase 9: optional Notion export (GOAL.md 导出到笔记软件)
+    notion_export = {"ok": False, "skipped": True}
+    if export_notion:
+        try:
+            from campus.notes.notion import sync_lecture_result
+            notion_export = sync_lecture_result(
+                {"run_dir": run_dir, "topic": topic}, mode="notion")
+        except Exception as e:
+            notion_export = {"ok": False, "error": str(e)[:200]}
+
     _ = ver
     return result
 

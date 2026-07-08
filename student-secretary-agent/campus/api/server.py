@@ -104,9 +104,39 @@ def _default_demo_a(req: DemoARequest) -> dict:
 
 def _default_demo_b(req: DemoBRequest) -> dict:
     from campus.demo_b import pipeline as _p
-    r = _p.run_demo_b(req.path, req.exam_date, free_minutes=req.free_minutes,
-                      start_date=req.start_date, topic=req.topic)
-    return _result_dict(r)
+    from campus.demo_b import path_resolver as _pr
+    import os
+
+    path = req.path
+    # Phase 9: fuzzy path resolution (GOAL.md 模糊路径 + 自动确认)
+    # If the path doesn't point to a real file/dir, treat it as a fuzzy query
+    # and resolve candidates from ~/Desktop, ~/Documents, etc.
+    needs_clarify = False
+    clarify_options: list = []
+    if path and not os.path.exists(os.path.expanduser(path)):
+        resolver_fn = None
+        try:
+            resolver_fn = _pr.make_llm_resolver_fn()
+        except Exception:
+            pass
+        resolution = _pr.resolve_lecture_path(path, resolver_fn=resolver_fn)
+        if resolution["resolved"]:
+            path = resolution["resolved"]
+        elif resolution["needs_clarify"]:
+            return {"ok": False, "needs_clarify": True,
+                    "clarify_options": resolution["clarify_options"],
+                    "candidates": resolution["candidates"],
+                    "message": f"在 {path} 附近找到多个可能的讲义文件，请确认是哪一个。"}
+        else:
+            return {"ok": False, "needs_clarify": False,
+                    "error": f"未找到匹配 '{path}' 的讲义文件。请提供完整路径。"}
+
+    r = _p.run_demo_b(path, req.exam_date, free_minutes=req.free_minutes,
+                      start_date=req.start_date, topic=req.topic,
+                      export_notion=bool(getattr(req, "export_notion", False)))
+    d = _result_dict(r)
+    d["topic"] = req.topic or ""
+    return d
 
 
 def _default_demo_c(req: DemoCRequest) -> dict:

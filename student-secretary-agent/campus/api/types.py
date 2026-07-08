@@ -6,10 +6,11 @@ from pydantic import BaseModel
 
 class DemoBRequest(BaseModel):
     path: str
-    exam_date: str
+    exam_date: str = ""
     free_minutes: int = 300
     start_date: Optional[str] = None
     topic: Optional[str] = None
+    export_notion: bool = False
 
 
 class DemoARequest(BaseModel):
