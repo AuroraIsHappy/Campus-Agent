@@ -320,3 +320,43 @@ def test_default_agent_run_writes_foundation_stores(monkeypatch):
     assert os.path.exists(os.path.join(base, "state", "runs.json"))
     tasks = c.get("/tasks").json()["tasks"]
     assert any(t["run_id"] == run_id for t in tasks)
+
+
+def test_phase7_domain_routes_local_fallback(monkeypatch):
+    base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..",
+                                        ".campus-test", uuid.uuid4().hex))
+    monkeypatch.setenv("CAMPUS_HOME", base)
+    c = TestClient(create_app(with_scheduler=False))
+
+    cards = c.post("/learning/flashcards", json={"topic": "Linux", "count": 3}).json()
+    assert cards["ok"] is True and len(cards["flashcards"]) == 3 and cards["run_id"]
+    assert c.post("/learning/deadlines", json={"title": "交作业", "due": "2026-08-01"}).json()["ok"] is True
+    assert c.get("/learning/dashboard").json()["progress"]["tasks"] >= 1
+    quiz = c.post("/learning/quiz/run", json={"topic": "Linux", "count": 2}).json()
+    assert len(quiz["questions"]) == 2
+    grade = c.post("/learning/quiz/grade", json={"topic": "Linux", "answers": [
+        {"question_id": "q1", "answer": "定义、例子、易错点"}
+    ]}).json()
+    assert grade["ok"] is True and "plan_adjustment" in grade
+
+    idea = c.post("/research/idea", json={"idea": "student secretary agent", "mode": "offline"}).json()
+    assert idea["ok"] is True and idea["note_path"]
+    gh = c.post("/research/github/trending", json={"topic": "student agent"}).json()
+    assert gh["ok"] is True and gh["items"]
+    fmt = c.post("/research/format/check", json={"title": "Paper", "manuscript": "Abstract\nFig. 1\nReferences"}).json()
+    assert fmt["ok"] is True and fmt["items"]
+
+    assert c.post("/life/health", json={"mood": "ok", "sleep_hours": 7}).json()["ok"] is True
+    assert c.get("/life/health").json()["records"]
+    assert c.post("/life/travel_plan", json={"destination": "上海", "days": 2}).json()["itinerary"]
+    assert c.get("/life/campus_guide", params={"query": "借教室"}).json()["guides"]
+
+    assert c.post("/club/meeting_minutes", json={"topic": "例会", "notes": "确定预算。联系老师。"}).json()["minutes"]["todo"]
+    assert c.post("/club/recruiting_copy", json={"org": "AI 社"}).json()["copy"]["headline"]
+    assert "您好" in c.post("/club/email_draft", json={"purpose": "邀请指导"}).json()["email"]
+
+    jobs = c.post("/career/jobs/search", json={"query": "AI 产品", "city": "上海"}).json()
+    assert jobs["jobs"]
+    assert c.post("/career/jobs/save", json={"job": jobs["jobs"][0]}).json()["ok"] is True
+    assert c.get("/career/jobs").json()["jobs"]
+    assert c.post("/career/interview_plan", json={"role": "AI 产品实习生"}).json()["plan"]

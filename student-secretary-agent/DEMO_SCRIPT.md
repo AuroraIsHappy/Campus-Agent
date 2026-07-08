@@ -1,4 +1,4 @@
-最终我们需要完成三个典型长程任务的demo
+最终我们需要完成三个典型长程任务的 demo，并把它们纳入统一秘书工作区
 
 ## 当前可演示入口（本地 5 分钟）
 
@@ -10,9 +10,14 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start_demo.ps1
 
 打开 `http://127.0.0.1:5173`：
 
-- 仪表盘：看 LLM、skills、Notion、最近运行状态。
-- Demo 中心：选择 `offline`，运行 Demo A 和 Demo C；选择 `real` 时，如果 Hermes/LLM 未就绪，会显示缺什么。
-- 科研笔记：添加主题，刷新 digest，查看论文卡片和 `note_path`，同步本地 Markdown 镜像。
+- 仪表盘：看任务、最近运行、LLM、skills、Notion 状态。
+- 秘书：输入一句自然语言需求，例如“我想学 Linux，帮我安排 30 天计划”，看到 run id、领域、产物。
+- 学习：生成 flashcards、添加 deadline、运行 quiz、提交答案并看到计划调整。
+- 科研：从 idea 生成 digest，查看 GitHub fallback 项目，运行格式检查。
+- 生活：添加日程/纪念日，生成每日秘书日志，记录健康，生成旅行计划，查询校园办事指南。
+- 社团实践：生成会议纪要、招新文案、邮件草稿，也可跑 Demo A。
+- 职业：搜索 fallback 实习岗位，保存岗位，生成 7 天面试计划。
+- 设置：检查 LLM、skills、Notion、移动推送、GitHub/search provider readiness。
 
 服务启动后验收：
 

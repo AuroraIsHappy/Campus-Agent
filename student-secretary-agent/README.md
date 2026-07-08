@@ -30,7 +30,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start_demo.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\smoke_demo.ps1
 ```
 
-冒烟会验证：`/health`、`/demo/status`、Demo A offline、Demo C offline、科研主题刷新、本地 Markdown 笔记同步。运行产物默认写入仓库内 `.campus-demo/`，不会污染用户主目录。
+冒烟会验证：`/health`、`/settings/status`、`/agent/run`、Demo A/C offline、科研主题刷新、本地 Markdown 笔记同步、学习 flashcards、生活健康/旅行、社团邮件草稿、职业面试计划。运行产物默认写入仓库内 `.campus-demo/`，不会污染用户主目录。
 
 ### 1. Python 环境（重要）
 
@@ -103,7 +103,7 @@ npm i -D electron concurrently wait-on
 npm run electron:dev
 ```
 
-页面：仪表盘 / 新手引导 / 讲义复习(Demo B) / **生活(日程·生日·秘书日志)** / 任务看板 / 人格 / 记忆。前端**只**经 `campus/api` 取数，绝不直连 Hermes 内部——Hermes 可自由升级。
+页面：仪表盘 / 秘书 / 学习 / 科研 / 生活 / 社团实践 / 职业 / 任务 / 记忆 / 设置 / 新手引导 / Demo 中心。前端**只**经 `campus/api` 取数，绝不直连 Hermes 内部——Hermes 可自由升级。
 
 ---
 
@@ -149,12 +149,15 @@ frontend/        # React+Vite+TS+Tailwind（+可选 Electron）
 
 ---
 
-## 当前状态（Demo RC）
+## 当前状态（Phase 7 本地产品闭环）
 
-- Demo A / C offline、科研主题 digest、本地 Markdown 笔记、前端 Demo 中心已跑通。
+- 无外部 key 时，本地 fallback 可完成学习、科研、生活、社团实践、职业每个域至少一个任务。
+- `/agent/run` 提供自然语言统一入口，并把 run/task/artifact 写入 `CAMPUS_HOME`。
+- `/settings/status` 汇总 LLM、skills、Notion、移动推送、GitHub/search provider readiness。
+- Demo A / C offline、科研主题 digest、本地 Markdown 笔记、前端工作区已跑通。
 - `/demo/status` 会显示真实 LLM readiness；当前 API real 模式走 `hermes_cli` import 路径，不依赖 `hermes` CLI 是否在 PATH。
-- 测试：`tests/api/test_core.py` 当前 **18 passed**。
+- 测试：`tests/api/test_core.py` 当前 **22+ passed**（随 Phase 7 API 覆盖增长）。
 - 前端：`npm.cmd run typecheck` 通过；`npm.cmd run build` 在沙箱内会被 esbuild 读目录权限卡住，沙箱外构建通过。
-- Demo B、移动真渠道、Notion 真同步仍按手动配置/验收推进。
+- 移动真渠道、Notion 真同步、GitHub/search live provider 仍按手动配置/验收推进；未配置时不阻塞本地 fallback。
 
 更多细节见 [`devplan/phase-5/`](./devplan/phase-5/)（Plan / Status / Verification）。

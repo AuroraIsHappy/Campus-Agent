@@ -4,4 +4,8 @@ __pycache__/
 .campus-demo/
 .campus-demo-test/
 .campus-test/
+.hermes-test/
+.tmp-pytest/
+.pytest-deps/
+pytest_deps/
 frontend/dist/

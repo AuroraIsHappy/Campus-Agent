@@ -18,6 +18,10 @@ from campus.api.types import (
     AgentRunRequest, DemoARequest, DemoBRequest, DemoCRequest, MemoryQuery, OnboardingRequest, PushRequest,
     EventRequest, AnniversaryRequest, LogQuery, ResearchTopicRequest,
     ResearchRefreshRequest, NotionSyncRequest,
+    FlashcardsRequest, DeadlineRequest, QuizRunRequest, QuizGradeRequest,
+    ResearchIdeaRequest, GithubTrendingRequest, FormatCheckRequest,
+    HealthRequest, TravelPlanRequest, ClubMinutesRequest, RecruitingCopyRequest,
+    EmailDraftRequest, JobSearchRequest, JobSaveRequest, InterviewPlanRequest,
 )
 
 __all__ = ["Backends", "create_app", "app", "start_scheduler", "stop_scheduler"]
@@ -211,6 +215,7 @@ def _classify_agent_message(message: str) -> tuple[str, str, str]:
 
 def _default_agent_run(req: AgentRunRequest) -> dict:
     from campus.api.types import DemoARequest, DemoCRequest, ResearchRefreshRequest, ResearchTopicRequest
+    from campus import phase7
     from campus.runtime.stores import ArtifactStore, RunStore, TaskStore
 
     intent, domain, workflow = _classify_agent_message(req.message)
@@ -232,8 +237,12 @@ def _default_agent_run(req: AgentRunRequest) -> dict:
         elif domain == "research":
             topic = _default_research_add_topic(ResearchTopicRequest(title=req.message[:80] or "research idea", query=req.message))
             result = _default_research_refresh(topic["topic"]["id"], ResearchRefreshRequest(mode=req.mode))
+        elif domain == "life":
+            result = phase7.travel_plan(req.message[:40] or "周末", days=1, preferences=req.message)
+        elif domain == "career":
+            result = phase7.interview_plan(req.message[:40] or "实习岗位", days=7, background=req.message)
         else:
-            result = {"ok": True, "summary": f"已记录任务：{req.message}", "source_mode": "local"}
+            result = phase7.email_draft(req.message[:80] or "沟通事项", context=req.message)
         if not result.get("ok", False):
             status = "failed"
             error = result.get("error", "")
@@ -523,6 +532,107 @@ def create_app(backends: Optional[Backends] = None,
     def notes_status():
         b = app.state.backends.notes_status
         return b() if b else {"ok": False}
+
+    # ---- Phase 7 product routes ----
+    @app.post("/learning/flashcards")
+    def learning_flashcards(req: FlashcardsRequest):
+        from campus import phase7
+        return phase7.flashcards(req.topic, req.source_text, req.count)
+
+    @app.post("/learning/deadlines")
+    def learning_deadline_add(req: DeadlineRequest):
+        from campus import phase7
+        return phase7.add_deadline(req.title, req.due, req.course, req.note)
+
+    @app.get("/learning/deadlines")
+    def learning_deadlines():
+        from campus import phase7
+        return phase7.list_deadlines()
+
+    @app.post("/learning/quiz/run")
+    def learning_quiz_run(req: QuizRunRequest):
+        from campus import phase7
+        return phase7.quiz_run(req.topic, req.count, req.source_text)
+
+    @app.post("/learning/quiz/grade")
+    def learning_quiz_grade(req: QuizGradeRequest):
+        from campus import phase7
+        return phase7.quiz_grade(req.topic, req.answers)
+
+    @app.get("/learning/dashboard")
+    def learning_dashboard():
+        from campus import phase7
+        return phase7.learning_dashboard()
+
+    @app.post("/research/idea")
+    def research_idea(req: ResearchIdeaRequest):
+        from campus import phase7
+        return phase7.research_idea(req.idea, req.mode)
+
+    @app.post("/research/github/trending")
+    def research_github(req: GithubTrendingRequest):
+        from campus import phase7
+        return phase7.github_trending(req.topic, req.language)
+
+    @app.post("/research/format/check")
+    def research_format(req: FormatCheckRequest):
+        from campus import phase7
+        return phase7.format_check(req.title, req.target, req.manuscript)
+
+    @app.post("/life/health")
+    def life_health(req: HealthRequest):
+        from campus import phase7
+        return phase7.health_record(req.mood, req.sleep_hours, req.exercise, req.note)
+
+    @app.get("/life/health")
+    def life_health_list():
+        from campus import phase7
+        return phase7.health_list()
+
+    @app.post("/life/travel_plan")
+    def life_travel(req: TravelPlanRequest):
+        from campus import phase7
+        return phase7.travel_plan(req.destination, req.days, req.budget, req.preferences)
+
+    @app.get("/life/campus_guide")
+    def life_guide(query: str = ""):
+        from campus import phase7
+        return phase7.campus_guide(query)
+
+    @app.post("/club/meeting_minutes")
+    def club_minutes(req: ClubMinutesRequest):
+        from campus import phase7
+        return phase7.meeting_minutes(req.topic, req.notes)
+
+    @app.post("/club/recruiting_copy")
+    def club_recruiting(req: RecruitingCopyRequest):
+        from campus import phase7
+        return phase7.recruiting_copy(req.org, req.audience, req.tone)
+
+    @app.post("/club/email_draft")
+    def club_email(req: EmailDraftRequest):
+        from campus import phase7
+        return phase7.email_draft(req.purpose, req.recipient, req.context)
+
+    @app.post("/career/jobs/search")
+    def career_jobs_search(req: JobSearchRequest):
+        from campus import phase7
+        return phase7.job_search(req.query, req.city, req.mode)
+
+    @app.post("/career/jobs/save")
+    def career_job_save(req: JobSaveRequest):
+        from campus import phase7
+        return phase7.save_job(req.job)
+
+    @app.get("/career/jobs")
+    def career_jobs():
+        from campus import phase7
+        return phase7.list_jobs()
+
+    @app.post("/career/interview_plan")
+    def career_interview(req: InterviewPlanRequest):
+        from campus import phase7
+        return phase7.interview_plan(req.role, req.days, req.background)
 
     # ---- life routes (Phase 6) ----
     @app.post("/calendar")
