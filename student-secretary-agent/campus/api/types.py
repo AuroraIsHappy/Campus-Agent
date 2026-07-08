@@ -171,3 +171,17 @@ class InterviewPlanRequest(BaseModel):
     role: str
     days: int = 7
     background: str = ""
+
+
+class InterviewPracticeRequest(BaseModel):
+    role: str
+    question: str = ""
+    answer: str = ""
+    background: str = ""
+
+
+class InterviewReflectRequest(BaseModel):
+    role: str
+    reflection: str
+    practice_run_id: str = ""
+    tags: str = ""

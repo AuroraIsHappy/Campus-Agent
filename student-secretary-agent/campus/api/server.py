@@ -22,6 +22,7 @@ from campus.api.types import (
     ResearchIdeaRequest, GithubTrendingRequest, FormatCheckRequest,
     HealthRequest, TravelPlanRequest, ClubMinutesRequest, RecruitingCopyRequest,
     EmailDraftRequest, JobSearchRequest, JobSaveRequest, InterviewPlanRequest,
+    InterviewPracticeRequest, InterviewReflectRequest,
 )
 
 __all__ = ["Backends", "create_app", "app", "start_scheduler", "stop_scheduler"]
@@ -148,9 +149,54 @@ def _default_memory_recall(query: str, k: int) -> list:
 
 
 def _default_onboarding(answers: dict) -> dict:
-    # production: campus.meta_agent.onboarding wizard; deterministic canned default
-    return {"ok": True, "profile": {"identity": answers.get("identity", ""),
-            "major": answers.get("major", ""), "persona": answers.get("persona", "default")}}
+    # Phase 8 Step 1: wired to the real OnboardingWizard. The frontend sends a
+    # dict of answers; the wizard normalizes providers/persona + recommends skills.
+    # If answers are sparse, we still return what we have + the question list so
+    # the frontend can drive a multi-step form.
+    from campus.meta_agent.onboarding import OnboardingWizard, recommend_skills
+
+    questions = [{"key": k, "question": q} for k, q in OnboardingWizard.QUESTIONS]
+
+    # If the caller passed a full answer set, run the wizard to produce a profile.
+    required = {"identity", "major", "persona"}
+    if required.issubset({k for k, v in (answers or {}).items() if v}):
+        def _ask(q: str) -> str:
+            # map question → answer by key (QUESTIONS order is stable)
+            for k, question in OnboardingWizard.QUESTIONS:
+                if question == q:
+                    return str((answers or {}).get(k, ""))
+            return ""
+        try:
+            profile = OnboardingWizard(ask=_ask).run()
+            skills = recommend_skills(profile)
+            # persist the profile to memory so future sessions recall it
+            try:
+                from campus.memory.json_store import JsonFileStore
+                from campus.memory.types import PREFERENCES
+                store = JsonFileStore()
+                store.remember(layer=PREFERENCES, key="onboarding_profile",
+                               content=str(profile.__dict__),
+                               metadata={"identity": profile.identity,
+                                         "major": profile.major,
+                                         "persona": profile.persona},
+                               pinned=True)
+            except Exception:
+                pass
+            return {"ok": True, "profile": profile.__dict__,
+                    "recommended_skills": skills, "questions": questions}
+        except Exception as e:
+            return {"ok": False, "error": str(e),
+                    "profile": {"identity": answers.get("identity", ""),
+                                "major": answers.get("major", ""),
+                                "persona": answers.get("persona", "default")},
+                    "questions": questions}
+
+    # partial answers → return questions so the frontend can continue the form
+    return {"ok": True,
+            "profile": {"identity": answers.get("identity", ""),
+                        "major": answers.get("major", ""),
+                        "persona": answers.get("persona", "default")},
+            "questions": questions}
 
 
 def _default_tasks() -> list:
@@ -216,6 +262,7 @@ def _classify_agent_message(message: str) -> tuple[str, str, str]:
 def _default_agent_run(req: AgentRunRequest) -> dict:
     from campus.api.types import DemoARequest, DemoCRequest, ResearchRefreshRequest, ResearchTopicRequest
     from campus import phase7
+    from campus.runtime.llm_config import require_real_llm, resolve_mode
     from campus.runtime.stores import ArtifactStore, RunStore, TaskStore
 
     intent, domain, workflow = _classify_agent_message(req.message)
@@ -228,8 +275,45 @@ def _default_agent_run(req: AgentRunRequest) -> dict:
     status = "done"
     error = ""
     result: dict[str, Any] = {"ok": True}
+
+    # Phase 8 Step 1: real/auto + long-horizon tasks go through the MetaAgent →
+    # Odyssey multi-agent DAG (Planner↔Critic / Writer↔Reviewer adversarial
+    # debate) instead of the deterministic phase7 shortcut. Offline mode keeps
+    # the existing deterministic routing for backward compatibility + hermetic tests.
+    resolved = resolve_mode(req.mode)
+    use_meta = False
+    if resolved != "offline":
+        real, llm_status = require_real_llm(req.mode)
+        if real:
+            # long-horizon cue? delegate to MetaRunner for full multi-agent DAG.
+            from campus.meta_agent.meta_agent import LONG_KEYWORDS
+            is_long = len(req.message) > 20 or any(k in req.message for k in LONG_KEYWORDS)
+            if is_long:
+                use_meta = True
+
     try:
-        if domain == "learning":
+        if use_meta:
+            from campus.meta_agent.runner import MetaRunner
+            mr = MetaRunner()
+            mem = _try_recall_memory(req.message, k=3)
+            r = mr.run(req.message, mode=req.mode, domain=domain,
+                       context=req.context, memory_snippet=mem)
+            if r.ok:
+                # MetaRunner already persisted its own run record + artifacts;
+                # adopt its run_id and skip the manual artifact import below.
+                status = r.final_status or "done"
+                result = {"ok": True, "kind": r.kind, "summary": r.summary,
+                          "debates": r.debates, "dag": r.dag, "mode": req.mode,
+                          "multiagent": True, "artifacts": r.artifacts}
+                # mark the pre-created record as superseded by the meta run
+                runs.update(rec.id, status="superseded",
+                            result={"meta_run_id": r.run_id, "multiagent": True})
+                rec = runs.get(r.run_id) or rec  # adopt the meta run record
+            else:
+                status = "failed"
+                error = r.error
+                result = {"ok": False, "error": error, "multiagent": True}
+        elif domain == "learning":
             days = int(req.context.get("days", 30)) if isinstance(req.context, dict) else 30
             result = _default_demo_c(DemoCRequest(goal=req.message, days=days, mode=req.mode))
         elif domain == "club":
@@ -250,11 +334,16 @@ def _default_agent_run(req: AgentRunRequest) -> dict:
         status = "failed"
         error = str(e)
         result = {"ok": False, "error": error}
-    imported = artifacts.import_paths(rec.id, result.get("artifacts", []))
+    # MetaRunner already persisted its own run record + artifacts; skip the
+    # manual artifact import for the multi-agent path (artifacts are already dicts).
+    if use_meta and result.get("multiagent"):
+        imported = result.get("artifacts", [])
+    else:
+        imported = artifacts.import_paths(rec.id, result.get("artifacts", []))
     if result.get("run_dir"):
         imported.append(artifacts.write_text(rec.id, "SourceRun.txt", str(result["run_dir"]), "reference"))
-    artifacts.write_text(rec.id, "Status.md", f"# Status\n\n- status: {status}\n- error: {error}\n")
-    artifacts.write_text(rec.id, "Verification.md", f"# Verification\n\n- local fallback safe: yes\n- result ok: {bool(result.get('ok'))}\n")
+    artifacts.write_text(rec.id, "Status.md", f"# Status\n\n- status: {status}\n- error: {error}\n- multiagent: {bool(result.get('multiagent'))}\n")
+    artifacts.write_text(rec.id, "Verification.md", f"# Verification\n\n- local fallback safe: yes\n- result ok: {bool(result.get('ok'))}\n- multiagent: {bool(result.get('multiagent'))}\n")
     artifacts.write_json(rec.id, "run_result.json", result)
     manifest = artifacts.list(rec.id)
     tasks.create(title=req.message[:80] or intent, body=req.message, status=status,
@@ -269,7 +358,25 @@ def _default_agent_run(req: AgentRunRequest) -> dict:
         "status": status,
         "artifacts": manifest,
         "error": error,
+        "multiagent": bool(result.get("multiagent")),
     }
+
+
+def _try_recall_memory(query: str, k: int = 3) -> str:
+    """Best-effort memory recall for context injection. Never raises."""
+    try:
+        from campus.memory.json_store import JsonFileStore
+        store = JsonFileStore()
+        hits = store.recall(query, k=k)
+        if not hits:
+            return ""
+        lines = []
+        for r in hits:
+            rec = r.record
+            lines.append(f"[{rec.layer}] {rec.key}: {rec.content[:200]}")
+        return "\n".join(lines)
+    except Exception:
+        return ""
 
 
 def _default_agent_list_runs() -> dict:
@@ -633,6 +740,26 @@ def create_app(backends: Optional[Backends] = None,
     def career_interview(req: InterviewPlanRequest):
         from campus import phase7
         return phase7.interview_plan(req.role, req.days, req.background)
+
+    @app.post("/career/interview/practice")
+    def career_interview_practice(req: InterviewPracticeRequest):
+        from campus import phase7
+        return phase7.interview_practice(req.role, req.question, req.answer, req.background)
+
+    @app.post("/career/interview/reflect")
+    def career_interview_reflect(req: InterviewReflectRequest):
+        from campus import phase7
+        return phase7.interview_reflect(req.role, req.reflection, req.practice_run_id, req.tags)
+
+    @app.get("/club/export_status")
+    def club_export_status():
+        from campus import phase7
+        return phase7.export_status()
+
+    @app.post("/learning/quiz/daily")
+    def learning_quiz_daily(topic: str = "", count: int = 5):
+        from campus import phase7
+        return phase7.quiz_daily(topic, count)
 
     # ---- life routes (Phase 6) ----
     @app.post("/calendar")

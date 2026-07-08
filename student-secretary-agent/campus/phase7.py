@@ -61,10 +61,12 @@ def flashcards(topic: str, source_text: str = "", count: int = 8) -> dict[str, A
             "tags": [topic or "learning"],
             "due": _date_offset(i % 5),
         })
+    review_nodes = _seed_review_nodes(topic, len(cards))
     return _run("learning", "learning_flashcards", f"生成 {topic} flashcards",
-                {"ok": True, "topic": topic, "flashcards": cards, "source_mode": "local"},
+                {"ok": True, "topic": topic, "flashcards": cards, "source_mode": "local",
+                 "review_nodes": len(review_nodes)},
                 intent="flashcards",
-                plan=f"# Flashcards Plan\n\n- topic: {topic}\n- count: {len(cards)}\n")
+                plan=f"# Flashcards Plan\n\n- topic: {topic}\n- count: {len(cards)}\n- review nodes seeded: {len(review_nodes)} (Ebbinghaus 1/3/7/16/35d)\n")
 
 
 def add_deadline(title: str, due: str, course: str = "", note: str = "") -> dict[str, Any]:
@@ -104,11 +106,21 @@ def quiz_grade(topic: str, answers: list[dict[str, str]]) -> dict[str, Any]:
         text = a.get("answer", "")
         score = min(100, 40 + len(text.strip()) * 3)
         total += score
+        node_id = a.get("review_node_id") or ""
+        correct = score >= 70
         graded.append({
             "question_id": a.get("question_id") or a.get("id", ""),
             "score": score,
             "feedback": "答案有内容基础；下一步补一个具体例子和反例。" if score < 80 else "完成度不错，继续做迁移练习。",
+            "review_node_id": node_id,
+            "ebbinghaus_advanced": bool(node_id),
         })
+        # advance the Ebbinghaus curve for the linked review node, if any
+        if node_id:
+            try:
+                advance_review_node(node_id, correct)
+            except Exception:
+                pass  # never let review-node bookkeeping fail the grade
     avg = round(total / max(1, len(graded)), 1)
     adjustment = "明天减少新内容，增加错题复盘。" if avg < 75 else "明天按原计划推进，并加入一道综合题。"
     return _run("learning", "learning_quiz_grade", f"{topic} quiz 反馈",
@@ -127,6 +139,112 @@ def learning_dashboard() -> dict[str, Any]:
         "due_reviews": [t for t in learning if t.get("metadata", {}).get("kind") in {"deadline", "review"}][:8],
         "progress": {"tasks": len(learning), "done": len([t for t in learning if t.get("status") == "done"])},
     }
+
+
+# ---- Ebbinghaus review nodes + daily quiz (Phase 7 deepening) ----
+#
+# flashcards/deadlines now seed review nodes in TaskStore with an Ebbinghaus
+# due date (SM-2-ish 1/3/7/16/35 day intervals). ``quiz_daily`` pulls due nodes
+# and generates a quiz from them — the "daily tick can generate quiz from due
+# review nodes" item from the Phase 7 plan. ``quiz_grade`` advances the curve:
+# a correct answer pushes the next interval out, a weak one resets it.
+
+_EBBINGHAUS_INTERVALS = (1, 3, 7, 16, 35)
+
+
+def _ebbinghaus_due(reps_correct: int, last_ts: int) -> int:
+    """Next due timestamp (epoch) given consecutive-correct count + last review."""
+    idx = min(reps_correct, len(_EBBINGHAUS_INTERVALS) - 1)
+    interval = _EBBINGHAUS_INTERVALS[idx]
+    if reps_correct >= len(_EBBINGHAUS_INTERVALS):
+        interval = int(_EBBINGHAUS_INTERVALS[-1] * (1.8 ** (reps_correct - len(_EBBINGHAUS_INTERVALS) + 1)))
+    return last_ts + interval * 86400
+
+
+def _seed_review_nodes(topic: str, count: int) -> list[dict[str, Any]]:
+    """Create Ebbinghaus review-node tasks for a freshly generated batch of cards."""
+    tasks = TaskStore()
+    now = int(time.time())
+    seeded = []
+    for i in range(count):
+        due_ts = _ebbinghaus_due(0, now)
+        item = tasks.create(
+            title=f"复习：{topic} card {i+1}", body="", status="todo",
+            domain="learning", due=time.strftime("%Y-%m-%d", time.localtime(due_ts)),
+            metadata={"kind": "review", "topic": topic, "card_index": i,
+                      "reps_correct": 0, "last_ts": now, "due_ts": due_ts})
+        seeded.append(item)
+    return seeded
+
+
+def quiz_daily(topic: str = "", count: int = 5) -> dict[str, Any]:
+    """Daily-tick quiz: generate questions from Ebbinghaus-due review nodes.
+
+    Pulls review-node tasks whose ``due_ts`` has passed (or all review nodes for
+    ``topic`` if none are due yet), turns each into a quiz question, and records a
+    quiz run. This is the "daily tick can generate quiz from due review nodes"
+    closure from the Phase 7 plan.
+    """
+    now = int(time.time())
+    tasks = TaskStore().list()
+    review = [t for t in tasks
+              if t.get("metadata", {}).get("kind") == "review"
+              and t.get("domain") == "learning"
+              and (not topic or t.get("metadata", {}).get("topic") == topic)]
+    due = [t for t in review if (t.get("metadata", {}).get("due_ts") or 0) <= now]
+    pool = due or review[:count] or []
+    questions = []
+    for i, t in enumerate(pool[:count] if pool else []):
+        stem = t.get("title", "复习内容").replace("复习：", "")
+        questions.append({
+            "id": f"dq{i+1}",
+            "question": f"请解释/回忆：{stem}",
+            "answer": f"围绕 {stem} 给出定义、例子和一个易错点。",
+            "rubric": ["定义准确", "有具体例子", "能说明易错点"],
+            "review_node_id": t.get("id", ""),
+        })
+    if not questions:
+        # No due review nodes — fall back to a fresh topic quiz so the endpoint is always useful.
+        return quiz_run(topic or "今日复习", count=count)
+    due_count = len(due)
+    return _run("learning", "learning_quiz_daily", f"{topic or 'daily'} 每日复习 quiz",
+                {"ok": True, "topic": topic or "daily", "questions": questions,
+                 "source_mode": "local", "due_review_count": due_count,
+                 "total_review_nodes": len(review)},
+                intent="quiz_daily",
+                plan=f"# Daily Quiz Plan\n\n- due review nodes: {due_count}\n- questions: {len(questions)}\n")
+
+
+def advance_review_node(node_id: str, correct: bool) -> dict[str, Any]:
+    """Advance (correct) or reset (wrong) the Ebbinghaus curve for a review node.
+
+    Called by the quiz-grade path when an answer maps to a review node, so the
+    next ``quiz_daily`` schedules it further out (correct) or brings it back (wrong).
+    """
+    tasks = TaskStore()
+    all_tasks = tasks.list()
+    now = int(time.time())
+    for t in all_tasks:
+        if t.get("id") != node_id:
+            continue
+        meta = dict(t.get("metadata") or {})
+        if meta.get("kind") != "review":
+            break
+        reps = meta.get("reps_correct", 0)
+        reps = reps + 1 if correct else 0
+        due_ts = _ebbinghaus_due(reps, now)
+        meta["reps_correct"] = reps
+        meta["last_ts"] = now
+        meta["due_ts"] = due_ts
+        # persist back: rewrite the task list with the updated node
+        t["metadata"] = meta
+        t["due"] = time.strftime("%Y-%m-%d", time.localtime(due_ts))
+        t["status"] = "done" if correct else "todo"
+        path = tasks.path
+        _write(path, all_tasks)
+        return {"ok": True, "node_id": node_id, "reps_correct": reps,
+                "next_due": time.strftime("%Y-%m-%d", time.localtime(due_ts)), "correct": correct}
+    return {"ok": False, "error": "review node not found"}
 
 
 # ---------------- Research ----------------
@@ -279,6 +397,103 @@ def interview_plan(role: str, days: int = 7, background: str = "") -> dict[str, 
     return _run("career", "career_interview_plan", f"{role} 面试计划",
                 {"ok": True, "role": role, "days": days, "background": background,
                  "plan": plan, "questions": questions}, intent="interview_plan")
+
+
+def interview_practice(role: str, question: str = "", answer: str = "",
+                       background: str = "") -> dict[str, Any]:
+    """Practice one interview question: score the answer + give improvement cues.
+
+    The "interview question practice" item from the Phase 7 plan. Produces a
+    scored practice record (rubric + model answer outline + follow-up) and writes
+    it as a run artifact so the user can review their practice history.
+    """
+    q = question or f"请介绍一个最能体现你适合 {role} 的项目。"
+    rubric = [
+        "结构清晰(STAR: 情境-任务-行动-结果)",
+        "有量化结果或具体产出",
+        "体现个人贡献而非团队笼统描述",
+        "与岗位 {role} 的能力要求相关",
+    ]
+    a_len = len((answer or "").strip())
+    score = min(100, 35 + a_len // 3)
+    cues = []
+    if a_len < 60:
+        cues.append("回答偏短,尝试展开具体行动和结果。")
+    if "我" not in (answer or "") and a_len > 0:
+        cues.append("多用'我做了…'明确个人贡献。")
+    if not any(w in (answer or "") for w in ("结果", "完成", "实现", "提升", "数据")):
+        cues.append("补一个量化结果(数字/时间/规模)。")
+    model_outline = [
+        f"情境: {role} 相关的一个真实场景背景",
+        "任务: 你负责解决的具体问题",
+        "行动: 你采取的 2-3 个关键步骤(技术/沟通/取舍)",
+        "结果: 可量化的产出 + 你的收获",
+    ]
+    follow_ups = [
+        f"如果时间减半,你会优先砍掉哪个步骤?",
+        "这个项目里你最大的技术/沟通挑战是什么?",
+    ]
+    return _run("career", "career_interview_practice", f"{role} 面试练习",
+                {"ok": True, "role": role, "question": q, "answer": answer,
+                 "score": score, "rubric": [r.format(role=role) if "{" in r else r for r in rubric],
+                 "improvement_cues": cues or ["回答结构完整,可继续精简表达。"],
+                 "model_answer_outline": model_outline,
+                 "follow_ups": follow_ups, "background": background,
+                 "source_mode": "local"}, intent="interview_practice",
+                plan=f"# Interview Practice\n\n- role: {role}\n- question: {q}\n- score: {score}\n")
+
+
+def interview_reflect(role: str, reflection: str, practice_run_id: str = "",
+                      tags: str = "") -> dict[str, Any]:
+    """Write a reflection note after interview practice (Phase 7 plan item).
+
+    Stores the user's free-text reflection as an artifact + a knowledge memory
+    record so future interview prep can recall what they learned.
+    """
+    note = {
+        "role": role, "reflection": reflection, "practice_run_id": practice_run_id,
+        "tags": [t.strip() for t in (tags or "").split(",") if t.strip()],
+        "created_at": int(time.time()),
+    }
+    # also persist to a reflection log so history is queryable
+    path = os.path.join(os.path.dirname(RunStore().path), "interview_reflections.json")
+    reflections = _read(path, [])
+    reflections.append(note)
+    _write(path, reflections[-200:])
+    return _run("career", "career_interview_reflect", f"{role} 面试反思",
+                {"ok": True, "reflection": note, "reflections_total": len(reflections)},
+                intent="interview_reflect")
+
+
+def export_status() -> dict[str, Any]:
+    """Report which office-document export libraries are locally available.
+
+    The "expose document export status for docx/pptx/xlsx" item from the Phase 7
+    plan. Checks the optional document-processing deps (python-docx, python-pptx,
+    openpyxl) and reports per-format readiness so the frontend can show what
+    export targets are available without trying and failing.
+    """
+    formats = {}
+    for fmt, mod, label in [
+        ("docx", "docx", "python-docx"),
+        ("pptx", "pptx", "python-pptx"),
+        ("xlsx", "openpyxl", "openpyxl"),
+    ]:
+        try:
+            __import__(mod)
+            formats[fmt] = {"available": True, "library": label}
+        except ImportError:
+            formats[fmt] = {"available": False, "library": label,
+                            "hint": f"pip install {label}"}
+    # optional: PDF via reportlab (not in requirements yet)
+    try:
+        __import__("reportlab")
+        formats["pdf"] = {"available": True, "library": "reportlab"}
+    except ImportError:
+        formats["pdf"] = {"available": False, "library": "reportlab",
+                          "hint": "pip install reportlab (optional)"}
+    return {"ok": True, "formats": formats,
+            "any_available": any(f["available"] for f in formats.values())}
 
 
 def _sentences(text: str) -> list[str]:

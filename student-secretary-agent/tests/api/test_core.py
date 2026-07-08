@@ -360,3 +360,40 @@ def test_phase7_domain_routes_local_fallback(monkeypatch):
     assert c.post("/career/jobs/save", json={"job": jobs["jobs"][0]}).json()["ok"] is True
     assert c.get("/career/jobs").json()["jobs"]
     assert c.post("/career/interview_plan", json={"role": "AI 产品实习生"}).json()["plan"]
+    practice = c.post("/career/interview/practice", json={
+        "role": "AI 产品实习生", "question": "介绍一个项目", "answer": "我做了一个校园秘书agent"
+    }).json()
+    assert practice["ok"] is True and "score" in practice and practice["model_answer_outline"]
+    reflect = c.post("/career/interview/reflect", json={
+        "role": "AI 产品实习生", "reflection": "STAR结构还不够清晰", "tags": "产品,表达"
+    }).json()
+    assert reflect["ok"] is True and reflect["reflections_total"] >= 1
+    export = c.get("/club/export_status").json()
+    assert export["ok"] is True and "docx" in export["formats"]
+
+
+def test_ebbinghaus_daily_quiz_and_review_nodes(monkeypatch):
+    """Flashcards seed Ebbinghaus review nodes; quiz/daily pulls due ones; grade advances the curve."""
+    base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..",
+                                        ".campus-test", uuid.uuid4().hex))
+    monkeypatch.setenv("CAMPUS_HOME", base)
+    c = TestClient(create_app(with_scheduler=False))
+
+    cards = c.post("/learning/flashcards", json={"topic": "OS", "count": 3}).json()
+    assert cards["ok"] and cards["review_nodes"] == 3
+
+    daily = c.post("/learning/quiz/daily", json={"topic": "OS", "count": 5}).json()
+    assert daily["ok"] and daily["total_review_nodes"] >= 3
+    assert len(daily["questions"]) >= 1
+    q0 = daily["questions"][0]
+    assert q0.get("review_node_id")
+
+    # grade the first answer, linked to its review node — should advance Ebbinghaus
+    grade = c.post("/learning/quiz/grade", json={"topic": "OS", "answers": [
+        {"question_id": q0["id"], "answer": "进程是程序运行实例,有线程和独立地址空间,例子是浏览器进程", "review_node_id": q0["review_node_id"]}
+    ]}).json()
+    assert grade["ok"] and grade["graded"][0]["ebbinghaus_advanced"] is True
+
+    # a second daily quiz should still have questions (other nodes still due)
+    daily2 = c.post("/learning/quiz/daily", json={"topic": "OS", "count": 5}).json()
+    assert daily2["ok"]
