@@ -9,6 +9,7 @@ Run for real:  ``uvicorn campus.api.server:app`` (after ``create_app()``).
 """
 from __future__ import annotations
 import os
+import json
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
@@ -929,6 +930,62 @@ def create_app(backends: Optional[Backends] = None,
         if b is None:
             return {"ok": False, "error": "daily-log backend not configured"}
         return b()
+
+    # ---- mobile inbound command channel (Phase 8 — GOAL.md 移动端对话) ----
+    @app.post("/mobile/command")
+    def mobile_command(body: dict = None):
+        """Receive a user command from mobile (Feishu/QQ), run agent, reply + persist.
+
+        Body: {"message": "...", "channel": "feishu|qq", "target": "<chat_id>"}
+        Returns: {"ok", "reply", "run_id", "artifacts", "pushed"}
+        """
+        from campus.mobile.inbound import handle_mobile_command
+        body = body or {}
+        return handle_mobile_command(
+            message=body.get("message", ""),
+            channel=body.get("channel", "feishu"),
+            target=body.get("target"),
+        )
+
+    @app.post("/mobile/webhook/feishu")
+    def mobile_webhook_feishu(body: dict = None):
+        """Feishu event webhook: extract user message → run agent → push reply.
+
+        Accepts Feishu's event format ({event: {message: {content}}}) and
+        dispatches to handle_mobile_command. The reply is pushed back to the
+        same chat via the configured push channel.
+        """
+        from campus.mobile.inbound import handle_mobile_command
+        body = body or {}
+        # Feishu event format: {"event": {"message": {"content": "...", "chat_id": "..."}}}
+        event = body.get("event", body)
+        msg_raw = event.get("message", {}).get("content", "") or event.get("text", "")
+        # Feishu wraps content as JSON {"text":"..."}
+        if msg_raw.startswith("{"):
+            try:
+                msg_raw = json.loads(msg_raw).get("text", msg_raw)
+            except Exception:
+                pass
+        chat_id = event.get("message", {}).get("chat_id", "") or os.environ.get("CAMPUS_FEISHU_CHAT_ID", "")
+        if not msg_raw:
+            return {"ok": False, "error": "no message in webhook payload"}
+        return handle_mobile_command(
+            message=msg_raw,
+            channel="feishu",
+            target=chat_id,
+        )
+
+    @app.get("/mobile/commands")
+    def mobile_command_history():
+        """List recent mobile command history (for debugging/audit)."""
+        import json as _json
+        from campus.runtime.paths import state_dir
+        path = os.path.join(state_dir(), "mobile_commands.json")
+        try:
+            with open(path, encoding="utf-8") as f:
+                return {"ok": True, "commands": _json.load(f)}
+        except Exception:
+            return {"ok": True, "commands": []}
 
     # ---- background reminder loop ----
     enable = with_scheduler

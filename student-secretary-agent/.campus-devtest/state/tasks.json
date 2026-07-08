@@ -442,5 +442,223 @@
     },
     "created_at": 1783530836,
     "updated_at": 1783530836
+  },
+  {
+    "id": "task_1783533823_c8d8aaf9",
+    "title": "学Linux",
+    "body": "{\"ok\": true, \"email\": \"主题：关于学习 Linux 的建议\\n\\n各位成员，\\n\\n随着项目对服务器和命令行操作的需求增加，掌握 Linux 基础变得越来越重要。\\n\\n以下是一份学习路线建议：\\n\\n一、入门阶段（1-2 周）\\n- 安装虚拟机或使用 WSL 搭建 Linux 环境（推荐 Ubuntu）\\n- 掌握基本命令：ls, cd, mkdir, rm, cp, mv\\n- 学习文件权限和目录结构\\n\\n二、进阶阶段（3-4 周）\\n- 进程管理：ps, top, kill\\n- 文本处理：grep, sed, awk\\n- 网络基础：ping, ssh, scp, netstat\\n\\n三、推荐资源\\n- 书籍：《鸟哥的 Linux 私房菜》\\n- 在线教程：Linux Journey（免费）\\n- 练习平台：OverTheWire Bandit\\n\\n四、实践建议\\n- 每天至少 30 分钟命令行练习\\n- 尝试在 Linux 上完成日常开发任务\\n- 参与开源项目，熟悉协作流程\\n\\n如有疑问，欢迎随时在群里讨论。\\n\\n祝学习顺利！\", \"recipient\": \"\", \"source_mode\": \"real_llm\"}",
+    "status": "done",
+    "domain": "club",
+    "run_id": "run_20260709_020343_dc77fc2a",
+    "due": "",
+    "metadata": {
+      "intent": "email_draft",
+      "workflow": "club_email_draft"
+    },
+    "created_at": 1783533823,
+    "updated_at": 1783533823
+  },
+  {
+    "id": "task_1783533823_1d496422",
+    "title": "学Linux",
+    "body": "学Linux",
+    "status": "done",
+    "domain": "general",
+    "run_id": "run_20260709_020319_cdb5e500",
+    "due": "",
+    "metadata": {
+      "intent": "general_secretary",
+      "workflow": "local_secretary"
+    },
+    "created_at": 1783533823,
+    "updated_at": 1783533823
+  },
+  {
+    "id": "task_1783533843_55d21e5a",
+    "title": "复习：OS card 1",
+    "body": "",
+    "status": "todo",
+    "domain": "learning",
+    "run_id": "",
+    "due": "2026-07-10",
+    "metadata": {
+      "kind": "review",
+      "topic": "OS",
+      "card_index": 0,
+      "reps_correct": 0,
+      "last_ts": 1783533843,
+      "due_ts": 1783620243
+    },
+    "created_at": 1783533843,
+    "updated_at": 1783533843
+  },
+  {
+    "id": "task_1783533843_205c66f7",
+    "title": "复习：OS card 2",
+    "body": "",
+    "status": "todo",
+    "domain": "learning",
+    "run_id": "",
+    "due": "2026-07-10",
+    "metadata": {
+      "kind": "review",
+      "topic": "OS",
+      "card_index": 1,
+      "reps_correct": 0,
+      "last_ts": 1783533843,
+      "due_ts": 1783620243
+    },
+    "created_at": 1783533843,
+    "updated_at": 1783533843
+  },
+  {
+    "id": "task_1783533843_2aea4170",
+    "title": "生成 OS flashcards",
+    "body": "{\"ok\": true, \"topic\": \"OS\", \"flashcards\": [{\"front\": \"进程和线程有什么区别？\", \"back\": \"进程是程序执行的一个实例，拥有独立的内存空间和资源；线程是进程内的执行单元，共享进程的内存和资源。进程间通信（IPC）较复杂，线程间通信更简单高效。\", \"tags\": [\"OS\"]}, {\"front\": \"什么是虚拟内存？\", \"back\": \"虚拟内存是一种内存管理技术，将物理内存和硬盘空间结合使用，让程序认为拥有连续可用的内存空间。它实现了进程间的内存隔离、内存保护，并支持超过物理内存的程序运行。\", \"tags\": [\"OS\"]}], \"source_mode\": \"real_llm\", \"review_nodes\": 2}",
+    "status": "done",
+    "domain": "learning",
+    "run_id": "run_20260709_020403_54082cc0",
+    "due": "",
+    "metadata": {
+      "intent": "flashcards",
+      "workflow": "learning_flashcards"
+    },
+    "created_at": 1783533843,
+    "updated_at": 1783533843
+  },
+  {
+    "id": "task_1783533859_914df726",
+    "title": "例会",
+    "body": "{\"ok\": true, \"topic\": \"例会\", \"summary\": \"例会 会议纪要已生成（LLM）。\", \"minutes\": {\"decisions\": [\"批准本学期社团活动总预算方案\", \"确定各部门预算分配比例：活动部40%，宣传部25%，组织部20%，秘书处15%\"], \"todo\": [\"各部门负责人于下周五前提交详细预算明细\", \"财务部整理汇总后进行公示，接受监督\", \"建立预算执行月度报告机制\"], \"next_meeting\": \"下月同日（预算执行情况跟进会）\"}, \"source_mode\": \"real_llm\"}",
+    "status": "done",
+    "domain": "club",
+    "run_id": "run_20260709_020419_d3820c5e",
+    "due": "",
+    "metadata": {
+      "intent": "meeting_minutes",
+      "workflow": "club_meeting_minutes"
+    },
+    "created_at": 1783533859,
+    "updated_at": 1783533859
+  },
+  {
+    "id": "task_1783533890_56868580",
+    "title": "后端 面试计划",
+    "body": "{\"ok\": true, \"role\": \"后端\", \"days\": 3, \"background\": \"\", \"plan\": [{\"day\": 1, \"focus\": \"编程语言基础\", \"task\": \"复习常用语言（Java/Go/Python）的核心特性、内存模型、并发编程\", \"minutes\": 90}, {\"day\": 2, \"focus\": \"数据结构与算法\", \"task\": \"刷LeetCode中等题10-15道，重点：链表、树、哈希表、排序\", \"minutes\": 120}, {\"day\": 3, \"focus\": \"数据库基础\", \"task\": \"SQL优化、索引原理、事务隔离级别、锁机制、Redis缓存策略\", \"minutes\": 90}, {\"day\": 4, \"focus\": \"网络与操作系统\", \"task\": \"HTTP/HTTPS、TCP/IP、进程线程、死锁、IO模型（阻塞/非阻塞/多路复用）\", \"minutes\": 90}, {\"day\": 5, \"focus\": \"系统设计\", \"task\": \"学习高并发、高可用、分布式系统基础：负载均衡、消息队列、分布式锁\", \"minutes\": 90}, {\"day\": 6, \"focus\": \"框架与中间件\", \"task\": \"Spring Boot/Go Gin原理、日志系统、监控系统、容器化部署\", \"minutes\": 90}, {\"day\": 7, \"focus\": \"模拟面试与总结\", \"task\": \"模拟面试2-3场，复盘薄弱环节，整理项目经验STAR法则描述\", \"minutes\": 90}], \"questions\": [\"解释数据库索引的原理及B+树的优势\", \"描述Redis的持久化机制（RDB和AOF）的区别和适用场景\", \"如何设计一个高并发的秒杀系统\", \"解释TCP三次握手和四次挥手的过程\", \"什么是脏读、不可重复读、幻读？如何解决？\", \"描述进程和线程的区别，以及进程间通信方式\", \"如何排查慢SQL？优化思路是什么？\", \"解释分布式事务的常见解决方案（2PC、TCC、本地消息表）\", \"HashMap的底层实现原理，为什么JDK1.8引入红黑树\", \"如何保证接口的幂等性\"], \"source_mode\": \"real_llm\"}",
+    "status": "done",
+    "domain": "career",
+    "run_id": "run_20260709_020449_751d7cd3",
+    "due": "",
+    "metadata": {
+      "intent": "interview_plan",
+      "workflow": "career_interview_plan"
+    },
+    "created_at": 1783533890,
+    "updated_at": 1783533890
+  },
+  {
+    "id": "task_1783533985_a1ab74f9",
+    "title": "搜索实习：AI",
+    "body": "{\"ok\": true, \"source_mode\": \"real_llm\", \"source_error\": \"\", \"jobs\": [{\"id\": \"job_1\", \"title\": \"AI算法实习生\", \"company\": \"字节跳动\", \"city\": \"北京\", \"url\": \"https://jobs.bytedance.com/intern\", \"fit\": 95, \"reason\": \"字节跳动在AI领域投入巨大，拥有丰富的数据和应用场景（抖音、今日头条等），实习生可以接触到推荐算法、NLP、计算机视觉等前沿技术，导师制培养体系完善，对大学生成长帮助极大。\"}, {\"id\": \"job_2\", \"title\": \"大模型研发实习生\", \"company\": \"阿里巴巴达摩院\", \"city\": \"杭州\", \"url\": \"https://talent.alibaba.com/off-campus\", \"fit\": 92, \"reason\": \"达摩院是国内顶尖的AI研究机构，专注于大模型和多模态技术研究。实习生可以参与通义千问等核心项目，接触最新的Transformer架构、预训练技术，团队中有很多知名学者，学术氛围浓厚。\"}, {\"id\": \"job_3\", \"title\": \"AI产品经理实习生\", \"company\": \"腾讯\", \"city\": \"深圳\", \"url\": \"https://join.qq.com/\", \"fit\": 88, \"reason\": \"腾讯有微信、QQ等海量用户产品，AI应用场景广泛（如AI助手、内容理解、智能推荐等）。产品岗位可以学习如何将AI技术转化为用户价值，适合对技术和产品都感兴趣的同学，培养商业思维。\"}], \"query\": \"AI\", \"city\": \"\"}",
+    "status": "done",
+    "domain": "career",
+    "run_id": "run_20260709_020624_d6e8a5ef",
+    "due": "",
+    "metadata": {
+      "intent": "job_search",
+      "workflow": "career_jobs_search"
+    },
+    "created_at": 1783533985,
+    "updated_at": 1783533985
+  },
+  {
+    "id": "task_1783534311_0a14270c",
+    "title": "邀请老师担任活动指导",
+    "body": "{\"ok\": true, \"email\": \"尊敬的[老师姓名]老师：\\n\\n您好！\\n\\n我是[社团名称]的[你的姓名]，现任社团秘书一职。\\n\\n我们社团将于[日期]举办[活动名称]，这是一场面向[目标群体]的[活动性质，如：学术交流/技能培训/文化活动等]。本次活动旨在[活动目的，如：提升同学们的专业能力/促进跨学科交流/丰富校园文化生活等]。\\n\\n鉴于您在[相关领域]的深厚造诣和丰富经验，我们诚挚地邀请您担任本次活动的指导老师。我们非常希望能在以下几个方面得到您的指导和支持：\\n\\n1. 活动内容的学术把关与专业建议\\n2. 现场指导与经验分享\\n3. 活动流程的优化建议\\n\\n如蒙应允，活动具体安排如下：\\n- 时间：[具体时间]\\n- 地点：[具体地点]\\n- 预计时长：[时长]\\n\\n我们深知您工作繁忙，但您的参与将对我们活动的成功举办意义重大。如果您方便，请于[日期]前告知我们是否能够拨冗出席。\\n\\n感谢您在百忙之中阅读此信，期待您的回复！\\n\\n此致\\n敬礼！\\n\\n[你的姓名]\\n[社团名称]秘书\\n[联系电话]\\n[邮箱]\\n[日期]\", \"recipient\": \"老师\", \"source_mode\": \"real_llm\"}",
+    "status": "done",
+    "domain": "club",
+    "run_id": "run_20260709_021151_79922e45",
+    "due": "",
+    "metadata": {
+      "intent": "email_draft",
+      "workflow": "club_email_draft"
+    },
+    "created_at": 1783534311,
+    "updated_at": 1783534311
+  },
+  {
+    "id": "task_1783534330_1852b738",
+    "title": "AI 学习社 招新文案",
+    "body": "{\"ok\": true, \"copy\": {\"headline\": \"加入 AI 学习社，与未来同行！\", \"body\": \"AI 正在改变世界，你准备好了吗？无论你是零基础新手，还是有经验的探索者，AI 学习社都是你理想的学习家园。\\n\\n我们提供：\\n• 系统化的 AI 知识体系学习\\n• 从基础理论到实战项目的全流程指导\\n• 定期技术分享和案例研讨\\n• 导师一对一答疑解惑\\n• 与志同道合的伙伴共同成长\\n\\n在这里，你将不仅学习 AI 技术，更能结识一群热爱科技、追求卓越的朋友。让我们一起探索 AI 的无限可能！\", \"poster_points\": [\"零基础友好，循序渐进\", \"实战项目驱动，学以致用\", \"资深导师指导，快速成长\", \"活跃社群，资源共享\", \"定期 hackathon，提升实战能力\"], \"tone\": \"热情\"}, \"source_mode\": \"real_llm\"}",
+    "status": "done",
+    "domain": "club",
+    "run_id": "run_20260709_021210_c3c5ec24",
+    "due": "",
+    "metadata": {
+      "intent": "recruiting_copy",
+      "workflow": "club_recruiting_copy"
+    },
+    "created_at": 1783534330,
+    "updated_at": 1783534330
+  },
+  {
+    "id": "task_1783534415_6b1f0b0d",
+    "title": "搜索实习：AI 产品经理",
+    "body": "{\"ok\": true, \"source_mode\": \"real_llm\", \"source_error\": \"\", \"jobs\": [{\"id\": \"job_1\", \"title\": \"AI产品经理实习生\", \"company\": \"商汤科技 SenseTime\", \"city\": \"上海\", \"url\": \"https://www.zhipin.com/job_detail/00000000000000000000?ka=search_list_j_0\", \"fit\": 92, \"reason\": \"商汤为计算机视觉与通用大模型头部公司，实习中可接触真实AI项目与商业化落地，导师资源强，含目标设定与产品规划，简历背书价值高。\"}, {\"id\": \"job_2\", \"title\": \"AI大模型产品经理实习生\", \"company\": \"拼多多 Pinduoduo\", \"city\": \"上海\", \"url\": \"https://www.zhipin.com/job_detail/00000000000000000000?ka=search_list_j_1\", \"fit\": 88, \"reason\": \"拼多多搜索/推荐/大模型应用场景多，可参与AI搜索、智能推荐、多模态AI等项目；产品节奏快，适合希望快速验证想法的同学。\"}, {\"id\": \"job_3\", \"title\": \"对话式AI产品经理实习生\", \"company\": \"字节跳动 ByteDance\", \"city\": \"上海\", \"url\": \"https://www.zhipin.com/job_detail/00000000000000000000?ka=search_list_j_2\", \"fit\": 86, \"reason\": \"豆包系列与AI交互产品为核心，对话式产品生态完整；可参与用户增长、提示工程优化与体验评估，产品方法论成熟。\"}], \"query\": \"AI 产品经理\", \"city\": \"上海\"}",
+    "status": "done",
+    "domain": "career",
+    "run_id": "run_20260709_021335_47b9c43d",
+    "due": "",
+    "metadata": {
+      "intent": "job_search",
+      "workflow": "career_jobs_search"
+    },
+    "created_at": 1783534415,
+    "updated_at": 1783534415
+  },
+  {
+    "id": "task_1783534425_1d907883",
+    "title": "邀请老师担任活动指导",
+    "body": "{\"ok\": true, \"email\": \"老师您好：\\n\\n我是校园项目负责人，想就“邀请老师担任活动指导”与您沟通。\\n\\n如果方便，期待约一个 15 分钟的时间确认细节。谢谢！\", \"recipient\": \"老师\"}",
+    "status": "done",
+    "domain": "club",
+    "run_id": "run_20260709_021345_564961dd",
+    "due": "",
+    "metadata": {
+      "intent": "email_draft",
+      "workflow": "club_email_draft"
+    },
+    "created_at": 1783534425,
+    "updated_at": 1783534425
+  },
+  {
+    "id": "task_1783534574_811d9f84",
+    "title": "AI 产品经理实习生 面试计划",
+    "body": "{\"ok\": true, \"role\": \"AI 产品经理实习生\", \"days\": 7, \"background\": \"\", \"plan\": [{\"day\": 1, \"focus\": \"岗位拆解\", \"task\": \"准备 AI 产品经理实习生：岗位拆解\", \"minutes\": 45}, {\"day\": 2, \"focus\": \"项目故事\", \"task\": \"准备 AI 产品经理实习生：项目故事\", \"minutes\": 45}, {\"day\": 3, \"focus\": \"基础知识\", \"task\": \"准备 AI 产品经理实习生：基础知识\", \"minutes\": 45}, {\"day\": 4, \"focus\": \"算法/案例\", \"task\": \"准备 AI 产品经理实习生：算法/案例\", \"minutes\": 45}, {\"day\": 5, \"focus\": \"模拟问答\", \"task\": \"准备 AI 产品经理实习生：模拟问答\", \"minutes\": 45}, {\"day\": 6, \"focus\": \"复盘补缺\", \"task\": \"准备 AI 产品经理实习生：复盘补缺\", \"minutes\": 45}, {\"day\": 7, \"focus\": \"最终演练\", \"task\": \"准备 AI 产品经理实习生：最终演练\", \"minutes\": 45}], \"questions\": [\"请介绍一个最能体现你适合 AI 产品经理实习生 的项目。\", \"遇到冲突或卡点时你如何推进？\", \"你希望这段实习带来什么成长？\"]}",
+    "status": "done",
+    "domain": "career",
+    "run_id": "run_20260709_021614_72944867",
+    "due": "",
+    "metadata": {
+      "intent": "interview_plan",
+      "workflow": "career_interview_plan"
+    },
+    "created_at": 1783534574,
+    "updated_at": 1783534574
+  },
+  {
+    "id": "task_1783534591_747c3915",
+    "title": "GitHub trending: agent",
+    "body": "{\"ok\": true, \"source_mode\": \"real_github_api\", \"source_error\": \"\", \"summary\": \"为 agent 从 GitHub API 检索到 5 个热门项目。\", \"items\": [{\"name\": \"NousResearch/hermes-agent\", \"url\": \"https://github.com/NousResearch/hermes-agent\", \"language\": \"Python\", \"stars\": 211479, \"description\": \"The agent that grows with you\", \"reason\": \"GitHub 热门项目 (211479 ★)\"}, {\"name\": \"anthropics/skills\", \"url\": \"https://github.com/anthropics/skills\", \"language\": \"Python\", \"stars\": 159450, \"description\": \"Public repository for Agent Skills\", \"reason\": \"GitHub 热门项目 (159450 ★)\"}, {\"name\": \"langflow-ai/langflow\", \"url\": \"https://github.com/langflow-ai/langflow\", \"language\": \"Python\", \"stars\": 151367, \"description\": \"Langflow is a powerful tool for building and deploying AI-powered agents and workflows.\", \"reason\": \"GitHub 热门项目 (151367 ★)\"}, {\"name\": \"langchain-ai/langchain\", \"url\": \"https://github.com/langchain-ai/langchain\", \"language\": \"Python\", \"stars\": 141312, \"description\": \"The agent engineering platform.\", \"reason\": \"GitHub 热门项目 (141312 ★)\"}, {\"name\": \"anthropics/claude-code\", \"url\": \"https://github.com/anthropics/claude-code\", \"language\": \"Python\", \"stars\": 136868, \"description\": \"Claude Code is an agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster by executing routine tasks, explaining complex code, and handling git workflows - all through natural language commands.\", \"reason\": \"GitHub 热门项目 (136868 ★)\"}], \"questions\": [\"项目是否活跃？\", \"README 是否可复现？\", \"license 是否允许使用？\"]}",
+    "status": "done",
+    "domain": "research",
+    "run_id": "run_20260709_021631_9f35d91b",
+    "due": "",
+    "metadata": {
+      "intent": "github_trending",
+      "workflow": "research_github_trending"
+    },
+    "created_at": 1783534591,
+    "updated_at": 1783534591
   }
 ]
