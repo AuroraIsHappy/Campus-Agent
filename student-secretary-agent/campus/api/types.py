@@ -11,6 +11,7 @@ class DemoBRequest(BaseModel):
     start_date: Optional[str] = None
     topic: Optional[str] = None
     export_notion: bool = False
+    sync_calendar: str = ""  # "" | local | feishu | both
 
 
 class DemoARequest(BaseModel):

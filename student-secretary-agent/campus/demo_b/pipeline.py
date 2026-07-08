@@ -78,12 +78,17 @@ def run_demo_b(path: str, exam_date: str = "",
                extract_fn=None, searcher=None, quiz_fn=None,
                memory=None, run_dir: str | None = None,
                extractors=None,
-               export_notion: bool = False) -> RunResult:
+               export_notion: bool = False,
+               sync_calendar: str = "") -> RunResult:
     """Drive Demo B end-to-end. Returns RunResult.
 
     For deterministic testing pass ``extractors`` (fake table) / ``searcher`` /
     ``quiz_fn`` / ``extract_fn`` stubs and a temp ``path``; everything runs with
     no Hermes / no network / no real model.
+
+    Phase 9: ``export_notion`` writes the KG+plan+mindmap to Notion;
+    ``sync_calendar`` (``"local"``/``"feishu"``/``"both"``) syncs the review
+    plan to the local and/or Feishu calendar.
     """
     if run_dir is None:
         run_dir = new_run_dir()
@@ -166,6 +171,19 @@ def run_demo_b(path: str, exam_date: str = "",
                 {"run_dir": run_dir, "topic": topic}, mode="notion")
         except Exception as e:
             notion_export = {"ok": False, "error": str(e)[:200]}
+
+    # Phase 9: optional calendar sync (GOAL.md 同步飞书&本地日历)
+    calendar_sync = {"ok": False, "skipped": True}
+    if sync_calendar and plan.days:
+        try:
+            from campus.life.plan_calendar import sync_review_plan
+            local = sync_calendar in ("local", "both")
+            feishu = sync_calendar in ("feishu", "both")
+            calendar_sync = sync_review_plan(
+                plan, topic=topic, slot_time="20:00",
+                local=local, feishu=feishu)
+        except Exception as e:
+            calendar_sync = {"ok": False, "error": str(e)[:200]}
 
     _ = ver
     return result

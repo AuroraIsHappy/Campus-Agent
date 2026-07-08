@@ -19,7 +19,7 @@ def _write(path, text):
         f.write(text)
 
 
-def run_learning_plan(goal, days=30, slot_minutes=20, quiz_n=3):
+def run_learning_plan(goal, days=30, slot_minutes=20, quiz_n=3, sync_calendar=""):
     ts = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
     out_dir = os.path.join(RUNS, ts)
     os.makedirs(out_dir, exist_ok=True)
@@ -43,6 +43,18 @@ def run_learning_plan(goal, days=30, slot_minutes=20, quiz_n=3):
     if day1:
         memory.log_progress(_slug(goal), 1, "planned", "day1 quiz generated")
 
+    # Phase 9: calendar sync (GOAL.md 同步飞书&本地日历)
+    calendar_sync = {"ok": False, "skipped": True}
+    if sync_calendar and plan.days:
+        try:
+            from campus.life.plan_calendar import sync_demo_c_plan
+            local = sync_calendar in ("local", "both")
+            feishu = sync_calendar in ("feishu", "both")
+            calendar_sync = sync_demo_c_plan(
+                plan, slot_time="20:00", local=local, feishu=feishu)
+        except Exception as e:
+            calendar_sync = {"ok": False, "error": str(e)[:200]}
+
     plan_md = plan.to_markdown()
     _write(os.path.join(out_dir, "plan.md"), plan_md)
     _write(os.path.join(out_dir, "quiz_day1.json"),
@@ -57,14 +69,16 @@ def run_learning_plan(goal, days=30, slot_minutes=20, quiz_n=3):
                        "recommendation": {"title": res.title, "url": res.url,
                                           "score": pick.score, "reasons": pick.reasons},
                        "days": len(plan.days),
-                       "quiz_questions": len(day1_quiz.questions) if day1_quiz else 0},
+                       "quiz_questions": len(day1_quiz.questions) if day1_quiz else 0,
+                       "calendar_sync": calendar_sync},
                       ensure_ascii=False, indent=2))
 
     return {"ok": True, "run_dir": out_dir,
             "recommendation": res.title, "score": pick.score,
             "days": len(plan.days),
             "quiz_questions": len(day1_quiz.questions) if day1_quiz else 0,
-            "plan_md_head": plan_md.split(NL)[0]}
+            "plan_md_head": plan_md.split(NL)[0],
+            "calendar_sync": calendar_sync}
 
 
 def _main():

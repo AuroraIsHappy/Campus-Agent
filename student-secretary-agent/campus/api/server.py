@@ -133,7 +133,8 @@ def _default_demo_b(req: DemoBRequest) -> dict:
 
     r = _p.run_demo_b(path, req.exam_date, free_minutes=req.free_minutes,
                       start_date=req.start_date, topic=req.topic,
-                      export_notion=bool(getattr(req, "export_notion", False)))
+                      export_notion=bool(getattr(req, "export_notion", False)),
+                      sync_calendar=getattr(req, "sync_calendar", ""))
     d = _result_dict(r)
     d["topic"] = req.topic or ""
     return d
