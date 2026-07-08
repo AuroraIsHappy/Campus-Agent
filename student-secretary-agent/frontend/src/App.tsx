@@ -1,14 +1,15 @@
 import { useState } from "react";
 import {
-  DashboardPage, OnboardingPage, DemoBPage, KanbanPage, PersonaPage, MemoryPage,
+  DashboardPage, OnboardingPage, DemoBPage, KanbanPage, PersonaPage, MemoryPage, LifePage,
 } from "./pages";
 
-type View = "dashboard" | "onboarding" | "demob" | "kanban" | "persona" | "memory";
+type View = "dashboard" | "onboarding" | "demob" | "kanban" | "persona" | "memory" | "life";
 
 const NAV: { key: View; label: string; icon: string }[] = [
   { key: "dashboard", label: "仪表盘", icon: "◆" },
   { key: "onboarding", label: "新手引导", icon: "✦" },
   { key: "demob", label: "讲义复习", icon: "📚" },
+  { key: "life", label: "生活", icon: "🗓" },
   { key: "kanban", label: "任务看板", icon: "▦" },
   { key: "persona", label: "人格", icon: "♟" },
   { key: "memory", label: "记忆", icon: "❖" },
@@ -42,12 +43,13 @@ export default function App() {
             </button>
           ))}
         </nav>
-        <p className="px-5 py-4 text-xs text-ink-700/50">M5 · 发布候选</p>
+        <p className="px-5 py-4 text-xs text-ink-700/50">M6 · 生活基础</p>
       </aside>
       <main className="flex-1 overflow-x-hidden p-8">
         {view === "dashboard" && <DashboardPage />}
         {view === "onboarding" && <OnboardingPage />}
         {view === "demob" && <DemoBPage />}
+        {view === "life" && <LifePage />}
         {view === "kanban" && <KanbanPage />}
         {view === "persona" && <PersonaPage />}
         {view === "memory" && <MemoryPage />}

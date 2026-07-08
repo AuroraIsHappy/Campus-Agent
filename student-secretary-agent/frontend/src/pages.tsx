@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { api, type DemoBResult, type MemoryHit, type Profile, type Task } from "./api";
+import { api, type DemoBResult, type MemoryHit, type Profile, type Task, type CalEvent, type Anniversary, type DailyLog } from "./api";
 
 function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
@@ -275,6 +275,139 @@ export function MemoryPage() {
           ))}
           {hits.length === 0 && <li className="text-sm text-ink-700/60">无结果。</li>}
         </ul>
+      </Card>
+    </>
+  );
+}
+
+/* ---------------- Life (Phase 6) ---------------- */
+export function LifePage() {
+  const [events, setEvents] = useState<CalEvent[]>([]);
+  const [annivs, setAnnivs] = useState<Anniversary[]>([]);
+  const [logs, setLogs] = useState<DailyLog[]>([]);
+  const [err, setErr] = useState<string | null>(null);
+
+  // add-event form
+  const [title, setTitle] = useState("");
+  const [start, setStart] = useState("");
+  const [end, setEnd] = useState("");
+  const [location, setLocation] = useState("");
+  const [rrule, setRrule] = useState("");
+  // add-anniv form
+  const [aName, setAName] = useState("");
+  const [aDate, setADate] = useState("");
+  const [aKind, setAKind] = useState("birthday");
+
+  const refresh = () => {
+    Promise.all([api.calendarList(), api.annivList(), api.dailyLogGet(undefined, 5)])
+      .then(([e, a, l]) => { setEvents(e.events); setAnnivs(a.anniversaries); setLogs(l.logs); })
+      .catch((e: Error) => setErr(e.message));
+  };
+  useEffect(refresh, []);
+
+  const addEvent = () => {
+    if (!title || !start) return;
+    api.calendarAdd({ title, start, end: end || null, rrule: rrule || null, location })
+      .then(refresh).then(() => { setTitle(""); setStart(""); setEnd(""); setLocation(""); setRrule(""); })
+      .catch((e: Error) => setErr(e.message));
+  };
+  const delEvent = (id: string) => api.calendarDelete(id).then(refresh).catch((e: Error) => setErr(e.message));
+
+  const addAnniv = () => {
+    if (!aName || !aDate) return;
+    api.annivAdd({ name: aName, date: aDate, kind: aKind })
+      .then(refresh).then(() => { setAName(""); setADate(""); })
+      .catch((e: Error) => setErr(e.message));
+  };
+
+  const runDaily = () => api.dailyLogRun().then(refresh).catch((e: Error) => setErr(e.message));
+
+  return (
+    <>
+      <PageHeader title="生活" subtitle="日程 · 生日纪念日提醒 · 每日秘书日志。" />
+      <Err e={err} />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card title="日程">
+          <ul className="space-y-1 text-sm">
+            {events.map((e, i) => (
+              <li key={i} className="flex items-center justify-between rounded border border-ink-100 px-2 py-1">
+                <span>
+                  <span className="font-mono text-xs text-campus-700">{e.start}</span>{" "}
+                  {e.title}{e.location ? `（${e.location}）` : ""}
+                  {e.rrule ? <span className="campus-chip ml-2">{e.rrule}</span> : null}
+                </span>
+                <button className="text-xs text-red-500 hover:underline" onClick={() => e.id && delEvent(e.id)}>删除</button>
+              </li>
+            ))}
+            {events.length === 0 && <li className="text-ink-700/60">暂无日程。</li>}
+          </ul>
+          <div className="mt-4 grid gap-2 border-t border-ink-100 pt-3 text-sm">
+            <input className="campus-input" placeholder="标题（如：高数课）" value={title} onChange={(e) => setTitle(e.target.value)} />
+            <div className="grid grid-cols-2 gap-2">
+              <input className="campus-input" placeholder="开始 2026-07-09T08:00" value={start} onChange={(e) => setStart(e.target.value)} />
+              <input className="campus-input" placeholder="结束（可空）" value={end} onChange={(e) => setEnd(e.target.value)} />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <input className="campus-input" placeholder="地点（可空）" value={location} onChange={(e) => setLocation(e.target.value)} />
+              <select className="campus-input" value={rrule} onChange={(e) => setRrule(e.target.value)}>
+                <option value="">不重复</option>
+                <option value="DAILY">每天</option>
+                <option value="WEEKLY">每周</option>
+              </select>
+            </div>
+            <button className="campus-btn" onClick={addEvent} disabled={!title || !start}>添加日程</button>
+          </div>
+        </Card>
+
+        <Card title="生日 / 纪念日">
+          <ul className="space-y-1 text-sm">
+            {annivs.map((a, i) => (
+              <li key={i} className="rounded border border-ink-100 px-2 py-1">
+                <span className="font-mono text-xs text-campus-700">{a.date}</span>{" "}
+                {a.name}
+                <span className="campus-chip ml-2">{a.kind === "birthday" ? "生日" : "纪念日"}</span>
+              </li>
+            ))}
+            {annivs.length === 0 && <li className="text-ink-700/60">暂无。会提前 1 天 + 当天提醒。</li>}
+          </ul>
+          <div className="mt-4 grid gap-2 border-t border-ink-100 pt-3 text-sm">
+            <input className="campus-input" placeholder="名称（如：小明）" value={aName} onChange={(e) => setAName(e.target.value)} />
+            <div className="grid grid-cols-2 gap-2">
+              <input className="campus-input" placeholder="日期 MM-DD" value={aDate} onChange={(e) => setADate(e.target.value)} />
+              <select className="campus-input" value={aKind} onChange={(e) => setAKind(e.target.value)}>
+                <option value="birthday">生日</option>
+                <option value="anniversary">纪念日</option>
+              </select>
+            </div>
+            <button className="campus-btn" onClick={addAnniv} disabled={!aName || !aDate}>添加</button>
+          </div>
+        </Card>
+      </div>
+
+      <Card title="每日秘书日志">
+        <div className="mb-3 flex items-center justify-between">
+          <p className="text-sm text-ink-700/70">每晚自动汇总当日日程 + 任务 + 提醒。也可手动触发：</p>
+          <button className="campus-btn" onClick={runDaily}>立即生成</button>
+        </div>
+        <div className="space-y-3">
+          {logs.map((lg) => (
+            <div key={lg.date} className="rounded-lg border border-ink-100 p-3">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">{lg.date}</span>
+              </div>
+              <p className="mt-1 text-sm">{lg.summary}</p>
+              {lg.entries.length > 0 && (
+                <ul className="mt-2 list-inside list-disc text-sm text-ink-700/80">
+                  {lg.entries.map((e, i) => <li key={i}>{e}</li>)}
+                </ul>
+              )}
+              {lg.tomorrow.length > 0 && (
+                <p className="mt-2 text-xs text-campus-700">明日：{lg.tomorrow.join("；")}</p>
+              )}
+            </div>
+          ))}
+          {logs.length === 0 && <p className="text-sm text-ink-700/60">暂无日志。</p>}
+        </div>
       </Card>
     </>
   );

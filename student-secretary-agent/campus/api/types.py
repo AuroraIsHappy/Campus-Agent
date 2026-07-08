@@ -25,3 +25,24 @@ class PushRequest(BaseModel):
     channel: str = "feishu"
     target: Optional[str] = None
     message: str
+
+
+class EventRequest(BaseModel):
+    title: str
+    start: str                       # "2026-07-09T08:00"
+    end: Optional[str] = None
+    rrule: Optional[str] = None
+    location: str = ""
+    note: str = ""
+
+
+class AnniversaryRequest(BaseModel):
+    name: str
+    date: str                        # "MM-DD"
+    kind: str = "birthday"           # birthday | anniversary
+    note: str = ""
+
+
+class LogQuery(BaseModel):
+    date: Optional[str] = None       # "YYYY-MM-DD"; defaults to today
+    n: int = 7

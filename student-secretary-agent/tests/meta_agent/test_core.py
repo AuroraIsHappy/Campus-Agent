@@ -140,6 +140,40 @@ def test_onboarding_chinese_comma_and_unknown_persona_default():
     assert "draft_email" in recommend_skills(prof)
 
 
+def test_onboarding_collects_birthday():
+    from campus.meta_agent.onboarding import _normalize_birthday
+    answers = {
+        "你的身份是？（例如：大二学生）": "大二",
+        "你的专业是？": "物理",
+        "你的年级或入学年份？（可留空）": "",
+        "想要哪种秘书风格？默认 / 费曼 / 鲁迅": "默认",
+        "你有哪些模型 API key？逗号分隔：glm / deepseek / qwen / openai": "",
+        "你的生日是？（可留空，格式 MM-DD，用于提醒）": "7月9日",
+    }
+    prof = OnboardingWizard(_canned(answers)).run()
+    assert prof.birthday == "07-09"                           # Chinese form normalized
+    d = prof.to_public_dict()
+    assert d["birthday"] == "07-09"                           # exported (not redacted)
+    assert d["anniversaries"] == []                           # default empty, exported
+
+
+def test_normalize_birthday_variants():
+    from campus.meta_agent.onboarding import _normalize_birthday
+    assert _normalize_birthday("07-09") == "07-09"
+    assert _normalize_birthday("7-9") == "07-09"              # zero-pad
+    assert _normalize_birthday("2001-07-09") == "07-09"       # drop year
+    assert _normalize_birthday("7月9日") == "07-09"
+    assert _normalize_birthday("") == ""                      # blank -> blank
+    assert _normalize_birthday("下个月") == ""                # garbage -> blank (safe skip)
+
+
+def test_userprofile_defaults_backward_compatible():
+    # old construction path (no birthday/anniversaries) still works
+    p = UserProfile(identity="x")
+    assert p.birthday == "" and p.anniversaries == []
+    assert "birthday" in p.to_public_dict()
+
+
 # --- P4-MA5 Meta-Agent --------------------------------------------------------
 
 def test_meta_agent_classify_short_vs_long():
