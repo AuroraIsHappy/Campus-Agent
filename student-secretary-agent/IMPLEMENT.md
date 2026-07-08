@@ -160,6 +160,31 @@
 
 ---
 
+## Phase 8 — 上线冲刺（可分发的开源自托管）
+
+**目标**：从 Phase 7 的本地产品闭环升级到「clone 即可跑」的交付级。智能化补全 + 真实集成打通 + 可分发包。
+
+**完成项**：
+
+| Step | 内容 |
+|---|---|
+| 0 | Phase 7 收尾：Ebbinghaus 曲线 + daily-tick quiz + export_status + interview practice/reflect |
+| 1 | Multi-agent 接线：MetaRunner 桥（classify→DAG→Orchestrator+Supervisor），/agent/run real+long 走多智能体 |
+| 2 | Memory 分层检索：RRF 融合 + 分层策略 + token 预算 + recency decay + nightly compress；接入生成路径 |
+| 3 | 真实 LLM 端到端：五域 workflow_llm prompt + mode 透传 + integration 测试（真实 GLM 验证） |
+| 4 | Auto-learn：correction 捕获 + CorrectionStore + SkillCreator + AutoLearner（LLM 分类偏好/skill/事实） |
+| 5 | 移动端真实推送：QQ Bot 官方 API（auth 验证通过）+ 飞书健康自检 |
+| 6 | Notion + 搜索 provider：Notion 双向 + GitHub API（真实仓库验证）+ Tavily |
+| 7 | 可分发包：Dockerfile（hermes clone+build）+ docker-compose + .env.example + CI + 生产前端 |
+| 8 | 真实任务验收 + 发布：全域真实任务通过，S-* 核验，tag v0.8.0 |
+| 9 | Agent 名称设置 + 前端美化：分层导航 + 动态名称 + 设置页增强 |
+
+**关键发现**：`hermes-agent` 不在 PyPI，官方安装方式是 `git clone` + `uv pip install .`（本地构建）。Dockerfile 照此构建。
+
+**里程碑 M8（上线）**：可分发的开源自托管 + 真实集成 + 智能化补全。
+
+---
+
 ## 开发方式：agent + git worktree 并行 vibe-code（A2）
 
 - **每 Phase / Demo 一个 worktree**（`git worktree add` 或 `EnterWorktree`），互不干扰、可并行。
