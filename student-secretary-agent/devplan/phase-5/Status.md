@@ -14,13 +14,13 @@
 ### 1. Demo B 后端（地基）
 - ✅ DB-T1 `campus/demo_b/types.py` + `__init__.py`（LectureDoc/ExtractedText/KGNode/KGEdge/KnowledgeGraph/ReviewDay/ReviewPlan/QuizQ/RunResult）
 - ✅ DB-T2 `campus/demo_b/extractors.py`（ExtractorPort + PDF/DOCX/PPTX/MD/TXT 降级链）+ `tests/demo_b/test_core.py`（**13 passed**，B-F1 抽取/降级/注入全绿）
-- ⏳ DB-T3 `campus/demo_b/knowledge_graph.py`（build_kg + 注入 extract_fn）+ 测试
-- ⏳ DB-T4 `campus/demo_b/resource_search.py`（search_resources + 复用 demo_c/ranker）+ 测试
-- ⏳ DB-T5 `campus/demo_b/review_planner.py`（build_review_plan + 复用 ebbinghaus；不超排）+ 测试
-- ⏳ DB-T6 `campus/demo_b/quiz.py`（generate_quiz + 注入 quiz_fn）+ 测试
-- ⏳ DB-T7 `campus/demo_b/checkers.py`（B-F*/B-Q* 质量闸）+ 测试
-- ⏳ DB-T8 `campus/demo_b/pipeline.py`（run_demo_b 全链路 + adjust_plan B-F6 + run_dir/Verification.md）
-- ⏳ DB-T9 `tests/demo_b/{__init__,test_core,test_full_e2e}.py` 全绿（P5-DB1..DB7）
+- ✅ DB-T3 `campus/demo_b/knowledge_graph.py`（build_kg + default/注入 extract_fn + validate_kg，B-F2）
+- ✅ DB-T4 `campus/demo_b/resource_search.py`（复用 demo_c Resource+ranker，B-F3/Q1）
+- ✅ DB-T5 `campus/demo_b/review_planner.py`（build_review_plan 不超排 B-Q3 + adjust_plan B-F6，复用 ebbinghaus）
+- ✅ DB-T6 `campus/demo_b/quiz.py`（generate_quiz + 注入 quiz_fn，B-F5）
+- ✅ DB-T7 `campus/demo_b/checkers.py`（all_checks B-F*/B-Q*）
+- ✅ DB-T8 `campus/demo_b/pipeline.py`（run_demo_b 全链路 + run_dir/Verification.md + memory KNOWLEDGE）
+- ✅ DB-T9 `tests/demo_b/{test_core,test_full_e2e}.py` → **32 passed**（P5-DB1..DB7 全绿）；全量回归 **172 passed**
 
 ### 2. API 薄层
 - ⏳ API-T1 `campus/api/{__init__,types,server}.py`（FastAPI 骨架 + 注入后端）
@@ -48,4 +48,4 @@
 - ⏳ V-T2 `Verification.md` 落档 + Status 全 ✅ → 删 /loop cron → M5
 
 ## 当前进度指针
-**下一步**：DB-T3（campus/demo_b/knowledge_graph.py：build_kg + 注入 extract_fn + validate_kg）。
+**下一步**：API-T1（campus/api/{__init__,types,server}.py：FastAPI 骨架 + 注入后端；TestClient 确定性测试）。Demo B 后端 ✅ 全绿（32 tests / 172 全量）。

@@ -158,6 +158,8 @@ def to_dict(obj):
     """Recursive dataclass -> dict (mirrors demo_c.types.to_dict)."""
     if isinstance(obj, list):
         return [to_dict(x) for x in obj]
+    if isinstance(obj, dict):
+        return {k: to_dict(v) for k, v in obj.items()}
     if hasattr(obj, "__dataclass_fields__"):
         return {k: to_dict(v) for k, v in asdict(obj).items()}
     return obj
