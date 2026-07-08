@@ -38,9 +38,9 @@
 - ⏳ MOB-T2 `campus/mobile/{qq_bot,wecom,cli}.py`（纯端口+注入 sender）
 - ⏳ MOB-T3 `tests/mobile/test_core.py` 全绿（P5-MOB1/MOB2）
 
-### 5. 成本路由
-- ⏳ COST-T1 `campus/meta_agent/cost.py`（角色分档 cheap/mid/strong + estimate_cost + BudgetGate）
-- ⏳ COST-T2 `tests/meta_agent/test_cost.py` 全绿（P5-COST1）
+### 5. 成本路由 ✅ DONE
+- ✅ COST-T1 `campus/meta_agent/cost.py`（角色分档 CHEAP/MID/STRONG + DEFAULT_ROLE_TIER + TIER_MULT + tier_for/estimate_cost/route_table + BudgetGate）
+- ✅ COST-T2 `tests/meta_agent/test_cost.py` → **8 passed**（P5-COST1 全绿：分档单调、route_table 合并、预算闸超限拒）
 
 ### 6. 收尾
 - ⏳ DOC-T1 `README.md` + `requirements.txt`
