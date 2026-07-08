@@ -279,6 +279,13 @@ def _default_notes_status() -> dict:
 
 def _classify_agent_message(message: str) -> tuple[str, str, str]:
     m = (message or "").lower()
+    # Phase 9: lecture summary → Demo B (知识图谱/思维导图/复习计划)
+    if any(k in m for k in ("讲义", "总结课程", "summarize lecture", "lecture notes",
+                            "知识图谱", "思维导图", "mind map")):
+        return "lecture_summary", "learning", "demo_b_lecture_pipeline"
+    # Phase 9: Zotero / literature management
+    if any(k in m for k in ("zotero", "存到文献库", "存论文", "文献管理")):
+        return "literature_manage", "research", "zotero_sync"
     if any(k in m for k in ("学习", "复习", "quiz", "flashcard", "课程", "lecture", "计划", "learn")):
         return "learning_plan", "learning", "demo_c_learning_plan"
     if any(k in m for k in ("科研", "论文", "paper", "research", "github", "文献")):
@@ -347,8 +354,18 @@ def _default_agent_run(req: AgentRunRequest) -> dict:
                 error = r.error
                 result = {"ok": False, "error": error, "multiagent": True}
         elif domain == "learning":
-            days = int(req.context.get("days", 30)) if isinstance(req.context, dict) else 30
-            result = _default_demo_c(DemoCRequest(goal=req.message, days=days, mode=req.mode))
+            # Phase 9: lecture-summary intent → Demo B (KG + mindmap + review plan)
+            if intent == "lecture_summary":
+                confirmed_path = (req.context or {}).get("confirmed_path", "")
+                path = confirmed_path or req.message
+                exam_date = (req.context or {}).get("exam_date", "")
+                result = _default_demo_b(DemoBRequest(
+                    path=path, exam_date=exam_date,
+                    export_notion=bool((req.context or {}).get("export_notion", False)),
+                    sync_calendar=(req.context or {}).get("sync_calendar", "")))
+            else:
+                days = int(req.context.get("days", 30)) if isinstance(req.context, dict) else 30
+                result = _default_demo_c(DemoCRequest(goal=req.message, days=days, mode=req.mode))
         elif domain == "club":
             result = _default_demo_a(DemoARequest(topic=req.message[:80] or "校园活动", mode=req.mode))
         elif domain == "research":
