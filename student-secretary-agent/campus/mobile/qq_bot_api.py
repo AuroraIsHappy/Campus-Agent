@@ -112,7 +112,16 @@ class QQBotAPIClient:
 
 
 def default_qq_sender():
-    """Factory: returns a QQBotAPIClient if configured, else None."""
+    """Factory: returns a QQBotAPIClient if configured, else None.
+
+    Skips auto-init during tests (CAMPUS_HOME under .campus-test) so unit tests
+    that expect no-sender behavior stay deterministic.
+    """
+    # test isolation: don't auto-init a real sender in test mode
+    import os
+    home = os.environ.get("CAMPUS_HOME", "")
+    if ".campus-test" in home or ".campus-e2e" in home or ".campus-frtend" in home:
+        return None
     client = QQBotAPIClient()
     if client.app_id and client.secret:
         return client

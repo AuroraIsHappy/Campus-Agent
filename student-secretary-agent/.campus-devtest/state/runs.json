@@ -894,5 +894,891 @@
     "context": {},
     "created_at": 1783529768,
     "updated_at": 1783529768
+  },
+  "run_20260709_010628_f6acc398": {
+    "id": "run_20260709_010628_f6acc398",
+    "message": "线性代数 每日 quiz",
+    "intent": "quiz",
+    "domain": "learning",
+    "selected_workflow": "learning_quiz_run",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010628_f6acc398",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010628_f6acc398\\Plan.md",
+        "kind": "document",
+        "created_at": 1783530388
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010628_f6acc398\\Status.md",
+        "kind": "document",
+        "created_at": 1783530388
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010628_f6acc398\\Verification.md",
+        "kind": "document",
+        "created_at": 1783530388
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010628_f6acc398\\run_result.json",
+        "kind": "json",
+        "created_at": 1783530388
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010628_f6acc398\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783530388
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "topic": "线性代数",
+      "questions": [
+        {
+          "id": "q1",
+          "question": "请解释：矩阵乘法、线性变换、特征值、正交分解",
+          "answer": "围绕 矩阵乘法、线性变换、特征值、正交分解 给出定义、例子和一个易错点。",
+          "rubric": [
+            "定义准确",
+            "有具体例子",
+            "能说明易错点"
+          ]
+        },
+        {
+          "id": "q2",
+          "question": "请解释：矩阵乘法、线性变换、特征值、正交分解",
+          "answer": "围绕 矩阵乘法、线性变换、特征值、正交分解 给出定义、例子和一个易错点。",
+          "rubric": [
+            "定义准确",
+            "有具体例子",
+            "能说明易错点"
+          ]
+        },
+        {
+          "id": "q3",
+          "question": "请解释：矩阵乘法、线性变换、特征值、正交分解",
+          "answer": "围绕 矩阵乘法、线性变换、特征值、正交分解 给出定义、例子和一个易错点。",
+          "rubric": [
+            "定义准确",
+            "有具体例子",
+            "能说明易错点"
+          ]
+        },
+        {
+          "id": "q4",
+          "question": "请解释：矩阵乘法、线性变换、特征值、正交分解",
+          "answer": "围绕 矩阵乘法、线性变换、特征值、正交分解 给出定义、例子和一个易错点。",
+          "rubric": [
+            "定义准确",
+            "有具体例子",
+            "能说明易错点"
+          ]
+        }
+      ],
+      "source_mode": "local"
+    },
+    "context": {},
+    "created_at": 1783530388,
+    "updated_at": 1783530388
+  },
+  "run_20260709_010648_eecc0ac0": {
+    "id": "run_20260709_010648_eecc0ac0",
+    "message": "GitHub trending: student agent",
+    "intent": "github_trending",
+    "domain": "research",
+    "selected_workflow": "research_github_trending",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010648_eecc0ac0",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010648_eecc0ac0\\Plan.md",
+        "kind": "document",
+        "created_at": 1783530408
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010648_eecc0ac0\\Status.md",
+        "kind": "document",
+        "created_at": 1783530408
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010648_eecc0ac0\\Verification.md",
+        "kind": "document",
+        "created_at": 1783530408
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010648_eecc0ac0\\run_result.json",
+        "kind": "json",
+        "created_at": 1783530408
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010648_eecc0ac0\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783530408
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "source_mode": "fallback_offline",
+      "source_error": "",
+      "summary": "为 student agent 生成 3 个本地 fallback 项目候选。",
+      "items": [
+        {
+          "name": "student-agent-starter",
+          "url": "https://github.com/example/starter",
+          "language": "Python",
+          "stars": 1240,
+          "reason": "适合作为入门工程模板"
+        },
+        {
+          "name": "student-agent-rag",
+          "url": "https://github.com/example/rag",
+          "language": "Python",
+          "stars": 980,
+          "reason": "包含检索、评测和本地运行示例"
+        },
+        {
+          "name": "student-agent-eval",
+          "url": "https://github.com/example/eval",
+          "language": "Python",
+          "stars": 720,
+          "reason": "适合做论文/项目复现实验"
+        }
+      ],
+      "questions": [
+        "项目是否活跃？",
+        "README 是否可复现？",
+        "license 是否允许使用？"
+      ]
+    },
+    "context": {},
+    "created_at": 1783530408,
+    "updated_at": 1783530408
+  },
+  "run_20260709_010657_3b07f75e": {
+    "id": "run_20260709_010657_3b07f75e",
+    "message": "GitHub trending: doctor agent",
+    "intent": "github_trending",
+    "domain": "research",
+    "selected_workflow": "research_github_trending",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010657_3b07f75e",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010657_3b07f75e\\Plan.md",
+        "kind": "document",
+        "created_at": 1783530417
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010657_3b07f75e\\Status.md",
+        "kind": "document",
+        "created_at": 1783530417
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010657_3b07f75e\\Verification.md",
+        "kind": "document",
+        "created_at": 1783530417
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010657_3b07f75e\\run_result.json",
+        "kind": "json",
+        "created_at": 1783530417
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010657_3b07f75e\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783530417
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "source_mode": "fallback_offline",
+      "source_error": "",
+      "summary": "为 doctor agent 生成 3 个本地 fallback 项目候选。",
+      "items": [
+        {
+          "name": "doctor-agent-starter",
+          "url": "https://github.com/example/starter",
+          "language": "Python",
+          "stars": 1240,
+          "reason": "适合作为入门工程模板"
+        },
+        {
+          "name": "doctor-agent-rag",
+          "url": "https://github.com/example/rag",
+          "language": "Python",
+          "stars": 980,
+          "reason": "包含检索、评测和本地运行示例"
+        },
+        {
+          "name": "doctor-agent-eval",
+          "url": "https://github.com/example/eval",
+          "language": "Python",
+          "stars": 720,
+          "reason": "适合做论文/项目复现实验"
+        }
+      ],
+      "questions": [
+        "项目是否活跃？",
+        "README 是否可复现？",
+        "license 是否允许使用？"
+      ]
+    },
+    "context": {},
+    "created_at": 1783530417,
+    "updated_at": 1783530417
+  },
+  "run_20260709_010700_a29e8423": {
+    "id": "run_20260709_010700_a29e8423",
+    "message": "GitHub trending: doctor agent",
+    "intent": "github_trending",
+    "domain": "research",
+    "selected_workflow": "research_github_trending",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010700_a29e8423",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010700_a29e8423\\Plan.md",
+        "kind": "document",
+        "created_at": 1783530420
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010700_a29e8423\\Status.md",
+        "kind": "document",
+        "created_at": 1783530420
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010700_a29e8423\\Verification.md",
+        "kind": "document",
+        "created_at": 1783530420
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010700_a29e8423\\run_result.json",
+        "kind": "json",
+        "created_at": 1783530420
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010700_a29e8423\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783530420
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "source_mode": "fallback_offline",
+      "source_error": "",
+      "summary": "为 doctor agent 生成 3 个本地 fallback 项目候选。",
+      "items": [
+        {
+          "name": "doctor-agent-starter",
+          "url": "https://github.com/example/starter",
+          "language": "Python",
+          "stars": 1240,
+          "reason": "适合作为入门工程模板"
+        },
+        {
+          "name": "doctor-agent-rag",
+          "url": "https://github.com/example/rag",
+          "language": "Python",
+          "stars": 980,
+          "reason": "包含检索、评测和本地运行示例"
+        },
+        {
+          "name": "doctor-agent-eval",
+          "url": "https://github.com/example/eval",
+          "language": "Python",
+          "stars": 720,
+          "reason": "适合做论文/项目复现实验"
+        }
+      ],
+      "questions": [
+        "项目是否活跃？",
+        "README 是否可复现？",
+        "license 是否允许使用？"
+      ]
+    },
+    "context": {},
+    "created_at": 1783530420,
+    "updated_at": 1783530420
+  },
+  "run_20260709_010702_050bae04": {
+    "id": "run_20260709_010702_050bae04",
+    "message": "我想研究本科生个人秘书 agent 如何做长期记忆",
+    "intent": "research_idea",
+    "domain": "research",
+    "selected_workflow": "research_idea",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010702_050bae04",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010702_050bae04\\Plan.md",
+        "kind": "document",
+        "created_at": 1783530422
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010702_050bae04\\Status.md",
+        "kind": "document",
+        "created_at": 1783530422
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010702_050bae04\\Verification.md",
+        "kind": "document",
+        "created_at": 1783530422
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010702_050bae04\\run_result.json",
+        "kind": "json",
+        "created_at": 1783530422
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010702_050bae04\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783530422
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "mode": "auto",
+      "source_mode": "real",
+      "source_error": "real_adapter:academic-search",
+      "topic_id": "agent-1783530422",
+      "topic": {
+        "id": "agent-1783530422",
+        "title": "我想研究本科生个人秘书 agent 如何做长期记忆",
+        "query": "我想研究本科生个人秘书 agent 如何做长期记忆",
+        "keywords": [],
+        "cadence": "weekly",
+        "created_at": 1783530422
+      },
+      "summary": "本次为 我想研究本科生个人秘书 agent 如何做长期记忆 找到 2 篇候选论文，建议先读综述再读方法论文。",
+      "papers": [
+        {
+          "title": "我想研究本科生个人秘书 agent 如何做长期记忆: A Practical Survey",
+          "url": "https://arxiv.org/abs/0000.00001",
+          "authors": [
+            "Offline Demo"
+          ],
+          "year": 2026,
+          "venue": "arXiv",
+          "abstract": "Survey-style overview for 我想研究本科生个人秘书 agent 如何做长期记忆, useful as a first reading map.",
+          "source": "academic-search",
+          "score": 0.91,
+          "reasons": [
+            "主题匹配",
+            "适合快速建立背景",
+            "real adapter found built-in skill: academic-search"
+          ]
+        },
+        {
+          "title": "Recent Methods for 我想研究本科生个人秘书 agent 如何做长期记忆",
+          "url": "https://arxiv.org/abs/0000.00002",
+          "authors": [
+            "Offline Demo"
+          ],
+          "year": 2025,
+          "venue": "arXiv",
+          "abstract": "Method-focused paper candidates around 我想研究本科生个人秘书 agent 如何做长期记忆.",
+          "source": "academic-search",
+          "score": 0.86,
+          "reasons": [
+            "方法导向",
+            "便于整理笔记",
+            "real adapter found built-in skill: academic-search"
+          ]
+        }
+      ],
+      "questions": [
+        "这篇论文解决的核心问题是什么？",
+        "方法和已有工作相比新增了什么假设？",
+        "哪些结论可以转化成你的研究笔记或实验计划？"
+      ],
+      "created_at": 1783530422,
+      "note_path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\notes\\research\\agent-1783530422.md",
+      "idea": "我想研究本科生个人秘书 agent 如何做长期记忆",
+      "artifacts": []
+    },
+    "context": {},
+    "created_at": 1783530422,
+    "updated_at": 1783530422
+  },
+  "run_20260709_010739_1d312030": {
+    "id": "run_20260709_010739_1d312030",
+    "message": "健康 check-in",
+    "intent": "health",
+    "domain": "life",
+    "selected_workflow": "life_health",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010739_1d312030",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010739_1d312030\\Plan.md",
+        "kind": "document",
+        "created_at": 1783530459
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010739_1d312030\\Status.md",
+        "kind": "document",
+        "created_at": 1783530459
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010739_1d312030\\Verification.md",
+        "kind": "document",
+        "created_at": 1783530459
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010739_1d312030\\run_result.json",
+        "kind": "json",
+        "created_at": 1783530459
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010739_1d312030\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783530459
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "record": {
+        "date": "2026-07-09",
+        "mood": "还不错",
+        "sleep_hours": 7.0,
+        "exercise": "散步 30 分钟",
+        "note": "",
+        "created_at": 1783530459
+      },
+      "records": [
+        {
+          "date": "2026-07-09",
+          "mood": "还不错",
+          "sleep_hours": 7.0,
+          "exercise": "散步 30 分钟",
+          "note": "",
+          "created_at": 1783530459
+        }
+      ]
+    },
+    "context": {},
+    "created_at": 1783530459,
+    "updated_at": 1783530459
+  },
+  "run_20260709_010742_947ab0cb": {
+    "id": "run_20260709_010742_947ab0cb",
+    "message": "上海 旅行计划",
+    "intent": "travel",
+    "domain": "life",
+    "selected_workflow": "life_travel_plan",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010742_947ab0cb",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010742_947ab0cb\\Plan.md",
+        "kind": "document",
+        "created_at": 1783530462
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010742_947ab0cb\\Status.md",
+        "kind": "document",
+        "created_at": 1783530462
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010742_947ab0cb\\Verification.md",
+        "kind": "document",
+        "created_at": 1783530462
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010742_947ab0cb\\run_result.json",
+        "kind": "json",
+        "created_at": 1783530462
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010742_947ab0cb\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783530462
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "destination": "上海",
+      "days": 2,
+      "preferences": "",
+      "itinerary": [
+        {
+          "day": 1,
+          "morning": "上海 城市/校园路线",
+          "afternoon": "博物馆/公园/书店",
+          "evening": "轻松晚餐 + 复盘照片",
+          "budget": 400
+        },
+        {
+          "day": 2,
+          "morning": "上海 城市/校园路线",
+          "afternoon": "博物馆/公园/书店",
+          "evening": "轻松晚餐 + 复盘照片",
+          "budget": 400
+        }
+      ],
+      "source_mode": "local"
+    },
+    "context": {},
+    "created_at": 1783530462,
+    "updated_at": 1783530462
+  },
+  "run_20260709_010750_2f2d06bc": {
+    "id": "run_20260709_010750_2f2d06bc",
+    "message": "AI 产品经理实习生 面试计划",
+    "intent": "interview_plan",
+    "domain": "career",
+    "selected_workflow": "career_interview_plan",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010750_2f2d06bc",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010750_2f2d06bc\\Plan.md",
+        "kind": "document",
+        "created_at": 1783530470
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010750_2f2d06bc\\Status.md",
+        "kind": "document",
+        "created_at": 1783530470
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010750_2f2d06bc\\Verification.md",
+        "kind": "document",
+        "created_at": 1783530470
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010750_2f2d06bc\\run_result.json",
+        "kind": "json",
+        "created_at": 1783530470
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010750_2f2d06bc\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783530470
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "role": "AI 产品经理实习生",
+      "days": 7,
+      "background": "",
+      "plan": [
+        {
+          "day": 1,
+          "focus": "岗位拆解",
+          "task": "准备 AI 产品经理实习生：岗位拆解",
+          "minutes": 45
+        },
+        {
+          "day": 2,
+          "focus": "项目故事",
+          "task": "准备 AI 产品经理实习生：项目故事",
+          "minutes": 45
+        },
+        {
+          "day": 3,
+          "focus": "基础知识",
+          "task": "准备 AI 产品经理实习生：基础知识",
+          "minutes": 45
+        },
+        {
+          "day": 4,
+          "focus": "算法/案例",
+          "task": "准备 AI 产品经理实习生：算法/案例",
+          "minutes": 45
+        },
+        {
+          "day": 5,
+          "focus": "模拟问答",
+          "task": "准备 AI 产品经理实习生：模拟问答",
+          "minutes": 45
+        },
+        {
+          "day": 6,
+          "focus": "复盘补缺",
+          "task": "准备 AI 产品经理实习生：复盘补缺",
+          "minutes": 45
+        },
+        {
+          "day": 7,
+          "focus": "最终演练",
+          "task": "准备 AI 产品经理实习生：最终演练",
+          "minutes": 45
+        }
+      ],
+      "questions": [
+        "请介绍一个最能体现你适合 AI 产品经理实习生 的项目。",
+        "遇到冲突或卡点时你如何推进？",
+        "你希望这段实习带来什么成长？"
+      ]
+    },
+    "context": {},
+    "created_at": 1783530470,
+    "updated_at": 1783530470
+  },
+  "run_20260709_010847_0c95a356": {
+    "id": "run_20260709_010847_0c95a356",
+    "message": "网球队 招新文案",
+    "intent": "recruiting_copy",
+    "domain": "club",
+    "selected_workflow": "club_recruiting_copy",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010847_0c95a356",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010847_0c95a356\\Plan.md",
+        "kind": "document",
+        "created_at": 1783530527
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010847_0c95a356\\Status.md",
+        "kind": "document",
+        "created_at": 1783530527
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010847_0c95a356\\Verification.md",
+        "kind": "document",
+        "created_at": 1783530527
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010847_0c95a356\\run_result.json",
+        "kind": "json",
+        "created_at": 1783530527
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_010847_0c95a356\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783530527
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "copy": {
+        "headline": "加入网球队，把你的想法做成真实项目",
+        "body": "面向大一新生，我们准备了低门槛培训、项目搭档和展示机会。欢迎喜欢行动的人来聊聊。",
+        "poster_points": [
+          "低门槛",
+          "有 mentor",
+          "能产出作品",
+          "氛围友好"
+        ],
+        "tone": "热情"
+      }
+    },
+    "context": {},
+    "created_at": 1783530527,
+    "updated_at": 1783530527
+  },
+  "run_20260709_011349_99bd48e0": {
+    "id": "run_20260709_011349_99bd48e0",
+    "message": "GitHub trending: student agent",
+    "intent": "github_trending",
+    "domain": "research",
+    "selected_workflow": "research_github_trending",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_011349_99bd48e0",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_011349_99bd48e0\\Plan.md",
+        "kind": "document",
+        "created_at": 1783530829
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_011349_99bd48e0\\Status.md",
+        "kind": "document",
+        "created_at": 1783530829
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_011349_99bd48e0\\Verification.md",
+        "kind": "document",
+        "created_at": 1783530829
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_011349_99bd48e0\\run_result.json",
+        "kind": "json",
+        "created_at": 1783530829
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_011349_99bd48e0\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783530829
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "source_mode": "fallback_offline",
+      "source_error": "",
+      "summary": "为 student agent 生成 3 个本地 fallback 项目候选。",
+      "items": [
+        {
+          "name": "student-agent-starter",
+          "url": "https://github.com/example/starter",
+          "language": "Python",
+          "stars": 1240,
+          "reason": "适合作为入门工程模板"
+        },
+        {
+          "name": "student-agent-rag",
+          "url": "https://github.com/example/rag",
+          "language": "Python",
+          "stars": 980,
+          "reason": "包含检索、评测和本地运行示例"
+        },
+        {
+          "name": "student-agent-eval",
+          "url": "https://github.com/example/eval",
+          "language": "Python",
+          "stars": 720,
+          "reason": "适合做论文/项目复现实验"
+        }
+      ],
+      "questions": [
+        "项目是否活跃？",
+        "README 是否可复现？",
+        "license 是否允许使用？"
+      ]
+    },
+    "context": {},
+    "created_at": 1783530829,
+    "updated_at": 1783530829
+  },
+  "run_20260709_011356_9dfc8f6a": {
+    "id": "run_20260709_011356_9dfc8f6a",
+    "message": "GitHub trending: agent",
+    "intent": "github_trending",
+    "domain": "research",
+    "selected_workflow": "research_github_trending",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_011356_9dfc8f6a",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_011356_9dfc8f6a\\Plan.md",
+        "kind": "document",
+        "created_at": 1783530836
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_011356_9dfc8f6a\\Status.md",
+        "kind": "document",
+        "created_at": 1783530836
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_011356_9dfc8f6a\\Verification.md",
+        "kind": "document",
+        "created_at": 1783530836
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_011356_9dfc8f6a\\run_result.json",
+        "kind": "json",
+        "created_at": 1783530836
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_011356_9dfc8f6a\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783530836
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "source_mode": "fallback_offline",
+      "source_error": "",
+      "summary": "为 agent 生成 3 个本地 fallback 项目候选。",
+      "items": [
+        {
+          "name": "agent-starter",
+          "url": "https://github.com/example/starter",
+          "language": "Python",
+          "stars": 1240,
+          "reason": "适合作为入门工程模板"
+        },
+        {
+          "name": "agent-rag",
+          "url": "https://github.com/example/rag",
+          "language": "Python",
+          "stars": 980,
+          "reason": "包含检索、评测和本地运行示例"
+        },
+        {
+          "name": "agent-eval",
+          "url": "https://github.com/example/eval",
+          "language": "Python",
+          "stars": 720,
+          "reason": "适合做论文/项目复现实验"
+        }
+      ],
+      "questions": [
+        "项目是否活跃？",
+        "README 是否可复现？",
+        "license 是否允许使用？"
+      ]
+    },
+    "context": {},
+    "created_at": 1783530836,
+    "updated_at": 1783530836
   }
 }

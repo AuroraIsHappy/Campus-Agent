@@ -45,7 +45,7 @@ def _run(domain: str, workflow: str, title: str, result: dict[str, Any],
 # ---------------- Learning ----------------
 
 def flashcards(topic: str, source_text: str = "", count: int = 8,
-               mode: str = "offline", memory_snippet: str = "") -> dict[str, Any]:
+               mode: str = "auto", memory_snippet: str = "") -> dict[str, Any]:
     # Phase 8 Step 3: real LLM generation with offline fallback
     if mode in ("real", "auto"):
         from campus.runtime.workflow_llm import llm_generate
@@ -99,7 +99,7 @@ def list_deadlines() -> dict[str, Any]:
 
 
 def quiz_run(topic: str, count: int = 5, source_text: str = "",
-             mode: str = "offline", memory_snippet: str = "") -> dict[str, Any]:
+             mode: str = "auto", memory_snippet: str = "") -> dict[str, Any]:
     if mode in ("real", "auto"):
         from campus.runtime.workflow_llm import llm_generate
         llm_result = llm_generate("learning", "quiz",
@@ -275,7 +275,7 @@ def advance_review_node(node_id: str, correct: bool) -> dict[str, Any]:
 
 # ---------------- Research ----------------
 
-def research_idea(idea: str, mode: str = "offline") -> dict[str, Any]:
+def research_idea(idea: str, mode: str = "auto") -> dict[str, Any]:
     from campus.research import tracker
     topic = tracker.add_topic(idea[:80] or "research idea", idea, cadence="weekly")
     digest = tracker.refresh_topic(topic["topic"]["id"], mode)
@@ -286,7 +286,7 @@ def research_idea(idea: str, mode: str = "offline") -> dict[str, Any]:
 
 
 def github_trending(topic: str = "student agent", language: str = "Python",
-                    mode: str = "offline", memory_snippet: str = "") -> dict[str, Any]:
+                    mode: str = "auto", memory_snippet: str = "") -> dict[str, Any]:
     # Phase 8 Step 6: real GitHub API search (preferred over LLM for trending repos)
     if mode in ("real", "auto"):
         from campus.research.search_providers import github_search, github_available
@@ -360,7 +360,7 @@ def health_list() -> dict[str, Any]:
 
 
 def travel_plan(destination: str, days: int = 2, budget: int = 500, preferences: str = "",
-                mode: str = "offline", memory_snippet: str = "") -> dict[str, Any]:
+                mode: str = "auto", memory_snippet: str = "") -> dict[str, Any]:
     if mode in ("real", "auto"):
         from campus.runtime.workflow_llm import llm_generate
         llm_result = llm_generate("life", "travel_plan",
@@ -394,7 +394,7 @@ def campus_guide(query: str = "") -> dict[str, Any]:
 # ---------------- Club ----------------
 
 def meeting_minutes(topic: str, notes: str = "",
-                    mode: str = "offline", memory_snippet: str = "") -> dict[str, Any]:
+                    mode: str = "auto", memory_snippet: str = "") -> dict[str, Any]:
     if mode in ("real", "auto"):
         from campus.runtime.workflow_llm import llm_generate
         llm_result = llm_generate("club", "meeting_minutes",
@@ -413,7 +413,7 @@ def meeting_minutes(topic: str, notes: str = "",
 
 
 def recruiting_copy(org: str, audience: str = "大一新生", tone: str = "热情",
-                    mode: str = "offline", memory_snippet: str = "") -> dict[str, Any]:
+                    mode: str = "auto", memory_snippet: str = "") -> dict[str, Any]:
     if mode in ("real", "auto"):
         from campus.runtime.workflow_llm import llm_generate
         llm_result = llm_generate("club", "recruiting_copy",
@@ -437,7 +437,7 @@ def recruiting_copy(org: str, audience: str = "大一新生", tone: str = "热�
 
 
 def email_draft(purpose: str, recipient: str = "", context: str = "",
-                mode: str = "offline", memory_snippet: str = "") -> dict[str, Any]:
+                mode: str = "auto", memory_snippet: str = "") -> dict[str, Any]:
     if mode in ("real", "auto"):
         from campus.runtime.workflow_llm import llm_generate
         llm_result = llm_generate("club", "email_draft",
@@ -455,7 +455,17 @@ def email_draft(purpose: str, recipient: str = "", context: str = "",
 
 # ---------------- Career ----------------
 
-def job_search(query: str, city: str = "", mode: str = "offline") -> dict[str, Any]:
+def job_search(query: str, city: str = "", mode: str = "auto",
+               memory_snippet: str = "") -> dict[str, Any]:
+    if mode in ("real", "auto"):
+        from campus.runtime.workflow_llm import llm_generate
+        llm_result = llm_generate("career", "job_search",
+                                  {"query": query, "city": city}, memory_snippet=memory_snippet)
+        if llm_result and llm_result.get("jobs"):
+            return _run("career", "career_jobs_search", f"搜索实习：{query}",
+                        {"ok": True, "source_mode": llm_result.get("source_mode", "real_llm"),
+                         "source_error": "",
+                         "jobs": llm_result["jobs"], "query": query, "city": city}, intent="job_search")
     jobs = [
         {"id": f"job_{i}", "title": f"{query} 实习 {i}", "company": c, "city": city or "远程",
          "url": f"https://jobs.example.com/{_slug(query)}-{i}", "fit": 92 - i * 6,
@@ -483,7 +493,7 @@ def list_jobs() -> dict[str, Any]:
 
 
 def interview_plan(role: str, days: int = 7, background: str = "",
-                   mode: str = "offline", memory_snippet: str = "") -> dict[str, Any]:
+                   mode: str = "auto", memory_snippet: str = "") -> dict[str, Any]:
     if mode in ("real", "auto"):
         from campus.runtime.workflow_llm import llm_generate
         llm_result = llm_generate("career", "interview_plan",

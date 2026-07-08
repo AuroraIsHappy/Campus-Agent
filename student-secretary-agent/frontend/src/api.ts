@@ -115,6 +115,8 @@ export interface AgentRunResult {
   status: string;
   artifacts: { name: string; path: string; kind: string }[];
   error: string;
+  multiagent?: boolean;
+  source_mode?: string;
 }
 export interface CalEvent {
   id?: string;
@@ -173,7 +175,7 @@ export interface SettingsStatus {
 export const api = {
   health: () => jget<{ ok: boolean; service: string }>("/health"),
   runs: () => jget<{ runs: RunRecord[] }>("/runs"),
-  agentRun: (body: { message: string; mode?: string; context?: Record<string, unknown> }) =>
+  agentRun: (body: { message: string; context?: Record<string, unknown> }) =>
     jpost<AgentRunResult>("/agent/run", body),
   agentRuns: () => jget<{ runs: RunRecord[] }>("/agent/runs"),
   agentRunDetail: (id: string) => jget<RunRecord & { ok: boolean }>(`/agent/runs/${id}`),
@@ -214,37 +216,37 @@ export const api = {
     jpost<{ ok: boolean; local_path: string; notion_ok: boolean; error?: string }>("/notes/notion/sync", { digest, mode }),
   notesStatus: () => jget<{ ok: boolean; token_configured: boolean; database_configured?: boolean; local_mirror_dir?: string }>("/notes/status"),
   flashcards: (body: { topic: string; source_text?: string; count?: number }) =>
-    jpost<{ ok: boolean; topic: string; flashcards: { id: string; front: string; back: string; due: string }[]; run_id: string }>("/learning/flashcards", body),
+    jpost<{ ok: boolean; topic: string; flashcards: { id: string; front: string; back: string; tags: string[]; due: string }[]; run_id: string; source_mode?: string; review_nodes?: number }>("/learning/flashcards", body),
   addDeadline: (body: { title: string; due: string; course?: string; note?: string }) =>
     jpost<{ ok: boolean; deadline: Task; run_id: string }>("/learning/deadlines", body),
   learningDeadlines: () => jget<{ deadlines: Task[] }>("/learning/deadlines"),
   quizRun: (body: { topic: string; count?: number; source_text?: string }) =>
-    jpost<{ ok: boolean; topic: string; questions: { id: string; question: string; answer: string }[]; run_id: string }>("/learning/quiz/run", body),
-  quizGrade: (body: { topic: string; answers: { question_id: string; answer: string }[] }) =>
-    jpost<{ ok: boolean; score: number; graded: { question_id: string; score: number; feedback: string }[]; plan_adjustment: string; run_id: string }>("/learning/quiz/grade", body),
+    jpost<{ ok: boolean; topic: string; questions: { id: string; question: string; answer: string }[]; run_id: string; source_mode?: string }>("/learning/quiz/run", body),
+  quizGrade: (body: { topic: string; answers: { question_id: string; answer: string; review_node_id?: string }[] }) =>
+    jpost<{ ok: boolean; score: number; graded: { question_id: string; score: number; feedback: string; ebbinghaus_advanced?: boolean }[]; plan_adjustment: string; run_id: string }>("/learning/quiz/grade", body),
   learningDashboard: () => jget<{ ok: boolean; today_tasks: Task[]; deadlines: Task[]; due_reviews: Task[]; progress: { tasks: number; done: number } }>("/learning/dashboard"),
-  researchIdea: (body: { idea: string; mode?: string }) => jpost<ResearchDigest & { run_id: string }>("/research/idea", body),
+  researchIdea: (body: { idea: string }) => jpost<ResearchDigest & { run_id: string }>("/research/idea", body),
   githubTrending: (body: { topic: string; language?: string }) =>
-    jpost<{ ok: boolean; summary: string; items: { name: string; url: string; stars: number; reason: string }[]; run_id: string }>("/research/github/trending", body),
+    jpost<{ ok: boolean; summary: string; items: { name: string; url: string; stars: number; reason: string }[]; run_id: string; source_mode?: string }>("/research/github/trending", body),
   formatCheck: (body: { title: string; target?: string; manuscript?: string }) =>
-    jpost<{ ok: boolean; summary: string; items: { name: string; passed: boolean; detail: string }[]; run_id: string }>("/research/format/check", body),
+    jpost<{ ok: boolean; summary: string; items: { name: string; passed: boolean; detail: string }[]; run_id: string; source_mode?: string }>("/research/format/check", body),
   healthAdd: (body: { mood?: string; sleep_hours?: number; exercise?: string; note?: string }) =>
     jpost<{ ok: boolean; record: Record<string, unknown>; records: Record<string, unknown>[]; run_id: string }>("/life/health", body),
   healthList: () => jget<{ records: Record<string, unknown>[] }>("/life/health"),
   travelPlan: (body: { destination: string; days?: number; budget?: number; preferences?: string }) =>
-    jpost<{ ok: boolean; destination: string; itinerary: Record<string, unknown>[]; run_id: string }>("/life/travel_plan", body),
+    jpost<{ ok: boolean; destination: string; itinerary: Record<string, unknown>[]; run_id: string; source_mode?: string }>("/life/travel_plan", body),
   campusGuide: (query = "") => jget<{ ok: boolean; guides: { title: string; steps: string[] }[] }>(`/life/campus_guide${query ? `?query=${encodeURIComponent(query)}` : ""}`),
   meetingMinutes: (body: { topic: string; notes?: string }) =>
-    jpost<{ ok: boolean; minutes: { decisions: string[]; todo: string[]; next_meeting: string }; run_id: string }>("/club/meeting_minutes", body),
+    jpost<{ ok: boolean; topic: string; summary: string; minutes: { decisions: string[]; todo: string[]; next_meeting: string }; run_id: string; source_mode?: string }>("/club/meeting_minutes", body),
   recruitingCopy: (body: { org: string; audience?: string; tone?: string }) =>
-    jpost<{ ok: boolean; copy: { headline: string; body: string; poster_points: string[] }; run_id: string }>("/club/recruiting_copy", body),
+    jpost<{ ok: boolean; copy: { headline: string; body: string; poster_points: string[] }; run_id: string; source_mode?: string }>("/club/recruiting_copy", body),
   emailDraft: (body: { purpose: string; recipient?: string; context?: string }) =>
-    jpost<{ ok: boolean; email: string; run_id: string }>("/club/email_draft", body),
-  jobSearch: (body: { query: string; city?: string; mode?: string }) =>
-    jpost<{ ok: boolean; jobs: { id: string; title: string; company: string; city: string; fit: number; reason: string }[]; run_id: string }>("/career/jobs/search", body),
+    jpost<{ ok: boolean; email: string; recipient: string; run_id: string; source_mode?: string }>("/club/email_draft", body),
+  jobSearch: (body: { query: string; city?: string }) =>
+    jpost<{ ok: boolean; jobs: { id: string; title: string; company: string; city: string; fit: number; reason: string }[]; run_id: string; source_mode?: string }>("/career/jobs/search", body),
   saveJob: (job: Record<string, unknown>) => jpost<{ ok: boolean; jobs: Record<string, unknown>[] }>("/career/jobs/save", { job }),
   savedJobs: () => jget<{ jobs: Record<string, unknown>[] }>("/career/jobs"),
-  interviewPlan: (body: { role: string; days?: number; background?: string; mode?: string }) =>
+  interviewPlan: (body: { role: string; days?: number; background?: string }) =>
     jpost<{ ok: boolean; role: string; plan: { day: number; focus: string; task: string; minutes: number }[]; questions: string[]; run_id: string; source_mode?: string }>("/career/interview_plan", body),
   // Phase 8: interview practice + reflect
   interviewPractice: (body: { role: string; question?: string; answer?: string; background?: string }) =>

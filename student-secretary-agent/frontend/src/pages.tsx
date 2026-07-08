@@ -23,6 +23,76 @@ function Err({ e }: { e: string | null }) {
   return e ? <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{e}</p> : null;
 }
 
+function SourceBadge({ mode }: { mode?: string }) {
+  if (!mode) return null;
+  const isLLM = mode.includes("llm") || mode.includes("real");
+  return <span className={`ml-2 inline-block rounded-full px-2 py-0.5 text-xs ${isLLM ? "bg-emerald-100 text-emerald-700" : "bg-ink-100 text-ink-600"}`}>{isLLM ? "✨ AI 生成" : "模板"}</span>;
+}
+
+const WEEKDAYS = ["一", "二", "三", "四", "五", "六", "日"];
+
+function MonthCalendar({ events, onDelete }: { events: CalEvent[]; onDelete: (id: string) => void }) {
+  const [viewDate, setViewDate] = useState(new Date());
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+  // events grouped by date (YYYY-MM-DD)
+  const byDate: Record<string, CalEvent[]> = {};
+  for (const e of events) {
+    const d = (e.start || "").slice(0, 10);
+    if (d) (byDate[d] ||= []).push(e);
+  }
+
+  // build calendar grid: first day offset (Mon=0), days in month
+  const firstDay = new Date(year, month, 1);
+  let offset = firstDay.getDay() - 1; // Mon=0
+  if (offset < 0) offset = 6;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const cells: (number | null)[] = [];
+  for (let i = 0; i < offset; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  const monthLabel = `${year} 年 ${month + 1} 月`;
+  const prevMonth = () => setViewDate(new Date(year, month - 1, 1));
+  const nextMonth = () => setViewDate(new Date(year, month + 1, 1));
+
+  return (
+    <div>
+      <div className="mb-3 flex items-center justify-between">
+        <button onClick={prevMonth} className="rounded px-2 py-1 text-sm text-ink-600 hover:bg-ink-100">‹</button>
+        <span className="font-medium text-ink-800">{monthLabel}</span>
+        <button onClick={nextMonth} className="rounded px-2 py-1 text-sm text-ink-600 hover:bg-ink-100">›</button>
+      </div>
+      <div className="grid grid-cols-7 gap-1 text-center text-xs text-ink-500">
+        {WEEKDAYS.map(w => <div key={w} className="py-1 font-medium">{w}</div>)}
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {cells.map((d, i) => {
+          if (d === null) return <div key={i} className="min-h-16 rounded-lg bg-ink-50/50" />;
+          const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+          const dayEvents = byDate[dateStr] || [];
+          const isToday = dateStr === todayStr;
+          return (
+            <div key={i} className={`min-h-16 rounded-lg border p-1 text-xs ${isToday ? "border-campus-400 bg-campus-50" : "border-ink-100"}`}>
+              <div className={`mb-0.5 font-medium ${isToday ? "text-campus-700" : "text-ink-600"}`}>{d}</div>
+              {dayEvents.slice(0, 2).map((e, j) => (
+                <div key={j} className="group relative truncate rounded bg-campus-100 px-1 py-0.5 text-campus-700" title={e.title}>
+                  {e.title}
+                  {e.id && <button onClick={() => onDelete(e.id!)} className="ml-1 hidden text-red-400 group-hover:inline">×</button>}
+                </div>
+              ))}
+              {dayEvents.length > 2 && <div className="text-ink-400">+{dayEvents.length - 2} 更多</div>}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /* ---------------- Dashboard ---------------- */
 export function DashboardPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -83,7 +153,6 @@ export function DashboardPage() {
 /* ---------------- Secretary ---------------- */
 export function SecretaryPage() {
   const [message, setMessage] = useState("我想学 Linux，帮我安排 30 天计划");
-  const [mode, setMode] = useState("offline");
   const [result, setResult] = useState<AgentRunResult | null>(null);
   const [runs, setRuns] = useState<RunRecord[]>([]);
   const [err, setErr] = useState<string | null>(null);
@@ -93,7 +162,7 @@ export function SecretaryPage() {
   useEffect(() => { refresh(); }, []);
   const run = () => {
     setBusy(true); setErr(null);
-    api.agentRun({ message, mode })
+    api.agentRun({ message })
       .then((r) => { setResult(r); return refresh(); })
       .catch((e: Error) => setErr(e.message))
       .finally(() => setBusy(false));
@@ -104,16 +173,9 @@ export function SecretaryPage() {
       <PageHeader title="秘书" subtitle="一句话交给 Campus-Agent，自动路由到学习、科研、生活、社团或职业工作流。" />
       <Err e={err} />
       <Card title="新任务">
-        <div className="grid gap-3 md:grid-cols-[1fr_160px]">
+        <div className="grid gap-3 md:grid-cols-[1fr_auto]">
           <textarea className="campus-input min-h-28" value={message} onChange={(e) => setMessage(e.target.value)} />
-          <div className="grid content-start gap-2">
-            <select className="campus-input" value={mode} onChange={(e) => setMode(e.target.value)}>
-              <option value="offline">offline</option>
-              <option value="auto">auto</option>
-              <option value="real">real</option>
-            </select>
-            <button className="campus-btn" onClick={run} disabled={busy || !message.trim()}>{busy ? "运行中..." : "开始"}</button>
-          </div>
+          <button className="campus-btn" onClick={run} disabled={busy || !message.trim()}>{busy ? "运行中..." : "开始"}</button>
         </div>
         {result && (
           <div className="mt-4 grid gap-3 md:grid-cols-4">
@@ -123,6 +185,7 @@ export function SecretaryPage() {
             <Metric label="产物" value={String(result.artifacts.length)} />
           </div>
         )}
+        {result?.source_mode && <p className="mt-2 text-xs text-ink-700/50">来源：{result.source_mode}{result.multiagent ? " · 多智能体" : ""}</p>}
       </Card>
       <Card title="最近运行">
         <ul className="space-y-2 text-sm">
@@ -193,7 +256,6 @@ export function OnboardingPage() {
 /* ---------------- Demo B ---------------- */
 export function DemoCenterPage() {
   const [status, setStatus] = useState<DemoStatus | null>(null);
-  const [mode, setMode] = useState("offline");
   const [topic, setTopic] = useState("校园低碳实践");
   const [region, setRegion] = useState("北京高校社区");
   const [goal, setGoal] = useState("7 天入门机器学习");
@@ -209,12 +271,12 @@ export function DemoCenterPage() {
 
   const runA = () => {
     setBusy("a"); setErr(null);
-    api.demoARun({ topic, region, window: "2026 暑期", mode })
+    api.demoARun({ topic, region, window: "2026 暑期" })
       .then(setARes).catch((e: Error) => setErr(e.message)).finally(() => setBusy(null));
   };
   const runC = () => {
     setBusy("c"); setErr(null);
-    api.demoCRun({ goal, days, minutes: 20, quiz_n: 3, mode })
+    api.demoCRun({ goal, days, minutes: 20, quiz_n: 3 })
       .then(setCRes).catch((e: Error) => setErr(e.message)).finally(() => setBusy(null));
   };
 
@@ -223,12 +285,7 @@ export function DemoCenterPage() {
       <PageHeader title="Demo 中心" subtitle="社会实践策划、学习计划、真实 LLM 状态检查。" />
       <Err e={err} />
       <div className="mb-4 grid gap-4 lg:grid-cols-3">
-        <Card title="运行模式">
-          <select className="campus-input" value={mode} onChange={(e) => setMode(e.target.value)}>
-            <option value="offline">offline</option>
-            <option value="auto">auto</option>
-            <option value="real">real</option>
-          </select>
+        <Card title="LLM 状态">
           {status && (
             <div className="mt-3 text-sm text-ink-700/70">
               <p>LLM：{status.llm.ok ? "可用" : "未就绪"}</p>
@@ -295,12 +352,14 @@ export function LearningPage() {
   const [dashboard, setDashboard] = useState<{ today_tasks: Task[]; deadlines: Task[]; progress: { tasks: number; done: number } } | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [cardSource, setCardSource] = useState<string | undefined>();
+  const [quizSource, setQuizSource] = useState<string | undefined>();
 
   const refresh = () => api.learningDashboard().then(setDashboard).catch((e: Error) => setErr(e.message));
   useEffect(() => { refresh(); }, []);
-  const makeCards = () => { setBusy(true); api.flashcards({ topic, source_text: source, count: 6 }).then((r) => setCards(r.flashcards)).then(refresh).catch((e: Error) => setErr(e.message)).finally(() => setBusy(false)); };
+  const makeCards = () => { setBusy(true); api.flashcards({ topic, source_text: source, count: 6 }).then((r) => { setCards(r.flashcards); setCardSource(r.source_mode); }).then(refresh).catch((e: Error) => setErr(e.message)).finally(() => setBusy(false)); };
   const addDeadline = () => api.addDeadline({ title: deadlineTitle, due: deadlineDue, course: topic }).then(refresh).catch((e: Error) => setErr(e.message));
-  const runQuiz = () => { setBusy(true); api.quizRun({ topic, source_text: source, count: 4 }).then((r) => setQuestions(r.questions)).then(refresh).catch((e: Error) => setErr(e.message)).finally(() => setBusy(false)); };
+  const runQuiz = () => { setBusy(true); api.quizRun({ topic, source_text: source, count: 4 }).then((r) => { setQuestions(r.questions); setQuizSource(r.source_mode); }).then(refresh).catch((e: Error) => setErr(e.message)).finally(() => setBusy(false)); };
   const gradeQuiz = () => api.quizGrade({ topic, answers: questions.map((q) => ({ question_id: q.id, answer: answers[q.id] || "" })) }).then((r) => setGrade(r)).then(refresh).catch((e: Error) => setErr(e.message));
 
   return (
@@ -328,11 +387,13 @@ export function LearningPage() {
         <Card title="Flashcards">
           <button className="campus-btn" onClick={makeCards} disabled={busy}>生成卡片</button>
           <div className="mt-3 grid gap-2">
+            {cards.length > 0 && <p className="text-xs text-ink-600"><SourceBadge mode={cardSource} /></p>}
             {cards.map((c) => <div key={c.id} className="rounded-lg border border-ink-100 p-3 text-sm"><p className="font-medium">{c.front}</p><p className="mt-1 text-ink-700/70">{c.back}</p><span className="campus-chip mt-2">due {c.due}</span></div>)}
           </div>
         </Card>
         <Card title="每日 Quiz">
           <button className="campus-btn" onClick={runQuiz} disabled={busy}>生成 quiz</button>
+          {questions.length > 0 && <p className="mt-2 text-xs text-ink-600"><SourceBadge mode={quizSource} /></p>}
           <div className="mt-3 space-y-3">
             {questions.map((q) => (
               <label key={q.id} className="block text-sm">
@@ -447,7 +508,7 @@ export function ResearchPage() {
   };
   const runIdea = () => {
     setBusy(true); setErr(null);
-    api.researchIdea({ idea, mode: "auto" })
+    api.researchIdea({ idea })
       .then((d) => { setLatest(d); refreshAll(); })
       .catch((e: Error) => setErr(e.message))
       .finally(() => setBusy(false));
@@ -709,20 +770,8 @@ export function LifePage() {
       <PageHeader title="生活" subtitle="日程 · 生日纪念日提醒 · 每日秘书日志。" />
       <Err e={err} />
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card title="日程">
-          <ul className="space-y-1 text-sm">
-            {events.map((e, i) => (
-              <li key={i} className="flex items-center justify-between rounded border border-ink-100 px-2 py-1">
-                <span>
-                  <span className="font-mono text-xs text-campus-700">{e.start}</span>{" "}
-                  {e.title}{e.location ? `（${e.location}）` : ""}
-                  {e.rrule ? <span className="campus-chip ml-2">{e.rrule}</span> : null}
-                </span>
-                <button className="text-xs text-red-500 hover:underline" onClick={() => e.id && delEvent(e.id)}>删除</button>
-              </li>
-            ))}
-            {events.length === 0 && <li className="text-ink-700/60">暂无日程。</li>}
-          </ul>
+        <Card title="日程日历">
+          <MonthCalendar events={events} onDelete={delEvent} />
           <div className="mt-4 grid gap-2 border-t border-ink-100 pt-3 text-sm">
             <input className="campus-input" placeholder="标题（如：高数课）" value={title} onChange={(e) => setTitle(e.target.value)} />
             <div className="grid grid-cols-2 gap-2">

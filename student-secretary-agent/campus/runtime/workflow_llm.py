@@ -155,4 +155,12 @@ def _career_prompt(task: str, params: dict, ctx: str) -> str:
             f"返回 JSON：{{\"score\": 80, \"rubric\": [\"标准1\"], \"improvement_cues\": [\"建议1\"], "
             f"\"model_answer_outline\": [\"要点1\"], \"follow_ups\": [\"追问1\"]}}"
         )
+    if task == "job_search":
+        query = params.get("query", "")
+        city = params.get("city", "")
+        return (
+            f"你是职业顾问。为「{query}」推荐 3 个适合大学生的实习岗位{'（城市：'+city+'）' if city else ''}。{ctx}\n"
+            f"返回 JSON：{{\"jobs\": [{{\"id\": \"job_1\", \"title\": \"岗位名\", \"company\": \"公司\", "
+            f"\"city\": \"城市\", \"url\": \"\", \"fit\": 90, \"reason\": \"推荐理由\"}}]}}"
+        )
     return f"你是职业顾问。完成任务：{task}。{ctx}\n返回 JSON 结果。"

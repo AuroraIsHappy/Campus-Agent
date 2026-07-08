@@ -42,7 +42,6 @@ const NAV_SECTIONS: NavSection[] = [
     title: "引导",
     items: [
       { key: "onboarding", label: "新手引导", icon: "✦" },
-      { key: "demo", label: "Demo 中心", icon: "△" },
     ],
   },
 ];

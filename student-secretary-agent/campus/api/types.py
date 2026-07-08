@@ -17,7 +17,7 @@ class DemoARequest(BaseModel):
     topic: str = "校园低碳实践"
     region: str = "北京高校社区"
     window: str = "2026 暑期"
-    mode: str = "offline"  # offline | auto | real
+    mode: str = "auto"  # offline | auto | real
 
 
 class DemoCRequest(BaseModel):
@@ -25,12 +25,12 @@ class DemoCRequest(BaseModel):
     days: int = 30
     minutes: int = 20
     quiz_n: int = 3
-    mode: str = "offline"  # offline | auto | real
+    mode: str = "auto"  # offline | auto | real
 
 
 class AgentRunRequest(BaseModel):
     message: str
-    mode: str = "offline"  # offline | auto | real
+    mode: str = "auto"  # offline | auto | real
     context: dict = {}
 
 
@@ -57,7 +57,7 @@ class ResearchTopicRequest(BaseModel):
 
 
 class ResearchRefreshRequest(BaseModel):
-    mode: str = "offline"
+    mode: str = "auto"
 
 
 class NotionSyncRequest(BaseModel):
@@ -90,7 +90,7 @@ class FlashcardsRequest(BaseModel):
     topic: str
     source_text: str = ""
     count: int = 8
-    mode: str = "offline"
+    mode: str = "auto"
 
 
 class DeadlineRequest(BaseModel):
@@ -104,7 +104,7 @@ class QuizRunRequest(BaseModel):
     topic: str
     count: int = 5
     source_text: str = ""
-    mode: str = "offline"
+    mode: str = "auto"
 
 
 class QuizGradeRequest(BaseModel):
@@ -114,13 +114,13 @@ class QuizGradeRequest(BaseModel):
 
 class ResearchIdeaRequest(BaseModel):
     idea: str
-    mode: str = "offline"
+    mode: str = "auto"
 
 
 class GithubTrendingRequest(BaseModel):
     topic: str = "student agent"
     language: str = "Python"
-    mode: str = "offline"
+    mode: str = "auto"
 
 
 class FormatCheckRequest(BaseModel):
@@ -141,33 +141,33 @@ class TravelPlanRequest(BaseModel):
     days: int = 2
     budget: int = 500
     preferences: str = ""
-    mode: str = "offline"
+    mode: str = "auto"
 
 
 class ClubMinutesRequest(BaseModel):
     topic: str
     notes: str = ""
-    mode: str = "offline"
+    mode: str = "auto"
 
 
 class RecruitingCopyRequest(BaseModel):
     org: str
     audience: str = "大一新生"
     tone: str = "热情"
-    mode: str = "offline"
+    mode: str = "auto"
 
 
 class EmailDraftRequest(BaseModel):
     purpose: str
     recipient: str = ""
     context: str = ""
-    mode: str = "offline"
+    mode: str = "auto"
 
 
 class JobSearchRequest(BaseModel):
     query: str
     city: str = ""
-    mode: str = "offline"
+    mode: str = "auto"
 
 
 class JobSaveRequest(BaseModel):
@@ -178,7 +178,7 @@ class InterviewPlanRequest(BaseModel):
     role: str
     days: int = 7
     background: str = ""
-    mode: str = "offline"
+    mode: str = "auto"
 
 
 class InterviewPracticeRequest(BaseModel):

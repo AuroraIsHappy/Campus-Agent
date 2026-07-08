@@ -277,5 +277,170 @@
     },
     "created_at": 1783529768,
     "updated_at": 1783529768
+  },
+  {
+    "id": "task_1783530388_ad59a06c",
+    "title": "线性代数 每日 quiz",
+    "body": "{\"ok\": true, \"topic\": \"线性代数\", \"questions\": [{\"id\": \"q1\", \"question\": \"请解释：矩阵乘法、线性变换、特征值、正交分解\", \"answer\": \"围绕 矩阵乘法、线性变换、特征值、正交分解 给出定义、例子和一个易错点。\", \"rubric\": [\"定义准确\", \"有具体例子\", \"能说明易错点\"]}, {\"id\": \"q2\", \"question\": \"请解释：矩阵乘法、线性变换、特征值、正交分解\", \"answer\": \"围绕 矩阵乘法、线性变换、特征值、正交分解 给出定义、例子和一个易错点。\", \"rubric\": [\"定义准确\", \"有具体例子\", \"能说明易错点\"]}, {\"id\": \"q3\", \"question\": \"请解释：矩阵乘法、线性变换、特征值、正交分解\", \"answer\": \"围绕 矩阵乘法、线性变换、特征值、正交分解 给出定义、例子和一个易错点。\", \"rubric\": [\"定义准确\", \"有具体例子\", \"能说明易错点\"]}, {\"id\": \"q4\", \"question\": \"请解释：矩阵乘法、线性变换、特征值、正交分解\", \"answer\": \"围绕 矩阵乘法、线性变换、特征值、正交分解 给出定义、例子和一个易错点。\", \"rubric\": [\"定义准确\", \"有具体例子\", \"能说明易错点\"]}], \"source_mode\": \"local\"}",
+    "status": "done",
+    "domain": "learning",
+    "run_id": "run_20260709_010628_f6acc398",
+    "due": "",
+    "metadata": {
+      "intent": "quiz",
+      "workflow": "learning_quiz_run"
+    },
+    "created_at": 1783530388,
+    "updated_at": 1783530388
+  },
+  {
+    "id": "task_1783530408_ad0a3061",
+    "title": "GitHub trending: student agent",
+    "body": "{\"ok\": true, \"source_mode\": \"fallback_offline\", \"source_error\": \"\", \"summary\": \"为 student agent 生成 3 个本地 fallback 项目候选。\", \"items\": [{\"name\": \"student-agent-starter\", \"url\": \"https://github.com/example/starter\", \"language\": \"Python\", \"stars\": 1240, \"reason\": \"适合作为入门工程模板\"}, {\"name\": \"student-agent-rag\", \"url\": \"https://github.com/example/rag\", \"language\": \"Python\", \"stars\": 980, \"reason\": \"包含检索、评测和本地运行示例\"}, {\"name\": \"student-agent-eval\", \"url\": \"https://github.com/example/eval\", \"language\": \"Python\", \"stars\": 720, \"reason\": \"适合做论文/项目复现实验\"}], \"questions\": [\"项目是否活跃？\", \"README 是否可复现？\", \"license 是否允许使用？\"]}",
+    "status": "done",
+    "domain": "research",
+    "run_id": "run_20260709_010648_eecc0ac0",
+    "due": "",
+    "metadata": {
+      "intent": "github_trending",
+      "workflow": "research_github_trending"
+    },
+    "created_at": 1783530408,
+    "updated_at": 1783530408
+  },
+  {
+    "id": "task_1783530417_9643cb8f",
+    "title": "GitHub trending: doctor agent",
+    "body": "{\"ok\": true, \"source_mode\": \"fallback_offline\", \"source_error\": \"\", \"summary\": \"为 doctor agent 生成 3 个本地 fallback 项目候选。\", \"items\": [{\"name\": \"doctor-agent-starter\", \"url\": \"https://github.com/example/starter\", \"language\": \"Python\", \"stars\": 1240, \"reason\": \"适合作为入门工程模板\"}, {\"name\": \"doctor-agent-rag\", \"url\": \"https://github.com/example/rag\", \"language\": \"Python\", \"stars\": 980, \"reason\": \"包含检索、评测和本地运行示例\"}, {\"name\": \"doctor-agent-eval\", \"url\": \"https://github.com/example/eval\", \"language\": \"Python\", \"stars\": 720, \"reason\": \"适合做论文/项目复现实验\"}], \"questions\": [\"项目是否活跃？\", \"README 是否可复现？\", \"license 是否允许使用？\"]}",
+    "status": "done",
+    "domain": "research",
+    "run_id": "run_20260709_010657_3b07f75e",
+    "due": "",
+    "metadata": {
+      "intent": "github_trending",
+      "workflow": "research_github_trending"
+    },
+    "created_at": 1783530417,
+    "updated_at": 1783530417
+  },
+  {
+    "id": "task_1783530420_813a10b9",
+    "title": "GitHub trending: doctor agent",
+    "body": "{\"ok\": true, \"source_mode\": \"fallback_offline\", \"source_error\": \"\", \"summary\": \"为 doctor agent 生成 3 个本地 fallback 项目候选。\", \"items\": [{\"name\": \"doctor-agent-starter\", \"url\": \"https://github.com/example/starter\", \"language\": \"Python\", \"stars\": 1240, \"reason\": \"适合作为入门工程模板\"}, {\"name\": \"doctor-agent-rag\", \"url\": \"https://github.com/example/rag\", \"language\": \"Python\", \"stars\": 980, \"reason\": \"包含检索、评测和本地运行示例\"}, {\"name\": \"doctor-agent-eval\", \"url\": \"https://github.com/example/eval\", \"language\": \"Python\", \"stars\": 720, \"reason\": \"适合做论文/项目复现实验\"}], \"questions\": [\"项目是否活跃？\", \"README 是否可复现？\", \"license 是否允许使用？\"]}",
+    "status": "done",
+    "domain": "research",
+    "run_id": "run_20260709_010700_a29e8423",
+    "due": "",
+    "metadata": {
+      "intent": "github_trending",
+      "workflow": "research_github_trending"
+    },
+    "created_at": 1783530420,
+    "updated_at": 1783530420
+  },
+  {
+    "id": "task_1783530422_03b9e407",
+    "title": "我想研究本科生个人秘书 agent 如何做长期记忆",
+    "body": "{\"ok\": true, \"mode\": \"auto\", \"source_mode\": \"real\", \"source_error\": \"real_adapter:academic-search\", \"topic_id\": \"agent-1783530422\", \"topic\": {\"id\": \"agent-1783530422\", \"title\": \"我想研究本科生个人秘书 agent 如何做长期记忆\", \"query\": \"我想研究本科生个人秘书 agent 如何做长期记忆\", \"keywords\": [], \"cadence\": \"weekly\", \"created_at\": 1783530422}, \"summary\": \"本次为 我想研究本科生个人秘书 agent 如何做长期记忆 找到 2 篇候选论文，建议先读综述再读方法论文。\", \"papers\": [{\"title\": \"我想研究本科生个人秘书 agent 如何做长期记忆: A Practical Survey\", \"url\": \"https://arxiv.org/abs/0000.00001\", \"authors\": [\"Offline Demo\"], \"year\": 2026, \"venue\": \"arXiv\", \"abstract\": \"Survey-style overview for 我想研究本科生个人秘书 agent 如何做长期记忆, useful as a first reading map.\", \"source\": \"academic-search\", \"score\": 0.91, \"reasons\": [\"主题匹配\", \"适合快速建立背景\", \"real adapter found built-in skill: academic-search\"]}, {\"title\": \"Recent Methods for 我想研究本科生个人秘书 agent 如何做长期记忆\", \"url\": \"https://arxiv.org/abs/0000.00002\", \"authors\": [\"Offline Demo\"], \"year\": 2025, \"venue\": \"arXiv\", \"abstract\": \"Method-focused paper candidates around 我想研究本科生个人秘书 agent 如何做长期记忆.\", \"source\": \"academic-search\", \"score\": 0.86, \"reasons\": [\"方法导向\", \"便于整理笔记\", \"real adapter found built-in skill: academic-search\"]}], \"questions\": [\"这篇论文解决的核心问题是什么？\", \"方法和已有工作相比新增了什么假设？\", \"哪些结论可以转化成你的研究笔记或实验计划？\"], \"created_at\": 1783530422, \"note_path\": \"C:\\\\Users\\\\Lenovo\\\\Desktop\\\\your_secretary\\\\student-secretary-agent\\\\.campus-devtest\\\\notes\\\\research\\\\agent-1783530422.md\", \"idea\": \"我想研究本科生个人秘书 agent 如何做长期记忆\", \"artifacts\": []}",
+    "status": "done",
+    "domain": "research",
+    "run_id": "run_20260709_010702_050bae04",
+    "due": "",
+    "metadata": {
+      "intent": "research_idea",
+      "workflow": "research_idea"
+    },
+    "created_at": 1783530422,
+    "updated_at": 1783530422
+  },
+  {
+    "id": "task_1783530459_e8279d9a",
+    "title": "健康 check-in",
+    "body": "{\"ok\": true, \"record\": {\"date\": \"2026-07-09\", \"mood\": \"还不错\", \"sleep_hours\": 7.0, \"exercise\": \"散步 30 分钟\", \"note\": \"\", \"created_at\": 1783530459}, \"records\": [{\"date\": \"2026-07-09\", \"mood\": \"还不错\", \"sleep_hours\": 7.0, \"exercise\": \"散步 30 分钟\", \"note\": \"\", \"created_at\": 1783530459}]}",
+    "status": "done",
+    "domain": "life",
+    "run_id": "run_20260709_010739_1d312030",
+    "due": "",
+    "metadata": {
+      "intent": "health",
+      "workflow": "life_health"
+    },
+    "created_at": 1783530459,
+    "updated_at": 1783530459
+  },
+  {
+    "id": "task_1783530462_117cf519",
+    "title": "上海 旅行计划",
+    "body": "{\"ok\": true, \"destination\": \"上海\", \"days\": 2, \"preferences\": \"\", \"itinerary\": [{\"day\": 1, \"morning\": \"上海 城市/校园路线\", \"afternoon\": \"博物馆/公园/书店\", \"evening\": \"轻松晚餐 + 复盘照片\", \"budget\": 400}, {\"day\": 2, \"morning\": \"上海 城市/校园路线\", \"afternoon\": \"博物馆/公园/书店\", \"evening\": \"轻松晚餐 + 复盘照片\", \"budget\": 400}], \"source_mode\": \"local\"}",
+    "status": "done",
+    "domain": "life",
+    "run_id": "run_20260709_010742_947ab0cb",
+    "due": "",
+    "metadata": {
+      "intent": "travel",
+      "workflow": "life_travel_plan"
+    },
+    "created_at": 1783530462,
+    "updated_at": 1783530462
+  },
+  {
+    "id": "task_1783530470_8f0b619d",
+    "title": "AI 产品经理实习生 面试计划",
+    "body": "{\"ok\": true, \"role\": \"AI 产品经理实习生\", \"days\": 7, \"background\": \"\", \"plan\": [{\"day\": 1, \"focus\": \"岗位拆解\", \"task\": \"准备 AI 产品经理实习生：岗位拆解\", \"minutes\": 45}, {\"day\": 2, \"focus\": \"项目故事\", \"task\": \"准备 AI 产品经理实习生：项目故事\", \"minutes\": 45}, {\"day\": 3, \"focus\": \"基础知识\", \"task\": \"准备 AI 产品经理实习生：基础知识\", \"minutes\": 45}, {\"day\": 4, \"focus\": \"算法/案例\", \"task\": \"准备 AI 产品经理实习生：算法/案例\", \"minutes\": 45}, {\"day\": 5, \"focus\": \"模拟问答\", \"task\": \"准备 AI 产品经理实习生：模拟问答\", \"minutes\": 45}, {\"day\": 6, \"focus\": \"复盘补缺\", \"task\": \"准备 AI 产品经理实习生：复盘补缺\", \"minutes\": 45}, {\"day\": 7, \"focus\": \"最终演练\", \"task\": \"准备 AI 产品经理实习生：最终演练\", \"minutes\": 45}], \"questions\": [\"请介绍一个最能体现你适合 AI 产品经理实习生 的项目。\", \"遇到冲突或卡点时你如何推进？\", \"你希望这段实习带来什么成长？\"]}",
+    "status": "done",
+    "domain": "career",
+    "run_id": "run_20260709_010750_2f2d06bc",
+    "due": "",
+    "metadata": {
+      "intent": "interview_plan",
+      "workflow": "career_interview_plan"
+    },
+    "created_at": 1783530470,
+    "updated_at": 1783530470
+  },
+  {
+    "id": "task_1783530527_006c1bd7",
+    "title": "网球队 招新文案",
+    "body": "{\"ok\": true, \"copy\": {\"headline\": \"加入网球队，把你的想法做成真实项目\", \"body\": \"面向大一新生，我们准备了低门槛培训、项目搭档和展示机会。欢迎喜欢行动的人来聊聊。\", \"poster_points\": [\"低门槛\", \"有 mentor\", \"能产出作品\", \"氛围友好\"], \"tone\": \"热情\"}}",
+    "status": "done",
+    "domain": "club",
+    "run_id": "run_20260709_010847_0c95a356",
+    "due": "",
+    "metadata": {
+      "intent": "recruiting_copy",
+      "workflow": "club_recruiting_copy"
+    },
+    "created_at": 1783530527,
+    "updated_at": 1783530527
+  },
+  {
+    "id": "task_1783530829_b2616bd1",
+    "title": "GitHub trending: student agent",
+    "body": "{\"ok\": true, \"source_mode\": \"fallback_offline\", \"source_error\": \"\", \"summary\": \"为 student agent 生成 3 个本地 fallback 项目候选。\", \"items\": [{\"name\": \"student-agent-starter\", \"url\": \"https://github.com/example/starter\", \"language\": \"Python\", \"stars\": 1240, \"reason\": \"适合作为入门工程模板\"}, {\"name\": \"student-agent-rag\", \"url\": \"https://github.com/example/rag\", \"language\": \"Python\", \"stars\": 980, \"reason\": \"包含检索、评测和本地运行示例\"}, {\"name\": \"student-agent-eval\", \"url\": \"https://github.com/example/eval\", \"language\": \"Python\", \"stars\": 720, \"reason\": \"适合做论文/项目复现实验\"}], \"questions\": [\"项目是否活跃？\", \"README 是否可复现？\", \"license 是否允许使用？\"]}",
+    "status": "done",
+    "domain": "research",
+    "run_id": "run_20260709_011349_99bd48e0",
+    "due": "",
+    "metadata": {
+      "intent": "github_trending",
+      "workflow": "research_github_trending"
+    },
+    "created_at": 1783530829,
+    "updated_at": 1783530829
+  },
+  {
+    "id": "task_1783530836_3d2b7e1a",
+    "title": "GitHub trending: agent",
+    "body": "{\"ok\": true, \"source_mode\": \"fallback_offline\", \"source_error\": \"\", \"summary\": \"为 agent 生成 3 个本地 fallback 项目候选。\", \"items\": [{\"name\": \"agent-starter\", \"url\": \"https://github.com/example/starter\", \"language\": \"Python\", \"stars\": 1240, \"reason\": \"适合作为入门工程模板\"}, {\"name\": \"agent-rag\", \"url\": \"https://github.com/example/rag\", \"language\": \"Python\", \"stars\": 980, \"reason\": \"包含检索、评测和本地运行示例\"}, {\"name\": \"agent-eval\", \"url\": \"https://github.com/example/eval\", \"language\": \"Python\", \"stars\": 720, \"reason\": \"适合做论文/项目复现实验\"}], \"questions\": [\"项目是否活跃？\", \"README 是否可复现？\", \"license 是否允许使用？\"]}",
+    "status": "done",
+    "domain": "research",
+    "run_id": "run_20260709_011356_9dfc8f6a",
+    "due": "",
+    "metadata": {
+      "intent": "github_trending",
+      "workflow": "research_github_trending"
+    },
+    "created_at": 1783530836,
+    "updated_at": 1783530836
   }
 ]
