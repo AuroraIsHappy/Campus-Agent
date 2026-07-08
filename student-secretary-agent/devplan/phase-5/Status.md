@@ -33,10 +33,10 @@
 - ⏳ FE-T4 `frontend/electron/main.ts` 壳
 - ⏳ FE-T5 `npm run build` 0 错（P5-FE）
 
-### 4. 移动适配
-- ⏳ MOB-T1 `campus/mobile/{__init__,ports,feishu}.py`（PushPort + FeishuPusher 真 subprocess `hermes send`）
-- ⏳ MOB-T2 `campus/mobile/{qq_bot,wecom,cli}.py`（纯端口+注入 sender）
-- ⏳ MOB-T3 `tests/mobile/test_core.py` 全绿（P5-MOB1/MOB2）
+### 4. 移动适配 ✅ DONE
+- ✅ MOB-T1 `campus/mobile/{__init__,ports,feishu}.py`（PushPort + PushReceipt + FeishuPusher 真 subprocess `hermes send --to feishu:`）
+- ✅ MOB-T2 `campus/mobile/{qq_bot,wecom,cli}.py`（QQBotPusher/WeComPusher 纯端口+注入 sender；cli.push 分派）
+- ✅ MOB-T3 `tests/mobile/test_core.py` → **12 passed**（P5-MOB1 飞书命令形状+rc / MOB2 端口注入+无凭证降级）
 
 ### 5. 成本路由 ✅ DONE
 - ✅ COST-T1 `campus/meta_agent/cost.py`（角色分档 CHEAP/MID/STRONG + DEFAULT_ROLE_TIER + TIER_MULT + tier_for/estimate_cost/route_table + BudgetGate）
@@ -48,4 +48,4 @@
 - ⏳ V-T2 `Verification.md` 落档 + Status 全 ✅ → 删 /loop cron → M5
 
 ## 当前进度指针
-**下一步**：MOB-T1（campus/mobile/{__init__,ports,feishu}.py：PushPort + FeishuPusher 真 subprocess `hermes send`）。已完成 Demo B 后端 + 成本路由 + API（3/5 块，**188 passed** 全量）。前端待 ultracode Workflow。
+**下一步**：FE-T1（frontend/ scaffold：vite+react+ts+tailwind；用 ultracode Workflow 并行建组件）。已完成 Demo B + 成本 + API + 移动（**4/5 块，200 passed** 全量）。仅剩前端 + 文档收尾。
