@@ -25,37 +25,6 @@ async function jdel<T>(path: string): Promise<T> {
   return (await r.json()) as T;
 }
 
-export interface DemoBResult {
-  ok: boolean;
-  run_dir: string;
-  final_status: string;
-  extraction_rate: number;
-  kg_nodes: number;
-  resource_count: number;
-  plan_days: number;
-}
-export interface DemoAResult {
-  ok: boolean;
-  mode: string;
-  run_dir: string;
-  final_status?: string;
-  outreach_count: number;
-  email_segments: number;
-  artifacts?: string[];
-  error?: string;
-  real_llm?: DemoStatus["llm"];
-}
-export interface DemoCResult {
-  ok: boolean;
-  mode: string;
-  run_dir: string;
-  recommendation?: string;
-  days: number;
-  quiz_questions: number;
-  plan_md_head?: string;
-  error?: string;
-  real_llm?: DemoStatus["llm"];
-}
 export interface DemoStatus {
   ok: boolean;
   hermes_home: string;
@@ -181,12 +150,6 @@ export const api = {
   agentRunDetail: (id: string) => jget<RunRecord & { ok: boolean }>(`/agent/runs/${id}`),
   settingsStatus: () => jget<SettingsStatus>("/settings/status"),
   demoStatus: () => jget<DemoStatus>("/demo/status"),
-  demoARun: (body: { sample_text?: string; topic: string; region: string; window: string; mode?: string }) =>
-    jpost<DemoAResult>("/demo_a/run", body),
-  demoBRun: (path: string, exam_date: string, opts: { free_minutes?: number; start_date?: string; topic?: string } = {}) =>
-    jpost<DemoBResult>("/demo_b/run", { path, exam_date, ...opts }),
-  demoCRun: (body: { goal: string; days?: number; minutes?: number; quiz_n?: number; mode?: string }) =>
-    jpost<DemoCResult>("/demo_c/run", body),
   recall: (query: string, k = 5) => jpost<{ results: MemoryHit[] }>("/memory", { query, k }),
   onboard: (answers: Record<string, string>) => jpost<Profile>("/onboarding", { answers }),
   profile: () => jget<Profile>("/profile"),

@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { api, type DemoAResult, type DemoBResult, type DemoCResult, type DemoStatus, type MemoryHit, type Profile, type Task, type CalEvent, type Anniversary, type DailyLog, type ResearchDigest, type ResearchTopic, type RunRecord, type AgentRunResult, type SettingsStatus } from "./api";
+import { api, type DemoStatus, type MemoryHit, type Profile, type Task, type CalEvent, type Anniversary, type DailyLog, type ResearchDigest, type ResearchTopic, type RunRecord, type AgentRunResult, type SettingsStatus } from "./api";
 
 function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
@@ -287,94 +287,6 @@ export function OnboardingPage() {
     </>
   );
 }
-
-/* ---------------- Demo B ---------------- */
-export function DemoCenterPage() {
-  const [status, setStatus] = useState<DemoStatus | null>(null);
-  const [topic, setTopic] = useState("校园低碳实践");
-  const [region, setRegion] = useState("北京高校社区");
-  const [goal, setGoal] = useState("7 天入门机器学习");
-  const [days, setDays] = useState(7);
-  const [aRes, setARes] = useState<DemoAResult | null>(null);
-  const [cRes, setCRes] = useState<DemoCResult | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-  const [busy, setBusy] = useState<string | null>(null);
-
-  useEffect(() => {
-    api.demoStatus().then(setStatus).catch((e: Error) => setErr(e.message));
-  }, []);
-
-  const runA = () => {
-    setBusy("a"); setErr(null);
-    api.demoARun({ topic, region, window: "2026 暑期" })
-      .then(setARes).catch((e: Error) => setErr(e.message)).finally(() => setBusy(null));
-  };
-  const runC = () => {
-    setBusy("c"); setErr(null);
-    api.demoCRun({ goal, days, minutes: 20, quiz_n: 3 })
-      .then(setCRes).catch((e: Error) => setErr(e.message)).finally(() => setBusy(null));
-  };
-
-  return (
-    <>
-      <PageHeader title="Demo 中心" subtitle="社会实践策划、学习计划、真实 LLM 状态检查。" />
-      <Err e={err} />
-      <div className="mb-4 grid gap-4 lg:grid-cols-3">
-        <Card title="LLM 状态">
-          {status && (
-            <div className="mt-3 text-sm text-ink-700/70">
-              <p>LLM：{status.llm.ok ? "可用" : "未就绪"}</p>
-              <p>Hermes：{status.llm.hermes_importable ? "import ok" : "不可导入"}</p>
-              <p>Skills dir：{status.external_dir_configured ? "已挂载" : "未挂载"}</p>
-              <p>内置技能：{status.vendor.length + status.campus.length}</p>
-              {status.missing_core.length > 0 && <p className="text-amber-700">缺少：{status.missing_core.join(", ")}</p>}
-              {!status.llm.ok && status.llm.fixes && status.llm.fixes.length > 0 && (
-                <p className="mt-2 text-amber-700">{status.llm.fixes[0]}</p>
-              )}
-            </div>
-          )}
-        </Card>
-        <Card title="Demo A 社会实践">
-          <div className="grid gap-2 text-sm">
-            <input className="campus-input" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="实践主题" />
-            <input className="campus-input" value={region} onChange={(e) => setRegion(e.target.value)} placeholder="地区" />
-            <button className="campus-btn" onClick={runA} disabled={busy !== null}>{busy === "a" ? "生成中..." : "生成策划案"}</button>
-          </div>
-          {aRes && (
-            <div className="mt-3 grid gap-2 text-sm">
-              <Metric label="状态" value={aRes.ok ? "成功" : "失败"} />
-              <Metric label="外联对象" value={String(aRes.outreach_count)} />
-              <Metric label="邮件草稿" value={String(aRes.email_segments)} />
-              <Metric label="模式" value={aRes.mode} />
-              <pre className="overflow-x-auto rounded-lg bg-ink-900 p-2 text-xs text-ink-100">{aRes.error || aRes.run_dir}</pre>
-              {aRes.artifacts && aRes.artifacts.length > 0 && (
-                <p className="text-xs text-ink-700/60">产物 {aRes.artifacts.length} 个，已写入 run 目录。</p>
-              )}
-            </div>
-          )}
-        </Card>
-        <Card title="Demo C 学习计划">
-          <div className="grid gap-2 text-sm">
-            <input className="campus-input" value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="学习目标" />
-            <input className="campus-input" type="number" value={days} onChange={(e) => setDays(Number(e.target.value))} />
-            <button className="campus-btn" onClick={runC} disabled={busy !== null}>{busy === "c" ? "生成中..." : "生成学习计划"}</button>
-          </div>
-          {cRes && (
-            <div className="mt-3 grid gap-2 text-sm">
-              <Metric label="状态" value={cRes.ok ? "成功" : "失败"} />
-              <Metric label="天数" value={String(cRes.days)} />
-              <Metric label="Quiz" value={String(cRes.quiz_questions)} />
-              <Metric label="模式" value={cRes.mode} />
-              <pre className="overflow-x-auto rounded-lg bg-ink-900 p-2 text-xs text-ink-100">{cRes.error || cRes.run_dir}</pre>
-              {cRes.plan_md_head && <p className="text-xs text-ink-700/60">{cRes.plan_md_head}</p>}
-            </div>
-          )}
-        </Card>
-      </div>
-    </>
-  );
-}
-
 export function LearningPage() {
   const [topic, setTopic] = useState("线性代数");
   const [source, setSource] = useState("矩阵乘法、线性变换、特征值、正交分解");
@@ -441,63 +353,9 @@ export function LearningPage() {
           {grade && <p className="mt-3 rounded-lg bg-campus-50 p-3 text-sm text-campus-800">得分 {grade.score} · {grade.plan_adjustment}</p>}
         </Card>
       </div>
-      <DemoBPage />
     </>
   );
 }
-
-export function DemoBPage() {
-  const [path, setPath] = useState("");
-  const [exam, setExam] = useState("");
-  const [free, setFree] = useState(300);
-  const [res, setRes] = useState<DemoBResult | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  const run = () => {
-    setBusy(true);
-    setErr(null);
-    api.demoBRun(path, exam, { free_minutes: free })
-      .then(setRes)
-      .catch((e: Error) => setErr(e.message))
-      .finally(() => setBusy(false));
-  };
-
-  return (
-    <>
-      <PageHeader title="Demo B · 讲义复习计划" subtitle="扫描讲义 → 知识图谱 → 期末复习计划 + 每日 quiz。" />
-      <Card>
-        <div className="grid gap-3 md:grid-cols-3">
-          <label className="text-sm md:col-span-2">
-            讲义路径
-            <input className="campus-input mt-1" value={path} onChange={(e) => setPath(e.target.value)} placeholder="~/Courses/.../lectures" />
-          </label>
-          <label className="text-sm">
-            考试日期
-            <input className="campus-input mt-1" type="date" value={exam} onChange={(e) => setExam(e.target.value)} />
-          </label>
-          <label className="text-sm">
-            可用时间（分钟/天）
-            <input className="campus-input mt-1" type="number" value={free} onChange={(e) => setFree(Number(e.target.value))} />
-          </label>
-        </div>
-        <button className="campus-btn mt-4" onClick={run} disabled={busy || !path || !exam}>{busy ? "生成中…" : "生成复习计划"}</button>
-        <Err e={err} />
-        {res && (
-          <div className="mt-4 grid gap-3 md:grid-cols-4">
-            <Metric label="状态" value={res.ok ? "成功" : "失败"} />
-            <Metric label="知识节点" value={String(res.kg_nodes)} />
-            <Metric label="资源" value={String(res.resource_count)} />
-            <Metric label="计划天数" value={String(res.plan_days)} />
-            <pre className="md:col-span-4 overflow-x-auto rounded-lg bg-ink-900 p-3 text-xs text-ink-100">{res.run_dir}</pre>
-          </div>
-        )}
-      </Card>
-    </>
-  );
-}
-
-/* ---------------- Research + Notes ---------------- */
 export function ResearchPage() {
   const [topics, setTopics] = useState<ResearchTopic[]>([]);
   const [runs, setRuns] = useState<ResearchDigest[]>([]);
@@ -509,7 +367,7 @@ export function ResearchPage() {
   const [githubTopic, setGithubTopic] = useState("student agent");
   const [githubItems, setGithubItems] = useState<{ name: string; url: string; stars: number; reason: string }[]>([]);
   const [formatTitle, setFormatTitle] = useState("Campus-Agent: A Personal Secretary for Students");
-  const [manuscript, setManuscript] = useState("Abstract: ...\nFig. 1 shows the system.\nReferences\n[1] Demo.");
+  const [manuscript, setManuscript] = useState("Abstract: ...\nFig. 1 shows the system.\nReferences\n[1] Author et al.");
   const [formatItems, setFormatItems] = useState<{ name: string; passed: boolean; detail: string }[]>([]);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -917,7 +775,7 @@ export function ClubPage() {
   const [busy, setBusy] = useState<string | null>(null);
   return (
     <>
-      <PageHeader title="社团 / 实践" subtitle="会议纪要、招新文案、邮件草稿和社会实践 Demo。" />
+      <PageHeader title="社团 / 实践" subtitle="会议纪要、招新文案、邮件草稿。" />
       <Err e={err} />
       <div className="grid gap-4 lg:grid-cols-3">
         <Card title="会议纪要">
@@ -937,7 +795,6 @@ export function ClubPage() {
           {email && <pre className="mt-3 whitespace-pre-wrap rounded-lg bg-ink-900 p-3 text-xs text-ink-100">{email}</pre>}
         </Card>
       </div>
-      <DemoCenterPage />
     </>
   );
 }

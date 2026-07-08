@@ -660,5 +660,35 @@
     },
     "created_at": 1783534591,
     "updated_at": 1783534591
+  },
+  {
+    "id": "task_1783535738_b5e36abe",
+    "title": "帮我生成3张数据结构flashcards",
+    "body": "帮我生成3张数据结构flashcards",
+    "status": "done",
+    "domain": "learning",
+    "run_id": "run_20260709_023331_d822db59",
+    "due": "",
+    "metadata": {
+      "intent": "learning_plan",
+      "workflow": "demo_c_learning_plan"
+    },
+    "created_at": 1783535738,
+    "updated_at": 1783535738
+  },
+  {
+    "id": "task_1783535913_3dd38220",
+    "title": "搜索实习：AI 产品经理",
+    "body": "{\"ok\": true, \"source_mode\": \"real_llm\", \"source_error\": \"\", \"jobs\": [{\"id\": \"job_1\", \"title\": \"AI产品经理实习生\", \"company\": \"商汤科技\", \"city\": \"上海\", \"url\": \"\", \"fit\": 92, \"reason\": \"商汤是计算机视觉与深度学习领军企业,提供完整的AI模型训练到产品落地全链路实践,适合学习AI模型工程化与B端产品化,要求技术理解力与数据分析能力,匹配度高\"}, {\"id\": \"job_2\", \"title\": \"大模型产品经理实习生\", \"company\": \"MiniMax\", \"city\": \"上海\", \"url\": \"\", \"fit\": 88, \"reason\": \"MiniMax专注AGI大模型,实习生可参与对话产品或搜索产品的迭代,接触提示词工程、RAG等前沿技术,需产品思维与用户研究能力,工作氛围开放,适合快速成长\"}, {\"id\": \"job_3\", \"title\": \"智能对话产品经理实习生\", \"company\": \"达观数据\", \"city\": \"上海\", \"url\": \"\", \"fit\": 85, \"reason\": \"达观在NLP与企业知识库领域深耕,实习生负责文档智能与问答系统的需求分析与功能设计,锻炼项目管理与跨团队协作能力,流程规范,适合积累企业级AI产品经验\"}], \"query\": \"AI 产品经理\", \"city\": \"上海\"}",
+    "status": "done",
+    "domain": "career",
+    "run_id": "run_20260709_023832_30e44e5a",
+    "due": "",
+    "metadata": {
+      "intent": "job_search",
+      "workflow": "career_jobs_search"
+    },
+    "created_at": 1783535913,
+    "updated_at": 1783535913
   }
 ]

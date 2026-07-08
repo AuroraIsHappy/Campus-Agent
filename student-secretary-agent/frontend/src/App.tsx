@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import {
-  DashboardPage, SecretaryPage, OnboardingPage, LearningPage, DemoBPage, DemoCenterPage, KanbanPage, PersonaPage, MemoryPage, LifePage, ResearchPage,
+  DashboardPage, SecretaryPage, OnboardingPage, LearningPage, KanbanPage, PersonaPage, MemoryPage, LifePage, ResearchPage,
   ClubPage, CareerPage, SettingsPage,
 } from "./pages";
 import { api } from "./api";
 
-type View = "dashboard" | "secretary" | "learning" | "research" | "life" | "club" | "career" | "kanban" | "memory" | "settings" | "onboarding" | "demo" | "demob" | "persona";
+type View = "dashboard" | "secretary" | "learning" | "research" | "life" | "club" | "career" | "kanban" | "memory" | "settings" | "onboarding" | "persona";
 
 interface NavSection {
   title: string;
@@ -97,8 +97,6 @@ export default function App() {
           {view === "secretary" && <SecretaryPage />}
           {view === "learning" && <LearningPage />}
           {view === "onboarding" && <OnboardingPage />}
-          {view === "demo" && <DemoCenterPage />}
-          {view === "demob" && <DemoBPage />}
           {view === "research" && <ResearchPage />}
           {view === "life" && <LifePage />}
           {view === "club" && <ClubPage />}
