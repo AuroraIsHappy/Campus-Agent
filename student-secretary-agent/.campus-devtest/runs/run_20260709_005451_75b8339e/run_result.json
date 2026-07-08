@@ -1,0 +1,53 @@
+{
+  "ok": true,
+  "topic": "daily",
+  "questions": [
+    {
+      "id": "dq1",
+      "question": "请解释/回忆：OS card 1",
+      "answer": "围绕 OS card 1 给出定义、例子和一个易错点。",
+      "rubric": [
+        "定义准确",
+        "有具体例子",
+        "能说明易错点"
+      ],
+      "review_node_id": "task_1783529691_c667b9ca"
+    },
+    {
+      "id": "dq2",
+      "question": "请解释/回忆：OS card 2",
+      "answer": "围绕 OS card 2 给出定义、例子和一个易错点。",
+      "rubric": [
+        "定义准确",
+        "有具体例子",
+        "能说明易错点"
+      ],
+      "review_node_id": "task_1783529691_f99b297b"
+    },
+    {
+      "id": "dq3",
+      "question": "请解释/回忆：OS card 1",
+      "answer": "围绕 OS card 1 给出定义、例子和一个易错点。",
+      "rubric": [
+        "定义准确",
+        "有具体例子",
+        "能说明易错点"
+      ],
+      "review_node_id": "task_1783529691_14bf6e91"
+    },
+    {
+      "id": "dq4",
+      "question": "请解释/回忆：OS card 2",
+      "answer": "围绕 OS card 2 给出定义、例子和一个易错点。",
+      "rubric": [
+        "定义准确",
+        "有具体例子",
+        "能说明易错点"
+      ],
+      "review_node_id": "task_1783529691_13ffdfe2"
+    }
+  ],
+  "source_mode": "local",
+  "due_review_count": 0,
+  "total_review_nodes": 4
+}

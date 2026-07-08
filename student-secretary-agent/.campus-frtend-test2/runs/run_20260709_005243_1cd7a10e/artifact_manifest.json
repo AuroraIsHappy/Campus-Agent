@@ -1,0 +1,29 @@
+{
+  "run_id": "run_20260709_005243_1cd7a10e",
+  "artifacts": [
+    {
+      "name": "Plan.md",
+      "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-frtend-test2\\runs\\run_20260709_005243_1cd7a10e\\Plan.md",
+      "kind": "document",
+      "created_at": 1783529563
+    },
+    {
+      "name": "Status.md",
+      "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-frtend-test2\\runs\\run_20260709_005243_1cd7a10e\\Status.md",
+      "kind": "document",
+      "created_at": 1783529563
+    },
+    {
+      "name": "Verification.md",
+      "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-frtend-test2\\runs\\run_20260709_005243_1cd7a10e\\Verification.md",
+      "kind": "document",
+      "created_at": 1783529563
+    },
+    {
+      "name": "run_result.json",
+      "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-frtend-test2\\runs\\run_20260709_005243_1cd7a10e\\run_result.json",
+      "kind": "json",
+      "created_at": 1783529563
+    }
+  ]
+}

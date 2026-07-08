@@ -1,0 +1,34 @@
+{
+  "ok": true,
+  "source_mode": "fallback_offline",
+  "source_error": "",
+  "summary": "为 AI 生成 3 个本地 fallback 项目候选。",
+  "items": [
+    {
+      "name": "ai-starter",
+      "url": "https://github.com/example/starter",
+      "language": "Python",
+      "stars": 1240,
+      "reason": "适合作为入门工程模板"
+    },
+    {
+      "name": "ai-rag",
+      "url": "https://github.com/example/rag",
+      "language": "Python",
+      "stars": 980,
+      "reason": "包含检索、评测和本地运行示例"
+    },
+    {
+      "name": "ai-eval",
+      "url": "https://github.com/example/eval",
+      "language": "Python",
+      "stars": 720,
+      "reason": "适合做论文/项目复现实验"
+    }
+  ],
+  "questions": [
+    "项目是否活跃？",
+    "README 是否可复现？",
+    "license 是否允许使用？"
+  ]
+}

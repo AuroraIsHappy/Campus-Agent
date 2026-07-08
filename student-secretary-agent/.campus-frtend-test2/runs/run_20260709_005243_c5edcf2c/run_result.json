@@ -1,0 +1,21 @@
+{
+  "ok": true,
+  "record": {
+    "date": "2026-07-09",
+    "mood": "ok",
+    "sleep_hours": 7.0,
+    "exercise": "",
+    "note": "",
+    "created_at": 1783529563
+  },
+  "records": [
+    {
+      "date": "2026-07-09",
+      "mood": "ok",
+      "sleep_hours": 7.0,
+      "exercise": "",
+      "note": "",
+      "created_at": 1783529563
+    }
+  ]
+}

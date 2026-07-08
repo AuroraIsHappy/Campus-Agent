@@ -1,0 +1,59 @@
+{
+  "run_id": "run_20260709_005451_dbab9193",
+  "artifacts": [
+    {
+      "name": "Plan.md",
+      "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_dbab9193\\Plan.md",
+      "kind": "document",
+      "created_at": 1783529691
+    },
+    {
+      "name": "Plan.md",
+      "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_3d290946\\Plan.md",
+      "kind": "document",
+      "created_at": 1783529691
+    },
+    {
+      "name": "Status.md",
+      "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_3d290946\\Status.md",
+      "kind": "document",
+      "created_at": 1783529691
+    },
+    {
+      "name": "Verification.md",
+      "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_3d290946\\Verification.md",
+      "kind": "document",
+      "created_at": 1783529691
+    },
+    {
+      "name": "run_result.json",
+      "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_3d290946\\run_result.json",
+      "kind": "json",
+      "created_at": 1783529691
+    },
+    {
+      "name": "artifact_manifest.json",
+      "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_3d290946\\artifact_manifest.json",
+      "kind": "manifest",
+      "created_at": 1783529691
+    },
+    {
+      "name": "Status.md",
+      "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_dbab9193\\Status.md",
+      "kind": "document",
+      "created_at": 1783529691
+    },
+    {
+      "name": "Verification.md",
+      "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_dbab9193\\Verification.md",
+      "kind": "document",
+      "created_at": 1783529691
+    },
+    {
+      "name": "run_result.json",
+      "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_dbab9193\\run_result.json",
+      "kind": "json",
+      "created_at": 1783529691
+    }
+  ]
+}

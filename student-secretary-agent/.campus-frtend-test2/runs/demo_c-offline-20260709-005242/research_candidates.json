@@ -1,0 +1,29 @@
+[
+  {
+    "title": "我想学习 Linux 官方入门文档",
+    "url": "https://example.com/docs",
+    "source_type": "doc",
+    "provider": "Official docs",
+    "year": 2026,
+    "est_minutes": 240,
+    "difficulty": "beginner"
+  },
+  {
+    "title": "我想学习 Linux 系统课程",
+    "url": "https://example.com/course",
+    "source_type": "course",
+    "provider": "Open course",
+    "year": 2025,
+    "est_minutes": 600,
+    "difficulty": "beginner"
+  },
+  {
+    "title": "我想学习 Linux 实战笔记",
+    "url": "https://example.com/notes",
+    "source_type": "blog",
+    "provider": "Community",
+    "year": 2024,
+    "est_minutes": 120,
+    "difficulty": "beginner"
+  }
+]

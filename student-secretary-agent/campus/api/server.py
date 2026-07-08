@@ -432,7 +432,7 @@ def _default_settings_status() -> dict:
     }
     return {
         "ok": True,
-        "version": "0.7.0",
+        "version": "0.8.0",
         "branch": branch,
         "campus_home": campus_home(),
         "llm": real_llm_status("auto"),

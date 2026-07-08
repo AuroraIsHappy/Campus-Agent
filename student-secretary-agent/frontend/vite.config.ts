@@ -30,6 +30,8 @@ export default defineConfig({
       "/calendar": { target: "http://localhost:8000", changeOrigin: true },
       "/anniversaries": { target: "http://localhost:8000", changeOrigin: true },
       "/daily_log": { target: "http://localhost:8000", changeOrigin: true },
+      "/admin": { target: "http://localhost:8000", changeOrigin: true },
+      "/health": { target: "http://localhost:8000", changeOrigin: true },
     },
   },
   build: { outDir: "dist", sourcemap: true },

@@ -1,0 +1,29 @@
+{
+  "run_id": "run_20260709_005451_9b9ade2d",
+  "artifacts": [
+    {
+      "name": "Plan.md",
+      "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_9b9ade2d\\Plan.md",
+      "kind": "document",
+      "created_at": 1783529691
+    },
+    {
+      "name": "Status.md",
+      "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_9b9ade2d\\Status.md",
+      "kind": "document",
+      "created_at": 1783529691
+    },
+    {
+      "name": "Verification.md",
+      "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_9b9ade2d\\Verification.md",
+      "kind": "document",
+      "created_at": 1783529691
+    },
+    {
+      "name": "run_result.json",
+      "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_9b9ade2d\\run_result.json",
+      "kind": "json",
+      "created_at": 1783529691
+    }
+  ]
+}

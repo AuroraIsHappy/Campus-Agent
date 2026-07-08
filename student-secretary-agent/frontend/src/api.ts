@@ -165,7 +165,7 @@ export interface SettingsStatus {
   llm: DemoStatus["llm"];
   skills: DemoStatus;
   notion: { ok: boolean; token_configured: boolean; database_configured?: boolean; mode?: string; local_mirror_dir?: string };
-  mobile: { ok: boolean; channels: Record<string, boolean> };
+  mobile: { ok: boolean; channels: Record<string, { ok?: boolean; configured?: boolean; error?: string; target?: string; channel?: string } | boolean> };
   providers: Record<string, boolean>;
   smoke_command: string;
 }

@@ -1,0 +1,898 @@
+{
+  "run_20260709_005451_dbab9193": {
+    "id": "run_20260709_005451_dbab9193",
+    "message": "学Linux",
+    "intent": "general_secretary",
+    "domain": "general",
+    "selected_workflow": "local_secretary",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_dbab9193",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_dbab9193\\Plan.md",
+        "kind": "document",
+        "created_at": 1783529691
+      },
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_3d290946\\Plan.md",
+        "kind": "document",
+        "created_at": 1783529691
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_3d290946\\Status.md",
+        "kind": "document",
+        "created_at": 1783529691
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_3d290946\\Verification.md",
+        "kind": "document",
+        "created_at": 1783529691
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_3d290946\\run_result.json",
+        "kind": "json",
+        "created_at": 1783529691
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_3d290946\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783529691
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_dbab9193\\Status.md",
+        "kind": "document",
+        "created_at": 1783529691
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_dbab9193\\Verification.md",
+        "kind": "document",
+        "created_at": 1783529691
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_dbab9193\\run_result.json",
+        "kind": "json",
+        "created_at": 1783529691
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_dbab9193\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783529691
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "email": "老师/同学您好：\n\n我是校园项目负责人，想就“学Linux”与您沟通。学Linux\n\n如果方便，期待约一个 15 分钟的时间确认细节。谢谢！",
+      "recipient": "",
+      "run_id": "run_20260709_005451_3d290946",
+      "artifacts": [
+        {
+          "name": "Plan.md",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_3d290946\\Plan.md",
+          "kind": "document",
+          "created_at": 1783529691
+        },
+        {
+          "name": "Status.md",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_3d290946\\Status.md",
+          "kind": "document",
+          "created_at": 1783529691
+        },
+        {
+          "name": "Verification.md",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_3d290946\\Verification.md",
+          "kind": "document",
+          "created_at": 1783529691
+        },
+        {
+          "name": "run_result.json",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_3d290946\\run_result.json",
+          "kind": "json",
+          "created_at": 1783529691
+        },
+        {
+          "name": "artifact_manifest.json",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_3d290946\\artifact_manifest.json",
+          "kind": "manifest",
+          "created_at": 1783529691
+        }
+      ]
+    },
+    "context": {},
+    "created_at": 1783529691,
+    "updated_at": 1783529691
+  },
+  "run_20260709_005451_3d290946": {
+    "id": "run_20260709_005451_3d290946",
+    "message": "学Linux",
+    "intent": "email_draft",
+    "domain": "club",
+    "selected_workflow": "club_email_draft",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_3d290946",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_3d290946\\Plan.md",
+        "kind": "document",
+        "created_at": 1783529691
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_3d290946\\Status.md",
+        "kind": "document",
+        "created_at": 1783529691
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_3d290946\\Verification.md",
+        "kind": "document",
+        "created_at": 1783529691
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_3d290946\\run_result.json",
+        "kind": "json",
+        "created_at": 1783529691
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_3d290946\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783529691
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "email": "老师/同学您好：\n\n我是校园项目负责人，想就“学Linux”与您沟通。学Linux\n\n如果方便，期待约一个 15 分钟的时间确认细节。谢谢！",
+      "recipient": ""
+    },
+    "context": {},
+    "created_at": 1783529691,
+    "updated_at": 1783529691
+  },
+  "run_20260709_005451_9b9ade2d": {
+    "id": "run_20260709_005451_9b9ade2d",
+    "message": "生成 OS flashcards",
+    "intent": "flashcards",
+    "domain": "learning",
+    "selected_workflow": "learning_flashcards",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_9b9ade2d",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_9b9ade2d\\Plan.md",
+        "kind": "document",
+        "created_at": 1783529691
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_9b9ade2d\\Status.md",
+        "kind": "document",
+        "created_at": 1783529691
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_9b9ade2d\\Verification.md",
+        "kind": "document",
+        "created_at": 1783529691
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_9b9ade2d\\run_result.json",
+        "kind": "json",
+        "created_at": 1783529691
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_9b9ade2d\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783529691
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "topic": "OS",
+      "flashcards": [
+        {
+          "id": "card_1",
+          "front": "OS 的核心概念 是什么？",
+          "back": "用一句话解释 OS 的核心概念，再写一个自己的例子。",
+          "tags": [
+            "OS"
+          ],
+          "due": "2026-07-09"
+        },
+        {
+          "id": "card_2",
+          "front": "OS 的典型例题 是什么？",
+          "back": "用一句话解释 OS 的典型例题，再写一个自己的例子。",
+          "tags": [
+            "OS"
+          ],
+          "due": "2026-07-10"
+        }
+      ],
+      "source_mode": "local",
+      "review_nodes": 2
+    },
+    "context": {},
+    "created_at": 1783529691,
+    "updated_at": 1783529691
+  },
+  "run_20260709_005451_bd13cb03": {
+    "id": "run_20260709_005451_bd13cb03",
+    "message": "后端 面试练习",
+    "intent": "interview_practice",
+    "domain": "career",
+    "selected_workflow": "career_interview_practice",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_bd13cb03",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_bd13cb03\\Plan.md",
+        "kind": "document",
+        "created_at": 1783529691
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_bd13cb03\\Status.md",
+        "kind": "document",
+        "created_at": 1783529691
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_bd13cb03\\Verification.md",
+        "kind": "document",
+        "created_at": 1783529691
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_bd13cb03\\run_result.json",
+        "kind": "json",
+        "created_at": 1783529691
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_bd13cb03\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783529691
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "role": "后端",
+      "question": "q",
+      "answer": "a",
+      "score": 35,
+      "rubric": [
+        "结构清晰(STAR: 情境-任务-行动-结果)",
+        "有量化结果或具体产出",
+        "体现个人贡献而非团队笼统描述",
+        "与岗位 后端 的能力要求相关"
+      ],
+      "improvement_cues": [
+        "回答偏短,尝试展开具体行动和结果。",
+        "多用'我做了…'明确个人贡献。",
+        "补一个量化结果(数字/时间/规模)。"
+      ],
+      "model_answer_outline": [
+        "情境: 后端 相关的一个真实场景背景",
+        "任务: 你负责解决的具体问题",
+        "行动: 你采取的 2-3 个关键步骤(技术/沟通/取舍)",
+        "结果: 可量化的产出 + 你的收获"
+      ],
+      "follow_ups": [
+        "如果时间减半,你会优先砍掉哪个步骤?",
+        "这个项目里你最大的技术/沟通挑战是什么?"
+      ],
+      "background": "",
+      "source_mode": "local"
+    },
+    "context": {},
+    "created_at": 1783529691,
+    "updated_at": 1783529691
+  },
+  "run_20260709_005451_bf604ce2": {
+    "id": "run_20260709_005451_bf604ce2",
+    "message": "生成 OS flashcards",
+    "intent": "flashcards",
+    "domain": "learning",
+    "selected_workflow": "learning_flashcards",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_bf604ce2",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_bf604ce2\\Plan.md",
+        "kind": "document",
+        "created_at": 1783529691
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_bf604ce2\\Status.md",
+        "kind": "document",
+        "created_at": 1783529691
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_bf604ce2\\Verification.md",
+        "kind": "document",
+        "created_at": 1783529691
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_bf604ce2\\run_result.json",
+        "kind": "json",
+        "created_at": 1783529691
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_bf604ce2\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783529691
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "topic": "OS",
+      "flashcards": [
+        {
+          "id": "card_1",
+          "front": "OS 的核心概念 是什么？",
+          "back": "用一句话解释 OS 的核心概念，再写一个自己的例子。",
+          "tags": [
+            "OS"
+          ],
+          "due": "2026-07-09"
+        },
+        {
+          "id": "card_2",
+          "front": "OS 的典型例题 是什么？",
+          "back": "用一句话解释 OS 的典型例题，再写一个自己的例子。",
+          "tags": [
+            "OS"
+          ],
+          "due": "2026-07-10"
+        }
+      ],
+      "source_mode": "local",
+      "review_nodes": 2
+    },
+    "context": {},
+    "created_at": 1783529691,
+    "updated_at": 1783529691
+  },
+  "run_20260709_005451_75b8339e": {
+    "id": "run_20260709_005451_75b8339e",
+    "message": "daily 每日复习 quiz",
+    "intent": "quiz_daily",
+    "domain": "learning",
+    "selected_workflow": "learning_quiz_daily",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_75b8339e",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_75b8339e\\Plan.md",
+        "kind": "document",
+        "created_at": 1783529691
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_75b8339e\\Status.md",
+        "kind": "document",
+        "created_at": 1783529691
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_75b8339e\\Verification.md",
+        "kind": "document",
+        "created_at": 1783529691
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_75b8339e\\run_result.json",
+        "kind": "json",
+        "created_at": 1783529691
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005451_75b8339e\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783529691
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "topic": "daily",
+      "questions": [
+        {
+          "id": "dq1",
+          "question": "请解释/回忆：OS card 1",
+          "answer": "围绕 OS card 1 给出定义、例子和一个易错点。",
+          "rubric": [
+            "定义准确",
+            "有具体例子",
+            "能说明易错点"
+          ],
+          "review_node_id": "task_1783529691_c667b9ca"
+        },
+        {
+          "id": "dq2",
+          "question": "请解释/回忆：OS card 2",
+          "answer": "围绕 OS card 2 给出定义、例子和一个易错点。",
+          "rubric": [
+            "定义准确",
+            "有具体例子",
+            "能说明易错点"
+          ],
+          "review_node_id": "task_1783529691_f99b297b"
+        },
+        {
+          "id": "dq3",
+          "question": "请解释/回忆：OS card 1",
+          "answer": "围绕 OS card 1 给出定义、例子和一个易错点。",
+          "rubric": [
+            "定义准确",
+            "有具体例子",
+            "能说明易错点"
+          ],
+          "review_node_id": "task_1783529691_14bf6e91"
+        },
+        {
+          "id": "dq4",
+          "question": "请解释/回忆：OS card 2",
+          "answer": "围绕 OS card 2 给出定义、例子和一个易错点。",
+          "rubric": [
+            "定义准确",
+            "有具体例子",
+            "能说明易错点"
+          ],
+          "review_node_id": "task_1783529691_13ffdfe2"
+        }
+      ],
+      "source_mode": "local",
+      "due_review_count": 0,
+      "total_review_nodes": 4
+    },
+    "context": {},
+    "created_at": 1783529691,
+    "updated_at": 1783529691
+  },
+  "run_20260709_005608_068a4d4e": {
+    "id": "run_20260709_005608_068a4d4e",
+    "message": "学Linux",
+    "intent": "general_secretary",
+    "domain": "general",
+    "selected_workflow": "local_secretary",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_068a4d4e",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_068a4d4e\\Plan.md",
+        "kind": "document",
+        "created_at": 1783529768
+      },
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_ea5399fb\\Plan.md",
+        "kind": "document",
+        "created_at": 1783529768
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_ea5399fb\\Status.md",
+        "kind": "document",
+        "created_at": 1783529768
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_ea5399fb\\Verification.md",
+        "kind": "document",
+        "created_at": 1783529768
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_ea5399fb\\run_result.json",
+        "kind": "json",
+        "created_at": 1783529768
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_ea5399fb\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783529768
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_068a4d4e\\Status.md",
+        "kind": "document",
+        "created_at": 1783529768
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_068a4d4e\\Verification.md",
+        "kind": "document",
+        "created_at": 1783529768
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_068a4d4e\\run_result.json",
+        "kind": "json",
+        "created_at": 1783529768
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_068a4d4e\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783529768
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "email": "老师/同学您好：\n\n我是校园项目负责人，想就“学Linux”与您沟通。学Linux\n\n如果方便，期待约一个 15 分钟的时间确认细节。谢谢！",
+      "recipient": "",
+      "run_id": "run_20260709_005608_ea5399fb",
+      "artifacts": [
+        {
+          "name": "Plan.md",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_ea5399fb\\Plan.md",
+          "kind": "document",
+          "created_at": 1783529768
+        },
+        {
+          "name": "Status.md",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_ea5399fb\\Status.md",
+          "kind": "document",
+          "created_at": 1783529768
+        },
+        {
+          "name": "Verification.md",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_ea5399fb\\Verification.md",
+          "kind": "document",
+          "created_at": 1783529768
+        },
+        {
+          "name": "run_result.json",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_ea5399fb\\run_result.json",
+          "kind": "json",
+          "created_at": 1783529768
+        },
+        {
+          "name": "artifact_manifest.json",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_ea5399fb\\artifact_manifest.json",
+          "kind": "manifest",
+          "created_at": 1783529768
+        }
+      ]
+    },
+    "context": {},
+    "created_at": 1783529768,
+    "updated_at": 1783529768
+  },
+  "run_20260709_005608_ea5399fb": {
+    "id": "run_20260709_005608_ea5399fb",
+    "message": "学Linux",
+    "intent": "email_draft",
+    "domain": "club",
+    "selected_workflow": "club_email_draft",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_ea5399fb",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_ea5399fb\\Plan.md",
+        "kind": "document",
+        "created_at": 1783529768
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_ea5399fb\\Status.md",
+        "kind": "document",
+        "created_at": 1783529768
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_ea5399fb\\Verification.md",
+        "kind": "document",
+        "created_at": 1783529768
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_ea5399fb\\run_result.json",
+        "kind": "json",
+        "created_at": 1783529768
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_ea5399fb\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783529768
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "email": "老师/同学您好：\n\n我是校园项目负责人，想就“学Linux”与您沟通。学Linux\n\n如果方便，期待约一个 15 分钟的时间确认细节。谢谢！",
+      "recipient": ""
+    },
+    "context": {},
+    "created_at": 1783529768,
+    "updated_at": 1783529768
+  },
+  "run_20260709_005608_efd010a4": {
+    "id": "run_20260709_005608_efd010a4",
+    "message": "生成 OS flashcards",
+    "intent": "flashcards",
+    "domain": "learning",
+    "selected_workflow": "learning_flashcards",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_efd010a4",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_efd010a4\\Plan.md",
+        "kind": "document",
+        "created_at": 1783529768
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_efd010a4\\Status.md",
+        "kind": "document",
+        "created_at": 1783529768
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_efd010a4\\Verification.md",
+        "kind": "document",
+        "created_at": 1783529768
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_efd010a4\\run_result.json",
+        "kind": "json",
+        "created_at": 1783529768
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_efd010a4\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783529768
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "topic": "OS",
+      "flashcards": [
+        {
+          "id": "card_1",
+          "front": "OS 的核心概念 是什么？",
+          "back": "用一句话解释 OS 的核心概念，再写一个自己的例子。",
+          "tags": [
+            "OS"
+          ],
+          "due": "2026-07-09"
+        },
+        {
+          "id": "card_2",
+          "front": "OS 的典型例题 是什么？",
+          "back": "用一句话解释 OS 的典型例题，再写一个自己的例子。",
+          "tags": [
+            "OS"
+          ],
+          "due": "2026-07-10"
+        }
+      ],
+      "source_mode": "local",
+      "review_nodes": 2
+    },
+    "context": {},
+    "created_at": 1783529768,
+    "updated_at": 1783529768
+  },
+  "run_20260709_005608_7081eb5d": {
+    "id": "run_20260709_005608_7081eb5d",
+    "message": "daily 每日复习 quiz",
+    "intent": "quiz_daily",
+    "domain": "learning",
+    "selected_workflow": "learning_quiz_daily",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_7081eb5d",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_7081eb5d\\Plan.md",
+        "kind": "document",
+        "created_at": 1783529768
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_7081eb5d\\Status.md",
+        "kind": "document",
+        "created_at": 1783529768
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_7081eb5d\\Verification.md",
+        "kind": "document",
+        "created_at": 1783529768
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_7081eb5d\\run_result.json",
+        "kind": "json",
+        "created_at": 1783529768
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_7081eb5d\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783529768
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "topic": "daily",
+      "questions": [
+        {
+          "id": "dq1",
+          "question": "请解释/回忆：OS card 1",
+          "answer": "围绕 OS card 1 给出定义、例子和一个易错点。",
+          "rubric": [
+            "定义准确",
+            "有具体例子",
+            "能说明易错点"
+          ],
+          "review_node_id": "task_1783529691_c667b9ca"
+        },
+        {
+          "id": "dq2",
+          "question": "请解释/回忆：OS card 2",
+          "answer": "围绕 OS card 2 给出定义、例子和一个易错点。",
+          "rubric": [
+            "定义准确",
+            "有具体例子",
+            "能说明易错点"
+          ],
+          "review_node_id": "task_1783529691_f99b297b"
+        },
+        {
+          "id": "dq3",
+          "question": "请解释/回忆：OS card 1",
+          "answer": "围绕 OS card 1 给出定义、例子和一个易错点。",
+          "rubric": [
+            "定义准确",
+            "有具体例子",
+            "能说明易错点"
+          ],
+          "review_node_id": "task_1783529691_14bf6e91"
+        },
+        {
+          "id": "dq4",
+          "question": "请解释/回忆：OS card 2",
+          "answer": "围绕 OS card 2 给出定义、例子和一个易错点。",
+          "rubric": [
+            "定义准确",
+            "有具体例子",
+            "能说明易错点"
+          ],
+          "review_node_id": "task_1783529691_13ffdfe2"
+        },
+        {
+          "id": "dq5",
+          "question": "请解释/回忆：OS card 1",
+          "answer": "围绕 OS card 1 给出定义、例子和一个易错点。",
+          "rubric": [
+            "定义准确",
+            "有具体例子",
+            "能说明易错点"
+          ],
+          "review_node_id": "task_1783529768_29784564"
+        }
+      ],
+      "source_mode": "local",
+      "due_review_count": 0,
+      "total_review_nodes": 6
+    },
+    "context": {},
+    "created_at": 1783529768,
+    "updated_at": 1783529768
+  },
+  "run_20260709_005608_f4c05056": {
+    "id": "run_20260709_005608_f4c05056",
+    "message": "后端 面试练习",
+    "intent": "interview_practice",
+    "domain": "career",
+    "selected_workflow": "career_interview_practice",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_f4c05056",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_f4c05056\\Plan.md",
+        "kind": "document",
+        "created_at": 1783529768
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_f4c05056\\Status.md",
+        "kind": "document",
+        "created_at": 1783529768
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_f4c05056\\Verification.md",
+        "kind": "document",
+        "created_at": 1783529768
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_f4c05056\\run_result.json",
+        "kind": "json",
+        "created_at": 1783529768
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_f4c05056\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783529768
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "role": "后端",
+      "question": "q",
+      "answer": "a",
+      "score": 35,
+      "rubric": [
+        "结构清晰(STAR: 情境-任务-行动-结果)",
+        "有量化结果或具体产出",
+        "体现个人贡献而非团队笼统描述",
+        "与岗位 后端 的能力要求相关"
+      ],
+      "improvement_cues": [
+        "回答偏短,尝试展开具体行动和结果。",
+        "多用'我做了…'明确个人贡献。",
+        "补一个量化结果(数字/时间/规模)。"
+      ],
+      "model_answer_outline": [
+        "情境: 后端 相关的一个真实场景背景",
+        "任务: 你负责解决的具体问题",
+        "行动: 你采取的 2-3 个关键步骤(技术/沟通/取舍)",
+        "结果: 可量化的产出 + 你的收获"
+      ],
+      "follow_ups": [
+        "如果时间减半,你会优先砍掉哪个步骤?",
+        "这个项目里你最大的技术/沟通挑战是什么?"
+      ],
+      "background": "",
+      "source_mode": "local"
+    },
+    "context": {},
+    "created_at": 1783529768,
+    "updated_at": 1783529768
+  }
+}

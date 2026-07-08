@@ -1,0 +1,281 @@
+[
+  {
+    "id": "task_1783529691_5be12e56",
+    "title": "学Linux",
+    "body": "{\"ok\": true, \"email\": \"老师/同学您好：\\n\\n我是校园项目负责人，想就“学Linux”与您沟通。学Linux\\n\\n如果方便，期待约一个 15 分钟的时间确认细节。谢谢！\", \"recipient\": \"\"}",
+    "status": "done",
+    "domain": "club",
+    "run_id": "run_20260709_005451_3d290946",
+    "due": "",
+    "metadata": {
+      "intent": "email_draft",
+      "workflow": "club_email_draft"
+    },
+    "created_at": 1783529691,
+    "updated_at": 1783529691
+  },
+  {
+    "id": "task_1783529691_db75ffee",
+    "title": "学Linux",
+    "body": "学Linux",
+    "status": "done",
+    "domain": "general",
+    "run_id": "run_20260709_005451_dbab9193",
+    "due": "",
+    "metadata": {
+      "intent": "general_secretary",
+      "workflow": "local_secretary"
+    },
+    "created_at": 1783529691,
+    "updated_at": 1783529691
+  },
+  {
+    "id": "task_1783529691_c667b9ca",
+    "title": "复习：OS card 1",
+    "body": "",
+    "status": "todo",
+    "domain": "learning",
+    "run_id": "",
+    "due": "2026-07-10",
+    "metadata": {
+      "kind": "review",
+      "topic": "OS",
+      "card_index": 0,
+      "reps_correct": 0,
+      "last_ts": 1783529691,
+      "due_ts": 1783616091
+    },
+    "created_at": 1783529691,
+    "updated_at": 1783529691
+  },
+  {
+    "id": "task_1783529691_f99b297b",
+    "title": "复习：OS card 2",
+    "body": "",
+    "status": "todo",
+    "domain": "learning",
+    "run_id": "",
+    "due": "2026-07-10",
+    "metadata": {
+      "kind": "review",
+      "topic": "OS",
+      "card_index": 1,
+      "reps_correct": 0,
+      "last_ts": 1783529691,
+      "due_ts": 1783616091
+    },
+    "created_at": 1783529691,
+    "updated_at": 1783529691
+  },
+  {
+    "id": "task_1783529691_c7ba81d9",
+    "title": "生成 OS flashcards",
+    "body": "{\"ok\": true, \"topic\": \"OS\", \"flashcards\": [{\"id\": \"card_1\", \"front\": \"OS 的核心概念 是什么？\", \"back\": \"用一句话解释 OS 的核心概念，再写一个自己的例子。\", \"tags\": [\"OS\"], \"due\": \"2026-07-09\"}, {\"id\": \"card_2\", \"front\": \"OS 的典型例题 是什么？\", \"back\": \"用一句话解释 OS 的典型例题，再写一个自己的例子。\", \"tags\": [\"OS\"], \"due\": \"2026-07-10\"}], \"source_mode\": \"local\", \"review_nodes\": 2}",
+    "status": "done",
+    "domain": "learning",
+    "run_id": "run_20260709_005451_9b9ade2d",
+    "due": "",
+    "metadata": {
+      "intent": "flashcards",
+      "workflow": "learning_flashcards"
+    },
+    "created_at": 1783529691,
+    "updated_at": 1783529691
+  },
+  {
+    "id": "task_1783529691_5824c6ec",
+    "title": "后端 面试练习",
+    "body": "{\"ok\": true, \"role\": \"后端\", \"question\": \"q\", \"answer\": \"a\", \"score\": 35, \"rubric\": [\"结构清晰(STAR: 情境-任务-行动-结果)\", \"有量化结果或具体产出\", \"体现个人贡献而非团队笼统描述\", \"与岗位 后端 的能力要求相关\"], \"improvement_cues\": [\"回答偏短,尝试展开具体行动和结果。\", \"多用'我做了…'明确个人贡献。\", \"补一个量化结果(数字/时间/规模)。\"], \"model_answer_outline\": [\"情境: 后端 相关的一个真实场景背景\", \"任务: 你负责解决的具体问题\", \"行动: 你采取的 2-3 个关键步骤(技术/沟通/取舍)\", \"结果: 可量化的产出 + 你的收获\"], \"follow_ups\": [\"如果时间减半,你会优先砍掉哪个步骤?\", \"这个项目里你最大的技术/沟通挑战是什么?\"], \"background\": \"\", \"source_mode\": \"local\"}",
+    "status": "done",
+    "domain": "career",
+    "run_id": "run_20260709_005451_bd13cb03",
+    "due": "",
+    "metadata": {
+      "intent": "interview_practice",
+      "workflow": "career_interview_practice"
+    },
+    "created_at": 1783529691,
+    "updated_at": 1783529691
+  },
+  {
+    "id": "task_1783529691_14bf6e91",
+    "title": "复习：OS card 1",
+    "body": "",
+    "status": "todo",
+    "domain": "learning",
+    "run_id": "",
+    "due": "2026-07-10",
+    "metadata": {
+      "kind": "review",
+      "topic": "OS",
+      "card_index": 0,
+      "reps_correct": 0,
+      "last_ts": 1783529691,
+      "due_ts": 1783616091
+    },
+    "created_at": 1783529691,
+    "updated_at": 1783529691
+  },
+  {
+    "id": "task_1783529691_13ffdfe2",
+    "title": "复习：OS card 2",
+    "body": "",
+    "status": "todo",
+    "domain": "learning",
+    "run_id": "",
+    "due": "2026-07-10",
+    "metadata": {
+      "kind": "review",
+      "topic": "OS",
+      "card_index": 1,
+      "reps_correct": 0,
+      "last_ts": 1783529691,
+      "due_ts": 1783616091
+    },
+    "created_at": 1783529691,
+    "updated_at": 1783529691
+  },
+  {
+    "id": "task_1783529691_274d468f",
+    "title": "生成 OS flashcards",
+    "body": "{\"ok\": true, \"topic\": \"OS\", \"flashcards\": [{\"id\": \"card_1\", \"front\": \"OS 的核心概念 是什么？\", \"back\": \"用一句话解释 OS 的核心概念，再写一个自己的例子。\", \"tags\": [\"OS\"], \"due\": \"2026-07-09\"}, {\"id\": \"card_2\", \"front\": \"OS 的典型例题 是什么？\", \"back\": \"用一句话解释 OS 的典型例题，再写一个自己的例子。\", \"tags\": [\"OS\"], \"due\": \"2026-07-10\"}], \"source_mode\": \"local\", \"review_nodes\": 2}",
+    "status": "done",
+    "domain": "learning",
+    "run_id": "run_20260709_005451_bf604ce2",
+    "due": "",
+    "metadata": {
+      "intent": "flashcards",
+      "workflow": "learning_flashcards"
+    },
+    "created_at": 1783529691,
+    "updated_at": 1783529691
+  },
+  {
+    "id": "task_1783529691_242f91fa",
+    "title": "daily 每日复习 quiz",
+    "body": "{\"ok\": true, \"topic\": \"daily\", \"questions\": [{\"id\": \"dq1\", \"question\": \"请解释/回忆：OS card 1\", \"answer\": \"围绕 OS card 1 给出定义、例子和一个易错点。\", \"rubric\": [\"定义准确\", \"有具体例子\", \"能说明易错点\"], \"review_node_id\": \"task_1783529691_c667b9ca\"}, {\"id\": \"dq2\", \"question\": \"请解释/回忆：OS card 2\", \"answer\": \"围绕 OS card 2 给出定义、例子和一个易错点。\", \"rubric\": [\"定义准确\", \"有具体例子\", \"能说明易错点\"], \"review_node_id\": \"task_1783529691_f99b297b\"}, {\"id\": \"dq3\", \"question\": \"请解释/回忆：OS card 1\", \"answer\": \"围绕 OS card 1 给出定义、例子和一个易错点。\", \"rubric\": [\"定义准确\", \"有具体例子\", \"能说明易错点\"], \"review_node_id\": \"task_1783529691_14bf6e91\"}, {\"id\": \"dq4\", \"question\": \"请解释/回忆：OS card 2\", \"answer\": \"围绕 OS card 2 给出定义、例子和一个易错点。\", \"rubric\": [\"定义准确\", \"有具体例子\", \"能说明易错点\"], \"review_node_id\": \"task_1783529691_13ffdfe2\"}], \"source_mode\": \"local\", \"due_review_count\": 0, \"total_review_nodes\": 4}",
+    "status": "done",
+    "domain": "learning",
+    "run_id": "run_20260709_005451_75b8339e",
+    "due": "",
+    "metadata": {
+      "intent": "quiz_daily",
+      "workflow": "learning_quiz_daily"
+    },
+    "created_at": 1783529691,
+    "updated_at": 1783529691
+  },
+  {
+    "id": "task_1783529768_fc73354e",
+    "title": "学Linux",
+    "body": "{\"ok\": true, \"email\": \"老师/同学您好：\\n\\n我是校园项目负责人，想就“学Linux”与您沟通。学Linux\\n\\n如果方便，期待约一个 15 分钟的时间确认细节。谢谢！\", \"recipient\": \"\"}",
+    "status": "done",
+    "domain": "club",
+    "run_id": "run_20260709_005608_ea5399fb",
+    "due": "",
+    "metadata": {
+      "intent": "email_draft",
+      "workflow": "club_email_draft"
+    },
+    "created_at": 1783529768,
+    "updated_at": 1783529768
+  },
+  {
+    "id": "task_1783529768_eef6b12c",
+    "title": "学Linux",
+    "body": "学Linux",
+    "status": "done",
+    "domain": "general",
+    "run_id": "run_20260709_005608_068a4d4e",
+    "due": "",
+    "metadata": {
+      "intent": "general_secretary",
+      "workflow": "local_secretary"
+    },
+    "created_at": 1783529768,
+    "updated_at": 1783529768
+  },
+  {
+    "id": "task_1783529768_29784564",
+    "title": "复习：OS card 1",
+    "body": "",
+    "status": "todo",
+    "domain": "learning",
+    "run_id": "",
+    "due": "2026-07-10",
+    "metadata": {
+      "kind": "review",
+      "topic": "OS",
+      "card_index": 0,
+      "reps_correct": 0,
+      "last_ts": 1783529768,
+      "due_ts": 1783616168
+    },
+    "created_at": 1783529768,
+    "updated_at": 1783529768
+  },
+  {
+    "id": "task_1783529768_370f7ddd",
+    "title": "复习：OS card 2",
+    "body": "",
+    "status": "todo",
+    "domain": "learning",
+    "run_id": "",
+    "due": "2026-07-10",
+    "metadata": {
+      "kind": "review",
+      "topic": "OS",
+      "card_index": 1,
+      "reps_correct": 0,
+      "last_ts": 1783529768,
+      "due_ts": 1783616168
+    },
+    "created_at": 1783529768,
+    "updated_at": 1783529768
+  },
+  {
+    "id": "task_1783529768_b5b81b3f",
+    "title": "生成 OS flashcards",
+    "body": "{\"ok\": true, \"topic\": \"OS\", \"flashcards\": [{\"id\": \"card_1\", \"front\": \"OS 的核心概念 是什么？\", \"back\": \"用一句话解释 OS 的核心概念，再写一个自己的例子。\", \"tags\": [\"OS\"], \"due\": \"2026-07-09\"}, {\"id\": \"card_2\", \"front\": \"OS 的典型例题 是什么？\", \"back\": \"用一句话解释 OS 的典型例题，再写一个自己的例子。\", \"tags\": [\"OS\"], \"due\": \"2026-07-10\"}], \"source_mode\": \"local\", \"review_nodes\": 2}",
+    "status": "done",
+    "domain": "learning",
+    "run_id": "run_20260709_005608_efd010a4",
+    "due": "",
+    "metadata": {
+      "intent": "flashcards",
+      "workflow": "learning_flashcards"
+    },
+    "created_at": 1783529768,
+    "updated_at": 1783529768
+  },
+  {
+    "id": "task_1783529768_7fc601a3",
+    "title": "daily 每日复习 quiz",
+    "body": "{\"ok\": true, \"topic\": \"daily\", \"questions\": [{\"id\": \"dq1\", \"question\": \"请解释/回忆：OS card 1\", \"answer\": \"围绕 OS card 1 给出定义、例子和一个易错点。\", \"rubric\": [\"定义准确\", \"有具体例子\", \"能说明易错点\"], \"review_node_id\": \"task_1783529691_c667b9ca\"}, {\"id\": \"dq2\", \"question\": \"请解释/回忆：OS card 2\", \"answer\": \"围绕 OS card 2 给出定义、例子和一个易错点。\", \"rubric\": [\"定义准确\", \"有具体例子\", \"能说明易错点\"], \"review_node_id\": \"task_1783529691_f99b297b\"}, {\"id\": \"dq3\", \"question\": \"请解释/回忆：OS card 1\", \"answer\": \"围绕 OS card 1 给出定义、例子和一个易错点。\", \"rubric\": [\"定义准确\", \"有具体例子\", \"能说明易错点\"], \"review_node_id\": \"task_1783529691_14bf6e91\"}, {\"id\": \"dq4\", \"question\": \"请解释/回忆：OS card 2\", \"answer\": \"围绕 OS card 2 给出定义、例子和一个易错点。\", \"rubric\": [\"定义准确\", \"有具体例子\", \"能说明易错点\"], \"review_node_id\": \"task_1783529691_13ffdfe2\"}, {\"id\": \"dq5\", \"question\": \"请解释/回忆：OS card 1\", \"answer\": \"围绕 OS card 1 给出定义、例子和一个易错点。\", \"rubric\": [\"定义准确\", \"有具体例子\", \"能说明易错点\"], \"review_node_id\": \"task_1783529768_29784564\"}], \"source_mode\": \"local\", \"due_review_count\": 0, \"total_review_nodes\": 6}",
+    "status": "done",
+    "domain": "learning",
+    "run_id": "run_20260709_005608_7081eb5d",
+    "due": "",
+    "metadata": {
+      "intent": "quiz_daily",
+      "workflow": "learning_quiz_daily"
+    },
+    "created_at": 1783529768,
+    "updated_at": 1783529768
+  },
+  {
+    "id": "task_1783529768_cf490528",
+    "title": "后端 面试练习",
+    "body": "{\"ok\": true, \"role\": \"后端\", \"question\": \"q\", \"answer\": \"a\", \"score\": 35, \"rubric\": [\"结构清晰(STAR: 情境-任务-行动-结果)\", \"有量化结果或具体产出\", \"体现个人贡献而非团队笼统描述\", \"与岗位 后端 的能力要求相关\"], \"improvement_cues\": [\"回答偏短,尝试展开具体行动和结果。\", \"多用'我做了…'明确个人贡献。\", \"补一个量化结果(数字/时间/规模)。\"], \"model_answer_outline\": [\"情境: 后端 相关的一个真实场景背景\", \"任务: 你负责解决的具体问题\", \"行动: 你采取的 2-3 个关键步骤(技术/沟通/取舍)\", \"结果: 可量化的产出 + 你的收获\"], \"follow_ups\": [\"如果时间减半,你会优先砍掉哪个步骤?\", \"这个项目里你最大的技术/沟通挑战是什么?\"], \"background\": \"\", \"source_mode\": \"local\"}",
+    "status": "done",
+    "domain": "career",
+    "run_id": "run_20260709_005608_f4c05056",
+    "due": "",
+    "metadata": {
+      "intent": "interview_practice",
+      "workflow": "career_interview_practice"
+    },
+    "created_at": 1783529768,
+    "updated_at": 1783529768
+  }
+]
