@@ -428,6 +428,57 @@ def _default_agent_get_run(run_id: str) -> dict:
     return data
 
 
+def _try_parse_schedule_intent(message: str) -> Optional[dict]:
+    """Detect a 'remind me every X at Y' intent and return a job spec, or None.
+
+    Recognizes patterns like:
+      "每天8点提醒我背单词"  → daily 08:00
+      "每天早上9点提醒我"    → daily 09:00
+      "每周日晚上8点发我周报" → weekly 6 20:00
+      "3天后提醒我交作业"    → once <iso+3d>
+    """
+    import re
+    import datetime as _dt
+    m = message.strip()
+
+    # every day at HH[:MM]
+    pat = re.search(r"每天.*(早|上午|晚)?上?\s*(\d{1,2})\s*[点时](?:\s*(\d{1,2})\s*分)?", m)
+    if pat and ("提醒" in m or "发" in m or "推送" in m):
+        hour = int(pat.group(2))
+        if pat.group(1) == "晚" or "晚上" in m:
+            hour = hour if hour >= 12 else hour + 12
+        minute = int(pat.group(3)) if pat.group(3) else 0
+        # extract the task after "提醒我/让我"
+        task = re.search(r"(?:提醒我|让我|发我|推送)\s*(.+)", m)
+        task_text = task.group(1).strip() if task else m
+        return {"rule": f"daily {hour:02d}:{minute:02d}",
+                "message": f"⏰ 提醒：{task_text}"}
+
+    # every week <day> at HH
+    weekday_map = {"一": 0, "二": 1, "三": 2, "四": 3, "五": 4, "六": 5, "日": 6, "天": 6}
+    pat = re.search(r"每周(.)\s*(?:晚上?)?\s*(\d{1,2})\s*[点时]", m)
+    if pat and ("提醒" in m or "发" in m):
+        wd = weekday_map.get(pat.group(1), 0)
+        hour = int(pat.group(2))
+        task = re.search(r"(?:提醒我|让我|发我|推送)\s*(.+)", m)
+        task_text = task.group(1).strip() if task else m
+        return {"rule": f"weekly {wd} {hour:02d}:00",
+                "message": f"⏰ 提醒：{task_text}"}
+
+    # in N days
+    pat = re.search(r"(\d+)\s*天后.*(?:提醒|记得)", m)
+    if pat:
+        days = int(pat.group(1))
+        task = re.search(r"(?:提醒我|记得)\s*(.+)", m)
+        task_text = task.group(1).strip() if task else m
+        when = (_dt.datetime.now() + _dt.timedelta(days=days)).replace(
+            hour=9, minute=0, second=0, microsecond=0)
+        return {"rule": f"once {when.strftime('%Y-%m-%dT%H:%M')}",
+                "message": f"⏰ 提醒：{task_text}"}
+
+    return None
+
+
 def _default_agent_chat(req: AgentChatRequest) -> dict:
     """Chat-first endpoint (Phase 9 — GOAL.md 飞书式聊天).
 
@@ -438,9 +489,47 @@ def _default_agent_chat(req: AgentChatRequest) -> dict:
     Supports clarification flows: if the agent result carries ``needs_clarify``
     + ``clarify_options`` (e.g. fuzzy lecture path), the reply asks the user to
     confirm rather than silently proceeding.
+
+    Phase 9: also detects "schedule a reminder" intents ("每天8点提醒我背单词")
+    and registers a user-defined job directly, replying with confirmation.
     """
     from campus.conversation.store import ConversationStore
     from campus.conversation.reply import compose_reply, resolve_persona_name
+
+    # Phase 9: schedule-intent short-circuit (register a job, skip the agent run)
+    sched = _try_parse_schedule_intent(req.message)
+    if sched:
+        try:
+            from campus.life.job_store import JobStore, parse_rule
+            import os as _os
+            parsed = parse_rule(sched["rule"])
+            if parsed["type"] != "invalid":
+                channel = _os.environ.get("CAMPUS_QUIZ_PUSH_CHANNEL", "feishu")
+                target = _os.environ.get("CAMPUS_FEISHU_CHAT_ID", "")
+                job = JobStore().add(message=sched["message"], rule=sched["rule"],
+                                     channel=channel, target=target)
+                reply = (f"好的，已为你设置定时任务：\n"
+                         f"• 内容：{sched['message']}\n"
+                         f"• 规则：{sched['rule']}\n"
+                         f"• 推送频道：{channel}\n"
+                         f"到点会自动提醒你～")
+                store = ConversationStore()
+                now_ts = __import__("time").time()
+                added = store.append(conversation_id=req.conversation_id, role="user",
+                                     content=req.message, now=int(now_ts))
+                conv_id = added["conversation_id"]
+                store.append(conversation_id=conv_id, role="assistant", content=reply,
+                             now=int(now_ts))
+                return {"ok": True, "reply": reply, "run_id": "",
+                        "status": "job_registered", "domain": "life",
+                        "intent": "schedule_reminder", "artifacts": [],
+                        "multiagent": False, "conversation_id": conv_id,
+                        "persona": resolve_persona_name(req.persona),
+                        "source_mode": "template", "needs_clarify": False,
+                        "clarify_options": [], "error": "",
+                        "job": job}
+        except Exception:
+            pass  # fall through to normal agent run
 
     store = ConversationStore()
     persona_name = resolve_persona_name(req.persona)
@@ -1123,6 +1212,38 @@ def create_app(backends: Optional[Backends] = None,
         except Exception:
             return {"ok": True, "commands": []}
 
+    # ---- user-defined scheduled jobs (Phase 9 — GOAL.md 自定义定时任务) ----
+    @app.get("/jobs")
+    def jobs_list():
+        from campus.life.job_store import JobStore
+        return {"jobs": JobStore().list()}
+
+    @app.post("/jobs")
+    def jobs_add(body: dict = None):
+        """Register a scheduled job. Body: {message, rule, channel?, target?}.
+
+        rule: "daily 08:00" / "weekly 0 20:00" / "once 2026-07-12T09:00"
+        """
+        from campus.life.job_store import JobStore
+        body = body or {}
+        msg = body.get("message", "").strip()
+        rule = body.get("rule", "").strip()
+        if not msg or not rule:
+            return {"ok": False, "error": "message and rule are required"}
+        from campus.life.job_store import parse_rule
+        parsed = parse_rule(rule)
+        if parsed["type"] == "invalid":
+            return {"ok": False, "error": parsed.get("error", "invalid rule")}
+        channel = body.get("channel", os.environ.get("CAMPUS_QUIZ_PUSH_CHANNEL", "feishu"))
+        target = body.get("target", "")
+        job = JobStore().add(message=msg, rule=rule, channel=channel, target=target)
+        return {"ok": True, "job": job}
+
+    @app.delete("/jobs/{job_id}")
+    def jobs_delete(job_id: str):
+        from campus.life.job_store import JobStore
+        return {"ok": JobStore().delete(job_id), "id": job_id}
+
     # ---- background reminder loop ----
     enable = with_scheduler
     if enable is None:
@@ -1174,6 +1295,15 @@ def start_scheduler(app: FastAPI, interval: float = _SCHEDULER_INTERVAL) -> None
             # Phase 8 Step 4: nightly auto-learn (once per calendar day)
             try:
                 _maybe_auto_learn()
+            except Exception:
+                pass
+            # Phase 9: daily quiz push + user-defined scheduled jobs (every tick)
+            try:
+                _maybe_daily_quiz()
+            except Exception:
+                pass
+            try:
+                _run_scheduled_jobs()
             except Exception:
                 pass
 
@@ -1266,6 +1396,86 @@ def _maybe_auto_learn() -> None:
         learner.run(use_llm=True)
     except Exception:
         pass  # never let auto-learn kill the scheduler
+
+
+# ---- daily quiz push (Phase 9 — GOAL.md 定时 quiz 推送) -----------------------
+
+_LAST_QUIZ_DAY = None
+
+
+def _maybe_daily_quiz() -> None:
+    """Push a daily Ebbinghaus-due quiz to Feishu/QQ at the configured time.
+
+    Day-deduped so only one quiz fires per day. Generates the quiz from due
+    review nodes via ``phase7.quiz_daily``, stores it as a pending session
+    (so the user's reply routes to grading), and pushes the questions.
+    """
+    global _LAST_QUIZ_DAY
+    import time as _t
+    import datetime as _dt
+    today = _t.strftime("%Y-%m-%d")
+    now = _dt.datetime.now()
+    push_time = os.environ.get("CAMPUS_QUIZ_PUSH_TIME", "09:00")
+    try:
+        hh, mm = (int(x) for x in push_time.split(":")[:2])
+    except Exception:
+        hh, mm = 9, 0
+    # only fire at the configured hour (within the same minute window)
+    if now.hour != hh or now.minute != mm:
+        return
+    if _LAST_QUIZ_DAY == today:
+        return
+    _LAST_QUIZ_DAY = today
+    try:
+        from campus import phase7
+        from campus.learning.quiz_session import QuizSessionStore
+        from campus.mobile.cli import push as _push
+        channel = os.environ.get("CAMPUS_QUIZ_PUSH_CHANNEL", "feishu")
+        target = os.environ.get("CAMPUS_FEISHU_CHAT_ID", "") if channel == "feishu" \
+            else os.environ.get("QQBOT_HOME_CHANNEL", "")
+        result = phase7.quiz_daily(count=5)
+        questions = result.get("questions", [])
+        if not questions:
+            return
+        # store as pending session so inbound answers route to grading
+        QuizSessionStore().start(questions=questions,
+                                 topic=result.get("topic", "每日复习"),
+                                 channel=channel, target=target)
+        # format + push
+        lines = [f"📚 每日复习 quiz（{len(questions)} 题）", ""]
+        for i, q in enumerate(questions):
+            lines.append(f"Q{i+1}: {q.get('question', '')}")
+        lines += ["", "直接回复你的答案（如『1:xxx 2:xxx』或逐条回复），我会帮你批改并更新复习曲线。"]
+        msg = "\n".join(lines)
+        _push(channel, target, msg)
+    except Exception:
+        pass
+
+
+# ---- user-defined scheduled jobs (Phase 9 — GOAL.md 自定义定时任务) ------------
+
+def _run_scheduled_jobs() -> None:
+    """Check user-defined jobs and fire any that are due this minute.
+
+    Reuses the 60s scheduler tick + ``mobile.cli.push``. Each due job's
+    ``last_fired`` is updated for dedup.
+    """
+    import datetime as _dt
+    try:
+        from campus.life.job_store import JobStore, due_jobs
+        from campus.mobile.cli import push as _push
+        store = JobStore()
+        jobs = store.list()
+        now = _dt.datetime.now()
+        for j in due_jobs(jobs, now):
+            try:
+                _push(j.get("channel", "feishu"), j.get("target", ""),
+                      j.get("message", ""))
+                store.update_last_fired(j.get("id", ""), int(now.timestamp()))
+            except Exception:
+                pass
+    except Exception:
+        pass
 
 
 # module-level app for ``uvicorn campus.api.server:app``.

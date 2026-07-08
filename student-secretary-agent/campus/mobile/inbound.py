@@ -39,7 +39,20 @@ def handle_mobile_command(message: str, *, channel: str = "feishu",
     """Process a mobile user command: run agent → format reply → push → persist.
 
     Returns {ok, reply, run_id, artifacts, pushed}.
+
+    Phase 9: if there's an active pending quiz session for this (channel,target),
+    the message is treated as quiz answers → graded → Ebbinghaus curve updated,
+    bypassing the generic agent run.
     """
+    # 0. Quiz-answer detection: if a pushed quiz is pending, grade the reply.
+    try:
+        from campus.learning.quiz_session import QuizSessionStore
+        session = QuizSessionStore().active_for(channel, target or "")
+        if session:
+            return _handle_quiz_answer(message, session, channel, target)
+    except Exception:
+        pass
+
     # 1. Run the agent
     if agent_run_fn is None:
         from campus.api.server import _default_agent_run
@@ -195,6 +208,89 @@ def push_reply(channel: str, target: str, message: str) -> tuple[bool, str]:
         return receipt.ok, receipt.error
     except Exception as e:
         return False, str(e)
+
+
+def _parse_quiz_answers(message: str, questions: list[dict]) -> list[dict[str, str]]:
+    """Parse a free-text reply into per-question answer dicts.
+
+    Accepts formats like:
+      "1:进程是程序的一次执行 2:线程是轻量级进程"
+      "进程是程序的一次执行"  (single question → all to Q1)
+      "1=xxx\n2=yyy"
+    """
+    import re
+    text = message.strip()
+    answers = []
+    # try "N:answer" or "N=answer" patterns
+    pattern = re.compile(r"(\d+)\s*[:：=]\s*([^\d\n]+)")
+    matches = pattern.findall(text)
+    if matches:
+        for num, ans in matches:
+            qid = f"dq{num}" if not num.startswith("dq") else num
+            answers.append({"question_id": qid, "answer": ans.strip()})
+        return answers
+    # single block → attribute to first question
+    if questions:
+        answers.append({"question_id": questions[0].get("id", "dq1"),
+                        "answer": text})
+    return answers
+
+
+def _handle_quiz_answer(message: str, session: dict, channel: str,
+                        target: Optional[str]) -> dict[str, Any]:
+    """Grade a quiz answer reply, update the Ebbinghaus curve, push feedback."""
+    from campus.learning.quiz_grader import grade_quiz_answers
+    from campus.learning.quiz_session import QuizSessionStore
+
+    questions = session.get("questions", [])
+    topic = session.get("topic", "每日复习")
+    answers = _parse_quiz_answers(message, questions)
+    graded = grade_quiz_answers(questions, answers)
+
+    # advance Ebbinghaus curve per graded answer
+    try:
+        from campus import phase7
+        for g in graded:
+            nid = g.get("review_node_id", "")
+            if nid:
+                try:
+                    phase7.advance_review_node(nid, g.get("correct", False))
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
+    # build feedback reply
+    avg = round(sum(g["score"] for g in graded) / max(1, len(graded)), 1)
+    lines = [f"📝 Quiz 批改完成（{topic}）", f"平均分：{avg}/100", ""]
+    for g in graded:
+        mark = "✅" if g.get("correct") else "❌"
+        lines.append(f"{mark} Q: {g.get('question_id','')} — {g['score']}分")
+        if g.get("feedback"):
+            lines.append(f"   {g['feedback']}")
+    lines += ["", "复习曲线已更新，明天继续加油！" if avg >= 70 else
+              "明天会增加错题复盘，继续努力。"]
+
+    reply = "\n".join(lines)
+    # close the session
+    QuizSessionStore().close(channel, target or "")
+
+    # push the feedback
+    pushed = False
+    push_error = ""
+    if channel and target:
+        try:
+            pushed, push_error = push_reply(channel, target, reply)
+        except Exception as e:
+            push_error = str(e)
+
+    # persist to mobile command log
+    _log_mobile_command(message, channel, target, "", "quiz_graded", reply)
+
+    return {"ok": True, "reply": reply, "run_id": "", "status": "quiz_graded",
+            "artifacts": [], "multiagent": False, "pushed": pushed,
+            "push_error": push_error, "channel": channel, "target": target or "",
+            "quiz_score": avg}
 
 
 def _log_mobile_command(message: str, channel: str, target: Optional[str],
