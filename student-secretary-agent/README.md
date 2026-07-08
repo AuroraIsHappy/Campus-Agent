@@ -9,7 +9,22 @@
 
 ## 快速上手
 
-### 0. 5 分钟本地 demo（推荐）
+### 0. Docker 一键启动（推荐，生产用）
+
+```bash
+cd student-secretary-agent
+cp .env.example .env      # 填入你的 key（全部可选，不填走离线模式）
+docker compose up -d       # 构建并启动
+```
+
+打开 `http://localhost:8000`（前端 + API 同源）。健康检查：`http://localhost:8000/health`。
+
+> Docker 镜像会自动 clone + 构建 hermes-agent（不在 PyPI，需从 GitHub 安装）。
+> 首次构建约 5-10 分钟（含 hermes 依赖），后续构建有缓存。
+
+### 1. 本地开发启动（不用 Docker）
+
+#### 5 分钟本地 demo（离线模式，不需要 LLM key）
 
 这条路径优先保证“能打开前端、能跑出真实产物”。默认使用离线 demo 模式，不需要真实 LLM；如果 `hermes_cli` 和 provider key 可用，前端会在“Demo 中心”显示 real readiness。
 
@@ -149,15 +164,27 @@ frontend/        # React+Vite+TS+Tailwind（+可选 Electron）
 
 ---
 
-## 当前状态（Phase 7 本地产品闭环）
+## 当前状态（Phase 8 — 上线冲刺）
 
-- 无外部 key 时，本地 fallback 可完成学习、科研、生活、社团实践、职业每个域至少一个任务。
-- `/agent/run` 提供自然语言统一入口，并把 run/task/artifact 写入 `CAMPUS_HOME`。
-- `/settings/status` 汇总 LLM、skills、Notion、移动推送、GitHub/search provider readiness。
-- Demo A / C offline、科研主题 digest、本地 Markdown 笔记、前端工作区已跑通。
-- `/demo/status` 会显示真实 LLM readiness；当前 API real 模式走 `hermes_cli` import 路径，不依赖 `hermes` CLI 是否在 PATH。
-- 测试：`tests/api/test_core.py` 当前 **22+ passed**（随 Phase 7 API 覆盖增长）。
-- 前端：`npm.cmd run typecheck` 通过；`npm.cmd run build` 在沙箱内会被 esbuild 读目录权限卡住，沙箱外构建通过。
-- 移动真渠道、Notion 真同步、GitHub/search live provider 仍按手动配置/验收推进；未配置时不阻塞本地 fallback。
+### 已完成
 
-更多细节见 [`devplan/phase-5/`](./devplan/phase-5/)（Plan / Status / Verification）。
+- **Phase 7 功能闭环已关闭**：学习/科研/生活/社团/职业五域本地 fallback 全通；Ebbinghaus 遗忘曲线 + daily quiz、文档导出状态、面试练习/反思已补齐。
+- **Multi-agent 接线**：`/agent/run` real 模式下长程任务走 MetaAgent → Odyssey DAG（Planner↔Critic / Writer↔Reviewer 对抗辩论），不再只用关键词捷径。
+- **Memory 分层检索**：RRF 融合 + 分层策略（PREFERENCES 全量 / TASK_LOG task-scoped / KNOWLEDGE 语义 / DAILY_LOG 按日期）+ token 预算打包 + recency decay + nightly compress cron。生成路径现在注入召回记忆。
+- **真实 LLM 端到端**：五域工作流（flashcards/quiz/github_trending/meeting_minutes/travel_plan/interview_plan）支持 `mode=real`，用 GLM 真实生成。已用真实 key 验证。
+- **Auto-learn**：用户可对 run 产物提交 correction（`POST /agent/runs/{id}/correction`）；每日定时（或 `POST /admin/auto-learn` 手动触发）回顾 correction → LLM 分类（偏好/skill缺陷/事实）→ 写入 PREFERENCES 记忆或创建/更新 SKILL.md。
+- **移动端真实推送**：QQ Bot 走 q.qq.com 官方 API（`QQ_APP_ID`/`QQ_CLIENT_SECRET`）；飞书健康自检。已用真实 key 验证 QQ 认证通过。
+- **Notion + 搜索 provider**：Notion 双向同步（`NOTION_INTEGRATION_TOKEN`）；GitHub trending 走真实 GitHub API（已验证返回真实仓库）；Tavily web search provider。
+- **可分发包**：Dockerfile（多阶段，含 hermes clone+build）+ docker-compose + `.env.example` + 跨平台启动脚本 + 生产前端静态服务 + CORS + logging + CI。
+
+### 测试
+
+- 默认套件：**296 passed**（deterministic，无网络/无 LLM）
+- Integration 套件：6 个 `@pytest.mark.integration` 测试（需真实 GLM key，默认 skip）
+- 前端：`npm run typecheck` 通过
+
+### 配置
+
+复制 `.env.example` → `.env`，填入你有的 key。**所有 key 都是可选的**——不配任何 key 也能跑离线 demo。配了 GLM key 即可解锁真实 AI 生成。
+
+更多细节见 [`devplan/phase-7/`](./devplan/phase-7/)（Plan / Status / Verification）。

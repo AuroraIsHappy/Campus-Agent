@@ -552,14 +552,54 @@ def create_app(backends: Optional[Backends] = None,
     it get the loop ON in prod, OFF when the env flag is set). Pass False to
     force-disable (e.g. in TestClient suites).
     """
-    app = FastAPI(title="Campus-Agent API", version="0.6.0")
+    # Phase 8 Step 7: logging + prod config
+    import logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+    logger = logging.getLogger("campus")
+
+    is_prod = os.environ.get("CAMPUS_ENV", "dev").lower() == "prod"
+    kwargs = {"title": "Campus-Agent API", "version": "0.8.0"}
+    if is_prod:
+        kwargs["docs_url"] = None      # disable /docs (Swagger) in prod
+        kwargs["redoc_url"] = None     # disable /redoc in prod
+    app = FastAPI(**kwargs)
     app.state.backends = backends or _default_backends()
     app.state.scheduler_thread = None
     app.state.scheduler_stop = None
 
+    # Phase 8 Step 7: CORS (configurable for production)
+    from fastapi.middleware.cors import CORSMiddleware
+    cors_origins = os.environ.get("CAMPUS_CORS_ORIGINS",
+                                  "http://localhost:5173,http://127.0.0.1:5173").split(",")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[o.strip() for o in cors_origins if o.strip()],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    logger.info("Campus-Agent API starting (env=%s, version=0.8.0)",
+                os.environ.get("CAMPUS_ENV", "dev"))
+
     @app.get("/health")
     def health():
-        return {"ok": True, "service": "campus-api"}
+        """Liveness + readiness check. Verifies CAMPUS_HOME is writable."""
+        import os, tempfile
+        from campus.runtime.paths import campus_home
+        try:
+            home = campus_home()
+            os.makedirs(home, exist_ok=True)
+            # writable check
+            test_file = os.path.join(home, ".health_probe")
+            with open(test_file, "w") as f:
+                f.write("ok")
+            os.remove(test_file)
+            return {"ok": True, "service": "campus-api", "version": "0.8.0",
+                    "campus_home": home, "ready": True}
+        except Exception as e:
+            return {"ok": True, "service": "campus-api", "ready": False, "error": str(e)}
 
     @app.post("/demo_b/run")
     def demo_b_run(req: DemoBRequest):
@@ -896,6 +936,13 @@ def create_app(backends: Optional[Backends] = None,
         enable = not os.environ.get("CAMPUS_DISABLE_SCHEDULER")
     if enable:
         start_scheduler(app)
+
+    # Phase 8 Step 7: serve built frontend (production) if dist/ exists
+    import os.path as _osp
+    _frontend_dist = _osp.join(_osp.dirname(_osp.dirname(_osp.dirname(_osp.abspath(__file__)))), "frontend", "dist")
+    if _osp.isdir(_frontend_dist):
+        from fastapi.staticfiles import StaticFiles
+        app.mount("/", StaticFiles(directory=_frontend_dist, html=True), name="frontend")
 
     return app
 
