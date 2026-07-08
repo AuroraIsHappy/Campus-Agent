@@ -22,9 +22,9 @@
 - ✅ DB-T8 `campus/demo_b/pipeline.py`（run_demo_b 全链路 + run_dir/Verification.md + memory KNOWLEDGE）
 - ✅ DB-T9 `tests/demo_b/{test_core,test_full_e2e}.py` → **32 passed**（P5-DB1..DB7 全绿）；全量回归 **172 passed**
 
-### 2. API 薄层
-- ⏳ API-T1 `campus/api/{__init__,types,server}.py`（FastAPI 骨架 + 注入后端）
-- ⏳ API-T2 路由 /demo_b/run /runs /memory /onboarding /profile /tasks + `tests/api/test_core.py`（TestClient 确定性，P5-API1）
+### 2. API 薄层 ✅ DONE
+- ✅ API-T1 `campus/api/{__init__,types,server}.py`（FastAPI + 注入 Backends）
+- ✅ API-T2 路由 /health /demo_b/run /runs /memory /onboarding /profile /tasks /push + `tests/api/test_core.py` → **8 passed**（TestClient 确定性，P5-API1）
 
 ### 3. 前端
 - ⏳ FE-T1 `frontend/` scaffold（vite+react+ts+tailwind）+ `package.json`
@@ -48,4 +48,4 @@
 - ⏳ V-T2 `Verification.md` 落档 + Status 全 ✅ → 删 /loop cron → M5
 
 ## 当前进度指针
-**下一步**：API-T1（campus/api/{__init__,types,server}.py：FastAPI 骨架 + 注入后端；TestClient 确定性测试）。Demo B 后端 ✅ 全绿（32 tests / 172 全量）。
+**下一步**：MOB-T1（campus/mobile/{__init__,ports,feishu}.py：PushPort + FeishuPusher 真 subprocess `hermes send`）。已完成 Demo B 后端 + 成本路由 + API（3/5 块，**188 passed** 全量）。前端待 ultracode Workflow。
