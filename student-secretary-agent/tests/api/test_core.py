@@ -4,6 +4,7 @@ Deterministic -- no Hermes / no network / no real model. P5-API1.
 """
 import os
 import sys
+import uuid
 
 PKG = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if PKG not in sys.path:
@@ -12,7 +13,7 @@ if PKG not in sys.path:
 from fastapi.testclient import TestClient
 
 from campus.api.server import Backends, create_app
-from campus.api.types import DemoBRequest
+from campus.api.types import DemoARequest, DemoBRequest, DemoCRequest
 
 
 def _fake_backends():
@@ -21,12 +22,24 @@ def _fake_backends():
                 "extraction_rate": 1.0, "kg_nodes": 5, "resource_count": 4,
                 "plan_days": 10}
     return Backends(
+        demo_a_run=lambda req: {"ok": True, "mode": req.mode, "run_dir": "/tmp/demo-a",
+                                "outreach_count": 3, "email_segments": 3},
         demo_b_run=demo_b,
+        demo_c_run=lambda req: {"ok": True, "mode": req.mode, "run_dir": "/tmp/demo-c",
+                                "recommendation": "Official docs", "days": req.days,
+                                "quiz_questions": req.quiz_n},
+        demo_status=lambda: {"ok": True, "vendor": ["academic-search"], "missing_core": []},
         memory_recall=lambda q, k: [{"key": "demo_b/x", "score": 0.9, "snippet": q}],
         onboarding_run=lambda a: {"ok": True, "profile": {"identity": a.get("identity", "stu"),
                                   "major": "cs", "persona": "feynman"}},
         list_tasks=lambda: [{"id": "t1", "title": "demo_b", "status": "done"}],
         push_send=lambda ch, tg, msg: {"ok": True, "channel": ch, "target": tg, "error": ""},
+        research_add_topic=lambda req: {"ok": True, "topic": {"id": "r1", "title": req.title}},
+        research_list_topics=lambda: {"topics": [{"id": "r1", "title": "AI"}]},
+        research_refresh=lambda tid, req: {"ok": True, "topic_id": tid, "papers": [], "summary": "ok"},
+        research_runs=lambda: {"runs": [{"topic_id": "r1", "summary": "ok"}]},
+        notion_sync=lambda req: {"ok": True, "local_path": "/tmp/note.md", "notion_ok": False},
+        notes_status=lambda: {"ok": False, "token_configured": False},
     )
 
 
@@ -46,6 +59,21 @@ def test_demo_b_run():
     assert r.status_code == 200
     j = r.json()
     assert j["ok"] is True and j["kg_nodes"] == 5 and j["plan_days"] == 10
+
+
+def test_demo_a_run():
+    r = client().post("/demo_a/run", json={"topic": "低碳实践", "mode": "offline"})
+    assert r.status_code == 200
+    assert r.json()["ok"] is True and r.json()["outreach_count"] == 3
+
+
+def test_demo_c_run_and_status():
+    c = client()
+    r = c.post("/demo_c/run", json={"goal": "学线性代数", "days": 7, "quiz_n": 2})
+    assert r.status_code == 200
+    assert r.json()["ok"] is True and r.json()["days"] == 7
+    st = c.get("/demo/status")
+    assert st.status_code == 200 and st.json()["ok"] is True
 
 
 def test_memory():
@@ -81,6 +109,19 @@ def test_push():
     assert r.status_code == 200
     j = r.json()
     assert j["ok"] is True and j["channel"] == "feishu"
+
+
+def test_research_and_notes_routes():
+    c = client()
+    add = c.post("/research/topics", json={"title": "LLM agents", "query": "agent papers"})
+    assert add.status_code == 200 and add.json()["ok"] is True
+    assert c.get("/research/topics").json()["topics"][0]["id"] == "r1"
+    digest = c.post("/research/topics/r1/refresh", json={"mode": "offline"}).json()
+    assert digest["ok"] is True
+    assert c.get("/research/runs").json()["runs"][0]["topic_id"] == "r1"
+    sync = c.post("/notes/notion/sync", json={"digest": digest, "mode": "local"}).json()
+    assert sync["ok"] is True and sync["notion_ok"] is False
+    assert "token_configured" in c.get("/notes/status").json()
 
 
 def test_default_app_module_level():
@@ -205,3 +246,29 @@ def test_with_scheduler_true_starts_thread():
     app = create_app(backends=_fake_backends(), with_scheduler=True)
     assert app.state.scheduler_thread is not None
     stop_scheduler(app)
+
+
+def test_default_backends_offline_demo_smoke(monkeypatch):
+    """Default API backends can run the offline demo chain inside CAMPUS_HOME."""
+    base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..",
+                                        ".campus-test", uuid.uuid4().hex))
+    monkeypatch.setenv("CAMPUS_HOME", base)
+    c = TestClient(create_app(with_scheduler=False))
+    a = c.post("/demo_a/run", json={"topic": "低碳实践", "region": "北京高校社区",
+                                    "mode": "offline"}).json()
+    assert a["ok"] is True
+    assert a["mode"] == "offline"
+    assert os.path.isdir(a["run_dir"])
+    assert any(p.endswith("proposal.md") for p in a["artifacts"])
+
+    b = c.post("/demo_c/run", json={"goal": "入门线性代数", "days": 3,
+                                    "quiz_n": 2, "mode": "offline"}).json()
+    assert b["ok"] is True
+    assert b["mode"] == "offline"
+    assert os.path.isdir(b["run_dir"])
+
+    add = c.post("/research/topics", json={"title": "LLM agents", "query": "agent papers"}).json()
+    digest = c.post(f"/research/topics/{add['topic']['id']}/refresh", json={"mode": "auto"}).json()
+    assert digest["ok"] is True
+    assert digest["source_mode"] in {"real", "fallback_offline", "offline"}
+    assert digest["note_path"] and os.path.exists(digest["note_path"])

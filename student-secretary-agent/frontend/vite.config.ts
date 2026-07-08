@@ -9,7 +9,12 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/api": { target: "http://localhost:8000", changeOrigin: true },
+      "/demo": { target: "http://localhost:8000", changeOrigin: true },
+      "/demo_a": { target: "http://localhost:8000", changeOrigin: true },
       "/demo_b": { target: "http://localhost:8000", changeOrigin: true },
+      "/demo_c": { target: "http://localhost:8000", changeOrigin: true },
+      "/research": { target: "http://localhost:8000", changeOrigin: true },
+      "/notes": { target: "http://localhost:8000", changeOrigin: true },
       "/memory": { target: "http://localhost:8000", changeOrigin: true },
       "/onboarding": { target: "http://localhost:8000", changeOrigin: true },
       "/profile": { target: "http://localhost:8000", changeOrigin: true },

@@ -9,6 +9,29 @@
 
 ## 快速上手
 
+### 0. 5 分钟本地 demo（推荐）
+
+这条路径优先保证“能打开前端、能跑出真实产物”。默认使用离线 demo 模式，不需要真实 LLM；如果 `hermes_cli` 和 provider key 可用，前端会在“Demo 中心”显示 real readiness。
+
+```powershell
+cd C:\Users\Lenovo\Desktop\your_secretary\student-secretary-agent
+powershell -ExecutionPolicy Bypass -File .\scripts\doctor.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\start_demo.ps1
+```
+
+打开：
+
+- 前端：`http://127.0.0.1:5173`
+- API 健康检查：`http://127.0.0.1:8000/health`
+
+服务启动后可跑一键冒烟：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\smoke_demo.ps1
+```
+
+冒烟会验证：`/health`、`/demo/status`、Demo A offline、Demo C offline、科研主题刷新、本地 Markdown 笔记同步。运行产物默认写入仓库内 `.campus-demo/`，不会污染用户主目录。
+
 ### 1. Python 环境（重要）
 
 项目自带的 `.venv/Scripts/python.exe` 在受 **Windows Device Guard** 策略保护的机器上会被拦截（exit 126）。**请改用系统/Anaconda Python 3.10+**：
@@ -126,11 +149,12 @@ frontend/        # React+Vite+TS+Tailwind（+可选 Electron）
 
 ---
 
-## 当前状态（Phase 5 / M5 发布候选）
+## 当前状态（Demo RC）
 
-- Demo A / B / C 后端 + 记忆 L4 + Meta-Agent L5 + 人格 L6 + 编排 L2/L3 + API + 移动 + 成本路由 + 前端 全绿。
-- 测试：**206 passed**；phase-5 新模块覆盖率 **91%**（每文件 ≥80%）。
-- 前端 `npm run build` 0 错。
-- 真实 LLM / 真渠道 e2e 为手动验收项（同 phase 1–4 既定纪律）。
+- Demo A / C offline、科研主题 digest、本地 Markdown 笔记、前端 Demo 中心已跑通。
+- `/demo/status` 会显示真实 LLM readiness；当前 API real 模式走 `hermes_cli` import 路径，不依赖 `hermes` CLI 是否在 PATH。
+- 测试：`tests/api/test_core.py` 当前 **18 passed**。
+- 前端：`npm.cmd run typecheck` 通过；`npm.cmd run build` 在沙箱内会被 esbuild 读目录权限卡住，沙箱外构建通过。
+- Demo B、移动真渠道、Notion 真同步仍按手动配置/验收推进。
 
 更多细节见 [`devplan/phase-5/`](./devplan/phase-5/)（Plan / Status / Verification）。

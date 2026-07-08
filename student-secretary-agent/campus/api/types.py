@@ -12,6 +12,22 @@ class DemoBRequest(BaseModel):
     topic: Optional[str] = None
 
 
+class DemoARequest(BaseModel):
+    sample_text: str = ""
+    topic: str = "校园低碳实践"
+    region: str = "北京高校社区"
+    window: str = "2026 暑期"
+    mode: str = "offline"  # offline | auto | real
+
+
+class DemoCRequest(BaseModel):
+    goal: str
+    days: int = 30
+    minutes: int = 20
+    quiz_n: int = 3
+    mode: str = "offline"  # offline | auto | real
+
+
 class MemoryQuery(BaseModel):
     query: str
     k: int = 5
@@ -25,6 +41,22 @@ class PushRequest(BaseModel):
     channel: str = "feishu"
     target: Optional[str] = None
     message: str
+
+
+class ResearchTopicRequest(BaseModel):
+    title: str
+    query: str = ""
+    keywords: list[str] = []
+    cadence: str = "daily"
+
+
+class ResearchRefreshRequest(BaseModel):
+    mode: str = "offline"
+
+
+class NotionSyncRequest(BaseModel):
+    digest: dict
+    mode: str = "local"  # local | notion
 
 
 class EventRequest(BaseModel):

@@ -1,3 +1,7 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+.campus-demo/
+.campus-demo-test/
+.campus-test/
+frontend/dist/

@@ -1,6 +1,32 @@
 # Campus Skill 接入清单
 
-> **接入机制**：Hermes 原生兼容 agentskills.io，`hermes skills install <identifier-or-URL>` 一条装上（落 `~/.hermes/skills/`，不入 git）；自写 campus skill 放本目录，经 `~/.hermes/config.yaml` 的 `skills.external_dirs` 挂载（入 git，curator-exempt）。发现 = 纯目录扫描，drop 进去 + `hermes reload-skills` 即可用。完整计划见 `~/.claude/plans/skill-skill-list-md-goal-md-skill-fizzy-cray.md`。
+> **接入机制**：Hermes 原生兼容 agentskills.io，`hermes skills install <identifier-or-URL>` 一条装上。Windows 上 Hermes 0.18 的真实 home 是 `%LOCALAPPDATA%/hermes`，所以外部 skill 实际落在 `C:/Users/Lenovo/AppData/Local/hermes/skills/`；旧文档里的 `~/.hermes/skills/` 只适用于 POSIX 或旧布局。自写 campus skill 放本目录，经真实 `config.yaml` 的 `skills.external_dirs` 挂载（入 git，curator-exempt）。发现 = 纯目录扫描，drop 进去 + `hermes reload-skills` 即可用。完整计划见 `~/.claude/plans/skill-skill-list-md-goal-md-skill-fizzy-cray.md`。
+
+## 当前本机状态（2026-07-08 复核）
+
+- ✅ 外部安装目录已确认：`C:/Users/Lenovo/AppData/Local/hermes/skills/`。
+- ✅ 真实 Hermes config 已补上 repo skill 挂载：
+
+```yaml
+skills:
+  external_dirs:
+    - "c:/Users/Lenovo/Desktop/your_secretary/student-secretary-agent/skills"
+```
+
+- ✅ 已看到实体目录：`academic-search` / `read-arxiv-paper` / `academic-researcher` / `academic-research-skills` / `web-access` / `notion-api` / `baoyu-translate` / `docx` / `pptx` / `xlsx` / `pdf` / `find-skills` / `skill-creator`。
+- ✅ 已同步可分发候选为仓库内置 skill：`student-secretary-agent/skills/vendor/`。
+- ⚠️ `docx` / `pptx` / `xlsx` / `pdf` 本机已安装，但其 skill 包声明 proprietary 条款并禁止复制/分发，因此不进入 vendor；产品侧继续用项目已有 Python 抽取/生成代码，或在用户本机按条款在线安装。
+- ⚠️ 当前 `.venv/Scripts/hermes.exe` 被 Windows Application Control 拦截，不能直接在 PowerShell 里跑 `hermes skills list`；文件系统复核为准，后续 demo doctor 需要检测这个启动风险。
+
+## 内置技能策略（面向未来上线）
+
+上线给非 CS 用户使用时，不能要求用户再手动安装这些基础 skill。推荐采用“三层内置”：
+
+1. **Campus 自研 skill**：继续放在 `student-secretary-agent/skills/<name>/`，随仓库版本控制，例如 `campus-demo-c`。
+2. **第三方 vendored skill**：已新增 `student-secretary-agent/skills/vendor/<name>/`，只复制已审核且无明确分发限制的第三方 skill，并保留 `_meta.json`、上游 URL、commit/tag、license、安全扫描结果。安装器首次启动时把 vendor skill 同步到 Hermes home，或直接把 vendor 根目录加入 `skills.external_dirs`。
+3. **可选在线安装**：`SKILL_LIST.md` 继续保留 URL 作为复现清单；只有当本地 vendor 缺失或用户主动升级时，才走 `hermes skills install` 联网安装。
+
+不建议把所有第三方 skill 直接平铺混进 `skills/` 根目录：来源、license、升级边界和安全审计会变乱。科研/Notion/docx/pdf 这些核心 demo 依赖应优先 vendor；被安全扫描拦截或上游不可达的 skill 不 vendor。
 
 ## 接入进度（2026-07-07，Wave 2+3 + html-ppt 安装后复核）
 | wave | skill | 状态 |

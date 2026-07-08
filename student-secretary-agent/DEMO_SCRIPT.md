@@ -1,5 +1,25 @@
 最终我们需要完成三个典型长程任务的demo
 
+## 当前可演示入口（本地 5 分钟）
+
+```powershell
+cd C:\Users\Lenovo\Desktop\your_secretary\student-secretary-agent
+powershell -ExecutionPolicy Bypass -File .\scripts\doctor.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\start_demo.ps1
+```
+
+打开 `http://127.0.0.1:5173`：
+
+- 仪表盘：看 LLM、skills、Notion、最近运行状态。
+- Demo 中心：选择 `offline`，运行 Demo A 和 Demo C；选择 `real` 时，如果 Hermes/LLM 未就绪，会显示缺什么。
+- 科研笔记：添加主题，刷新 digest，查看论文卡片和 `note_path`，同步本地 Markdown 镜像。
+
+服务启动后验收：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\smoke_demo.ps1
+```
+
 A. “根据微信里别人发来的策划案格式，自动写社会实践策划案 + 找外联对象 + 写邮件”
 
 可能的流程：

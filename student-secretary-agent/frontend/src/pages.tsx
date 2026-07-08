@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { api, type DemoBResult, type MemoryHit, type Profile, type Task, type CalEvent, type Anniversary, type DailyLog } from "./api";
+import { api, type DemoAResult, type DemoBResult, type DemoCResult, type DemoStatus, type MemoryHit, type Profile, type Task, type CalEvent, type Anniversary, type DailyLog, type ResearchDigest, type ResearchTopic } from "./api";
 
 function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
@@ -28,14 +28,18 @@ export function DashboardPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [runs, setRuns] = useState<string[]>([]);
+  const [status, setStatus] = useState<DemoStatus | null>(null);
+  const [notes, setNotes] = useState<{ ok: boolean; token_configured: boolean; database_configured?: boolean; local_mirror_dir?: string } | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([api.profile(), api.tasks(), api.runs()])
-      .then(([p, t, r]) => {
+    Promise.all([api.profile(), api.tasks(), api.runs(), api.demoStatus(), api.notesStatus()])
+      .then(([p, t, r, s, n]) => {
         setProfile(p);
         setTasks(t.tasks);
         setRuns(r.runs);
+        setStatus(s);
+        setNotes(n);
       })
       .catch((e: Error) => setErr(e.message));
   }, []);
@@ -57,6 +61,19 @@ export function DashboardPage() {
         <Card title="最近运行">
           <p className="text-3xl font-semibold">{runs.length}</p>
           <p className="text-sm text-ink-700/70">个 demo 运行记录</p>
+        </Card>
+        <Card title="LLM">
+          <p className="text-lg font-semibold">{status?.llm.ok ? "真实模式可用" : "离线优先"}</p>
+          <p className="text-sm text-ink-700/70">{status?.llm.hermes_importable ? "hermes_cli 可导入" : "hermes_cli 未就绪"}</p>
+          {status?.llm.configured_keys?.length ? <span className="campus-chip mt-2">{status.llm.configured_keys.join(", ")}</span> : null}
+        </Card>
+        <Card title="Skills">
+          <p className="text-3xl font-semibold">{(status?.vendor.length || 0) + (status?.campus.length || 0)}</p>
+          <p className="text-sm text-ink-700/70">{status?.external_dir_configured ? "仓库技能已挂载" : "仓库技能未挂载"}</p>
+        </Card>
+        <Card title="Notion">
+          <p className="text-lg font-semibold">{notes?.ok ? "可同步" : "本地镜像"}</p>
+          <p className="text-sm text-ink-700/70">{notes?.local_mirror_dir || "notes/research"}</p>
         </Card>
       </div>
     </>
@@ -112,6 +129,98 @@ export function OnboardingPage() {
 }
 
 /* ---------------- Demo B ---------------- */
+export function DemoCenterPage() {
+  const [status, setStatus] = useState<DemoStatus | null>(null);
+  const [mode, setMode] = useState("offline");
+  const [topic, setTopic] = useState("校园低碳实践");
+  const [region, setRegion] = useState("北京高校社区");
+  const [goal, setGoal] = useState("7 天入门机器学习");
+  const [days, setDays] = useState(7);
+  const [aRes, setARes] = useState<DemoAResult | null>(null);
+  const [cRes, setCRes] = useState<DemoCResult | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  useEffect(() => {
+    api.demoStatus().then(setStatus).catch((e: Error) => setErr(e.message));
+  }, []);
+
+  const runA = () => {
+    setBusy("a"); setErr(null);
+    api.demoARun({ topic, region, window: "2026 暑期", mode })
+      .then(setARes).catch((e: Error) => setErr(e.message)).finally(() => setBusy(null));
+  };
+  const runC = () => {
+    setBusy("c"); setErr(null);
+    api.demoCRun({ goal, days, minutes: 20, quiz_n: 3, mode })
+      .then(setCRes).catch((e: Error) => setErr(e.message)).finally(() => setBusy(null));
+  };
+
+  return (
+    <>
+      <PageHeader title="Demo 中心" subtitle="社会实践策划、学习计划、真实 LLM 状态检查。" />
+      <Err e={err} />
+      <div className="mb-4 grid gap-4 lg:grid-cols-3">
+        <Card title="运行模式">
+          <select className="campus-input" value={mode} onChange={(e) => setMode(e.target.value)}>
+            <option value="offline">offline</option>
+            <option value="auto">auto</option>
+            <option value="real">real</option>
+          </select>
+          {status && (
+            <div className="mt-3 text-sm text-ink-700/70">
+              <p>LLM：{status.llm.ok ? "可用" : "未就绪"}</p>
+              <p>Hermes：{status.llm.hermes_importable ? "import ok" : "不可导入"}</p>
+              <p>Skills dir：{status.external_dir_configured ? "已挂载" : "未挂载"}</p>
+              <p>内置技能：{status.vendor.length + status.campus.length}</p>
+              {status.missing_core.length > 0 && <p className="text-amber-700">缺少：{status.missing_core.join(", ")}</p>}
+              {!status.llm.ok && status.llm.fixes && status.llm.fixes.length > 0 && (
+                <p className="mt-2 text-amber-700">{status.llm.fixes[0]}</p>
+              )}
+            </div>
+          )}
+        </Card>
+        <Card title="Demo A 社会实践">
+          <div className="grid gap-2 text-sm">
+            <input className="campus-input" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="实践主题" />
+            <input className="campus-input" value={region} onChange={(e) => setRegion(e.target.value)} placeholder="地区" />
+            <button className="campus-btn" onClick={runA} disabled={busy !== null}>{busy === "a" ? "生成中..." : "生成策划案"}</button>
+          </div>
+          {aRes && (
+            <div className="mt-3 grid gap-2 text-sm">
+              <Metric label="状态" value={aRes.ok ? "成功" : "失败"} />
+              <Metric label="外联对象" value={String(aRes.outreach_count)} />
+              <Metric label="邮件草稿" value={String(aRes.email_segments)} />
+              <Metric label="模式" value={aRes.mode} />
+              <pre className="overflow-x-auto rounded-lg bg-ink-900 p-2 text-xs text-ink-100">{aRes.error || aRes.run_dir}</pre>
+              {aRes.artifacts && aRes.artifacts.length > 0 && (
+                <p className="text-xs text-ink-700/60">产物 {aRes.artifacts.length} 个，已写入 run 目录。</p>
+              )}
+            </div>
+          )}
+        </Card>
+        <Card title="Demo C 学习计划">
+          <div className="grid gap-2 text-sm">
+            <input className="campus-input" value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="学习目标" />
+            <input className="campus-input" type="number" value={days} onChange={(e) => setDays(Number(e.target.value))} />
+            <button className="campus-btn" onClick={runC} disabled={busy !== null}>{busy === "c" ? "生成中..." : "生成学习计划"}</button>
+          </div>
+          {cRes && (
+            <div className="mt-3 grid gap-2 text-sm">
+              <Metric label="状态" value={cRes.ok ? "成功" : "失败"} />
+              <Metric label="天数" value={String(cRes.days)} />
+              <Metric label="Quiz" value={String(cRes.quiz_questions)} />
+              <Metric label="模式" value={cRes.mode} />
+              <pre className="overflow-x-auto rounded-lg bg-ink-900 p-2 text-xs text-ink-100">{cRes.error || cRes.run_dir}</pre>
+              {cRes.plan_md_head && <p className="text-xs text-ink-700/60">{cRes.plan_md_head}</p>}
+            </div>
+          )}
+        </Card>
+      </div>
+    </>
+  );
+}
+
 export function DemoBPage() {
   const [path, setPath] = useState("");
   const [exam, setExam] = useState("");
@@ -158,6 +267,107 @@ export function DemoBPage() {
             <pre className="md:col-span-4 overflow-x-auto rounded-lg bg-ink-900 p-3 text-xs text-ink-100">{res.run_dir}</pre>
           </div>
         )}
+      </Card>
+    </>
+  );
+}
+
+/* ---------------- Research + Notes ---------------- */
+export function ResearchPage() {
+  const [topics, setTopics] = useState<ResearchTopic[]>([]);
+  const [runs, setRuns] = useState<ResearchDigest[]>([]);
+  const [latest, setLatest] = useState<ResearchDigest | null>(null);
+  const [title, setTitle] = useState("LLM agents for students");
+  const [query, setQuery] = useState("student secretary agent papers");
+  const [note, setNote] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const refreshAll = () => {
+    Promise.all([api.researchTopics(), api.researchRuns()])
+      .then(([t, r]) => { setTopics(t.topics); setRuns(r.runs); })
+      .catch((e: Error) => setErr(e.message));
+  };
+  useEffect(refreshAll, []);
+
+  const addTopic = () => {
+    setBusy(true); setErr(null);
+    api.researchAddTopic({ title, query })
+      .then(refreshAll)
+      .catch((e: Error) => setErr(e.message))
+      .finally(() => setBusy(false));
+  };
+  const runRefresh = (id: string) => {
+    setBusy(true); setErr(null);
+    api.researchRefresh(id, "auto")
+      .then((d) => { setLatest(d); refreshAll(); })
+      .catch((e: Error) => setErr(e.message))
+      .finally(() => setBusy(false));
+  };
+  const sync = () => {
+    if (!latest) return;
+    api.notionSync(latest, "local")
+      .then((r) => setNote(r.local_path))
+      .catch((e: Error) => setErr(e.message));
+  };
+
+  return (
+    <>
+      <PageHeader title="科研笔记" subtitle="论文主题跟踪、候选论文 digest、本地 Notion 镜像。" />
+      <Err e={err} />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card title="主题">
+          <div className="grid gap-2 text-sm">
+            <input className="campus-input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="主题名称" />
+            <input className="campus-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="检索 query" />
+            <button className="campus-btn" onClick={addTopic} disabled={busy || !title}>{busy ? "处理中..." : "添加主题"}</button>
+          </div>
+          <ul className="mt-4 space-y-2 text-sm">
+            {topics.map((t) => (
+              <li key={t.id} className="flex items-center justify-between rounded-lg border border-ink-100 p-2">
+                <span>
+                  <span className="font-medium">{t.title}</span>
+                  <span className="ml-2 text-ink-700/60">{t.query}</span>
+                </span>
+                <button className="campus-btn" onClick={() => runRefresh(t.id)} disabled={busy}>刷新</button>
+              </li>
+            ))}
+            {topics.length === 0 && <li className="text-ink-700/60">暂无主题。</li>}
+          </ul>
+        </Card>
+        <Card title="Digest">
+          {latest ? (
+            <div className="text-sm">
+              <p className="mb-3 text-ink-700/80">{latest.summary}</p>
+              <div className="mb-3 flex flex-wrap gap-2">
+                <span className="campus-chip">{latest.source_mode || "offline"}</span>
+                {latest.note_path && <span className="campus-chip">note ready</span>}
+              </div>
+              {latest.source_error && <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">{latest.source_error}</p>}
+              <ul className="space-y-2">
+                {latest.papers.map((p, i) => (
+                  <li key={i} className="rounded-lg border border-ink-100 p-2">
+                    <p className="font-medium">{p.title}</p>
+                    <p className="text-xs text-ink-700/60">{p.year || ""} · score {p.score || ""}</p>
+                    {p.abstract && <p className="mt-1 text-xs text-ink-700/70">{p.abstract}</p>}
+                  </li>
+                ))}
+              </ul>
+              <button className="campus-btn mt-3" onClick={sync}>同步笔记</button>
+              {(note || latest.note_path) && <pre className="mt-3 overflow-x-auto rounded-lg bg-ink-900 p-2 text-xs text-ink-100">{note || latest.note_path}</pre>}
+            </div>
+          ) : (
+            <p className="text-sm text-ink-700/60">刷新一个主题后会显示摘要。</p>
+          )}
+        </Card>
+      </div>
+      <Card title="历史运行">
+        <ul className="space-y-2 text-sm">
+          {runs.slice().reverse().slice(0, 5).map((r, i) => (
+            <li key={i} className="rounded-lg border border-ink-100 p-2">{r.summary}</li>
+          ))}
+          {runs.length === 0 && <li className="text-ink-700/60">暂无运行记录。</li>}
+        </ul>
       </Card>
     </>
   );

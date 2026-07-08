@@ -15,8 +15,9 @@ from typing import Any, Callable, Optional
 from fastapi import FastAPI
 
 from campus.api.types import (
-    DemoBRequest, MemoryQuery, OnboardingRequest, PushRequest,
-    EventRequest, AnniversaryRequest, LogQuery,
+    DemoARequest, DemoBRequest, DemoCRequest, MemoryQuery, OnboardingRequest, PushRequest,
+    EventRequest, AnniversaryRequest, LogQuery, ResearchTopicRequest,
+    ResearchRefreshRequest, NotionSyncRequest,
 )
 
 __all__ = ["Backends", "create_app", "app", "start_scheduler", "stop_scheduler"]
@@ -25,11 +26,20 @@ __all__ = ["Backends", "create_app", "app", "start_scheduler", "stop_scheduler"]
 @dataclass
 class Backends:
     """Injectable service callables. Any left None uses a sane default."""
+    demo_a_run: Callable[[DemoARequest], dict]
     demo_b_run: Callable[[DemoBRequest], dict]
+    demo_c_run: Callable[[DemoCRequest], dict]
+    demo_status: Callable[[], dict]
     memory_recall: Callable[[str, int], list]
     onboarding_run: Callable[[dict], dict]
     list_tasks: Callable[[], list]
     push_send: Callable[[str, Optional[str], str], dict]
+    research_add_topic: Optional[Callable[[ResearchTopicRequest], dict]] = None
+    research_list_topics: Optional[Callable[[], dict]] = None
+    research_refresh: Optional[Callable[[str, ResearchRefreshRequest], dict]] = None
+    research_runs: Optional[Callable[[], dict]] = None
+    notion_sync: Optional[Callable[[NotionSyncRequest], dict]] = None
+    notes_status: Optional[Callable[[], dict]] = None
     # life (Phase 6) — Optional so phase-5 callers that omit them still work
     calendar_add: Optional[Callable[[EventRequest], dict]] = None
     calendar_list: Optional[Callable[[Optional[str], Optional[str]], dict]] = None
@@ -42,11 +52,74 @@ class Backends:
 
 # ---- default backends (real campus libs; deterministic where possible) ----
 
+def _default_demo_a(req: DemoARequest) -> dict:
+    from campus.demo_a.types import Brief, SampleSpec
+    from campus.demo_a import pipeline as _p
+    from campus.runtime.llm_config import require_real_llm, resolve_mode
+
+    real, status = require_real_llm(req.mode)
+    if resolve_mode(req.mode) == "real" and not status.get("ok"):
+        return {"ok": False, "mode": "real", "error": status["error"], "real_llm": status}
+
+    sample = SampleSpec(raw=req.sample_text or "# 样例\n## 背景\n## 预算\n## 时间表\n## 安全预案")
+    brief = Brief(topic=req.topic, region=req.region, window=req.window)
+    turn = None
+    opener = None
+    if not real:
+        from campus.demo_a.offline import make_offline_turn
+        run_dir = _p.new_run_dir()
+        opener = lambda url, timeout=5: 200
+        result = _p.run_demo_a(sample, brief, turn_factory=make_offline_turn,
+                               run_dir=run_dir, url_opener=opener, sup_max_rounds=1)
+    else:
+        try:
+            result = _p.run_demo_a(sample, brief)
+        except Exception as e:
+            return {"ok": False, "mode": "real", "error": str(e), "real_llm": status}
+    data = {
+        "ok": result.ok,
+        "mode": "real" if real else "offline",
+        "run_dir": result.run_dir,
+        "final_status": result.final_status,
+        "outreach_count": result.outreach_count,
+        "email_segments": result.email_segments,
+        "checks": [getattr(c, "__dict__", c) for c in result.checks],
+        "debates": result.debates,
+        "artifacts": result.artifacts,
+        "error": result.error,
+        "real_llm": status,
+    }
+    return data
+
 def _default_demo_b(req: DemoBRequest) -> dict:
     from campus.demo_b import pipeline as _p
     r = _p.run_demo_b(req.path, req.exam_date, free_minutes=req.free_minutes,
                       start_date=req.start_date, topic=req.topic)
     return _result_dict(r)
+
+
+def _default_demo_c(req: DemoCRequest) -> dict:
+    from campus.runtime.llm_config import require_real_llm, resolve_mode
+    real, status = require_real_llm(req.mode)
+    if resolve_mode(req.mode) == "real" and not status.get("ok"):
+        return {"ok": False, "mode": "real", "error": status["error"], "real_llm": status}
+    if real:
+        try:
+            from campus.demo_c.orchestrator import run_learning_plan
+            result = run_learning_plan(req.goal, days=req.days, slot_minutes=req.minutes, quiz_n=req.quiz_n)
+            result["mode"] = "real"
+        except Exception as e:
+            return {"ok": False, "mode": "real", "error": str(e), "real_llm": status}
+    else:
+        from campus.demo_c.offline import run_learning_plan_offline
+        result = run_learning_plan_offline(req.goal, days=req.days, slot_minutes=req.minutes, quiz_n=req.quiz_n)
+    result["real_llm"] = status
+    return result
+
+
+def _default_demo_status() -> dict:
+    from campus.skills.registry import audit
+    return audit()
 
 
 def _result_dict(r) -> dict:
@@ -79,6 +152,36 @@ def _default_push(channel: str, target: Optional[str], message: str) -> dict:
                 "target": receipt.target, "error": receipt.error}
     except Exception as e:
         return {"ok": False, "channel": channel, "target": target, "error": str(e)}
+
+
+def _default_research_add_topic(req: ResearchTopicRequest) -> dict:
+    from campus.research import tracker
+    return tracker.add_topic(req.title, req.query, req.keywords, req.cadence)
+
+
+def _default_research_list_topics() -> dict:
+    from campus.research import tracker
+    return {"topics": tracker.list_topics()}
+
+
+def _default_research_refresh(topic_id: str, req: ResearchRefreshRequest) -> dict:
+    from campus.research import tracker
+    return tracker.refresh_topic(topic_id, req.mode)
+
+
+def _default_research_runs() -> dict:
+    from campus.research import tracker
+    return {"runs": tracker.list_runs()}
+
+
+def _default_notion_sync(req: NotionSyncRequest) -> dict:
+    from campus.notes import notion
+    return notion.sync_digest(req.digest, req.mode)
+
+
+def _default_notes_status() -> dict:
+    from campus.notes import notion
+    return notion.status()
 
 
 # ---- life backends (Phase 6) ----
@@ -152,11 +255,20 @@ def _default_daily_log_run() -> dict:
 
 def _default_backends() -> Backends:
     return Backends(
+        demo_a_run=_default_demo_a,
         demo_b_run=_default_demo_b,
+        demo_c_run=_default_demo_c,
+        demo_status=_default_demo_status,
         memory_recall=_default_memory_recall,
         onboarding_run=_default_onboarding,
         list_tasks=_default_tasks,
         push_send=_default_push,
+        research_add_topic=_default_research_add_topic,
+        research_list_topics=_default_research_list_topics,
+        research_refresh=_default_research_refresh,
+        research_runs=_default_research_runs,
+        notion_sync=_default_notion_sync,
+        notes_status=_default_notes_status,
         calendar_add=_default_calendar_add,
         calendar_list=_default_calendar_list,
         calendar_delete=_default_calendar_delete,
@@ -189,9 +301,22 @@ def create_app(backends: Optional[Backends] = None,
     def demo_b_run(req: DemoBRequest):
         return app.state.backends.demo_b_run(req)
 
+    @app.post("/demo_a/run")
+    def demo_a_run(req: DemoARequest):
+        return app.state.backends.demo_a_run(req)
+
+    @app.post("/demo_c/run")
+    def demo_c_run(req: DemoCRequest):
+        return app.state.backends.demo_c_run(req)
+
+    @app.get("/demo/status")
+    def demo_status():
+        return app.state.backends.demo_status()
+
     @app.get("/runs")
     def list_runs():
-        base = os.path.expanduser("~/.campus/runs")
+        from campus.runtime.paths import runs_dir
+        base = runs_dir()
         if not os.path.isdir(base):
             return {"runs": []}
         return {"runs": sorted(os.listdir(base))}
@@ -215,6 +340,36 @@ def create_app(backends: Optional[Backends] = None,
     @app.post("/push")
     def push(req: PushRequest):
         return app.state.backends.push_send(req.channel, req.target, req.message)
+
+    @app.post("/research/topics")
+    def research_add_topic(req: ResearchTopicRequest):
+        b = app.state.backends.research_add_topic
+        return b(req) if b else {"ok": False, "error": "research backend not configured"}
+
+    @app.get("/research/topics")
+    def research_list_topics():
+        b = app.state.backends.research_list_topics
+        return b() if b else {"topics": []}
+
+    @app.post("/research/topics/{topic_id}/refresh")
+    def research_refresh(topic_id: str, req: ResearchRefreshRequest):
+        b = app.state.backends.research_refresh
+        return b(topic_id, req) if b else {"ok": False, "error": "research backend not configured"}
+
+    @app.get("/research/runs")
+    def research_runs():
+        b = app.state.backends.research_runs
+        return b() if b else {"runs": []}
+
+    @app.post("/notes/notion/sync")
+    def notion_sync(req: NotionSyncRequest):
+        b = app.state.backends.notion_sync
+        return b(req) if b else {"ok": False, "error": "notes backend not configured"}
+
+    @app.get("/notes/status")
+    def notes_status():
+        b = app.state.backends.notes_status
+        return b() if b else {"ok": False}
 
     # ---- life routes (Phase 6) ----
     @app.post("/calendar")
