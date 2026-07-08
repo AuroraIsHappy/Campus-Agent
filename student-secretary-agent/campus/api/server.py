@@ -363,18 +363,18 @@ def _default_agent_run(req: AgentRunRequest) -> dict:
 
 
 def _try_recall_memory(query: str, k: int = 3) -> str:
-    """Best-effort memory recall for context injection. Never raises."""
+    """Best-effort layered memory recall for context injection. Never raises.
+
+    Phase 8 Step 2: uses ``recall_layered`` (tiered per-layer rules + RRF fusion +
+    token-budget packing) instead of the flat ``recall()`` scan. Returns a formatted
+    snippet ready to paste into an LLM prompt.
+    """
     try:
         from campus.memory.json_store import JsonFileStore
+        from campus.memory.recall_strategy import recall_layered
         store = JsonFileStore()
-        hits = store.recall(query, k=k)
-        if not hits:
-            return ""
-        lines = []
-        for r in hits:
-            rec = r.record
-            lines.append(f"[{rec.layer}] {rec.key}: {rec.content[:200]}")
-        return "\n".join(lines)
+        packed = recall_layered(store, query, token_budget=1500)
+        return packed.snippet
     except Exception:
         return ""
 
@@ -847,6 +847,11 @@ def start_scheduler(app: FastAPI, interval: float = _SCHEDULER_INTERVAL) -> None
                 run_daily(memory=_life_memory())
             except Exception:
                 pass  # never let the scheduler die; next tick retries
+            # Phase 8 Step 2: nightly memory compression (once per calendar day)
+            try:
+                _maybe_compress_memory()
+            except Exception:
+                pass
 
     t = threading.Thread(target=_loop, name="campus-life-scheduler", daemon=True)
     app.state.scheduler_thread = t
@@ -864,6 +869,54 @@ def stop_scheduler(app: FastAPI, timeout: float = 5.0) -> bool:
         app.state.scheduler_thread = None
         return not t.is_alive()
     return True
+
+
+# ---- nightly memory compression (Phase 8 Step 2) -------------------------------
+
+_LAST_COMPRESS_DAY = None
+
+
+def _maybe_compress_memory() -> None:
+    """Run memory compress + prune once per calendar day (idempotent guard).
+
+    Sediments old TASK_LOG / DAILY_LOG records into a PREFERENCES summary and
+    prunes records older than the retention window (pinned records always kept).
+    Uses the default (no-LLM) summarizer to stay deterministic + free; a real LLM
+    summarizer can be injected later. Mirrors the ``reminders._sent_today`` day-dedup
+    pattern so the 60s scheduler tick only fires this once per day.
+    """
+    global _LAST_COMPRESS_DAY
+    import time as _t
+    today = _t.strftime("%Y-%m-%d")
+    if _LAST_COMPRESS_DAY == today:
+        return
+    _LAST_COMPRESS_DAY = today
+    try:
+        from campus.memory.json_store import JsonFileStore
+        from campus.memory.compress import compress, prune_by_window
+        from campus.memory.types import DAILY_LOG, PREFERENCES, TASK_LOG
+        store = JsonFileStore()
+        now = int(_t.time())
+        retention = 90 * 86400  # 90 days
+        # gather old non-pinned TASK_LOG + DAILY_LOG records for compression
+        old_recs = [r for r in store.all()
+                    if r.layer in (TASK_LOG, DAILY_LOG) and not r.pinned
+                    and (now - (r.created_at or 0)) > 7 * 86400]  # > 7 days old
+        if old_recs:
+            sediment = compress(old_recs, created_at=now)
+            if sediment is not None:
+                store.remember(layer=PREFERENCES, key=f"sediment-{today}",
+                               content=sediment.content,
+                               metadata={"sedimented_from": len(old_recs),
+                                         "sediment_date": today})
+        # prune very old non-pinned records
+        all_recs = store.all()
+        kept = prune_by_window(all_recs, now, retention)
+        pruned_ids = {r.id for r in all_recs} - {r.id for r in kept}
+        for rid in pruned_ids:
+            store.forget(rid)
+    except Exception:
+        pass  # never let compression kill the scheduler
 
 
 # module-level app for ``uvicorn campus.api.server:app``.

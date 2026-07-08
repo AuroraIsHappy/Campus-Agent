@@ -99,13 +99,26 @@ def extract_json(text: str):
             return None
 
 
-def build_role_prompt(system_prompt: str, task: Task) -> str:
-    """Combine the role's system prompt + the task goal + a role-aware output contract."""
+def build_role_prompt(system_prompt: str, task: Task,
+                      memory_snippet: str = "") -> str:
+    """Combine the role's system prompt + the task goal + a role-aware output contract.
+
+    Phase 8 Step 2: if a ``memory_snippet`` is provided (from layered recall),
+    inject it as a USER CONTEXT section so roles see user preferences/history.
+    """
     role = (task.assignee or "").strip()
     body = task.body or ""
     parts = [
         (system_prompt or "").strip(),
         "",
+    ]
+    if memory_snippet:
+        parts += [
+            "=== USER CONTEXT (recalled memory) ===",
+            memory_snippet,
+            "",
+        ]
+    parts += [
         "=== TASK ===",
         f"title: {task.title}",
         "goal/context:",
@@ -165,14 +178,18 @@ def parse_role_output(raw: str, role: str) -> Tuple[str, dict, int]:
     return raw.strip(), meta, tokens
 
 
-def llm_turn(profile: dict, task: Task) -> TurnOutcome:
-    """The real injected turn_fn: profile + task -> one Hermes oneshot -> TurnOutcome."""
+def llm_turn(profile: dict, task: Task, memory_snippet: str = "") -> TurnOutcome:
+    """The real injected turn_fn: profile + task -> one Hermes oneshot -> TurnOutcome.
+
+    Phase 8 Step 2: ``memory_snippet`` (from layered recall) is injected into the
+    prompt so the role sees user preferences/history when generating.
+    """
     provider = profile.get("provider") or "zai"
     model = profile.get("model") or "glm-4.6"
     toolset = profile.get("toolset") or None
     system_prompt = profile.get("system_prompt") or ""
     role = profile.get("role") or (task.assignee or "")
-    prompt = build_role_prompt(system_prompt, task)
+    prompt = build_role_prompt(system_prompt, task, memory_snippet=memory_snippet)
     raw, _rc = ask_llm(prompt, model=model, provider=provider, toolsets=toolset)
     summary, metadata, tokens = parse_role_output(raw, role)
     return TurnOutcome(summary=summary, metadata=metadata, tokens=tokens)
