@@ -74,6 +74,22 @@ class NotionSyncRequest(BaseModel):
     mode: str = "local"  # local | notion
 
 
+class ZoteroSyncRequest(BaseModel):
+    papers: list[dict[str, Any]] = []
+    mode: str = "local"  # local | zotero
+
+
+class ZoteroSearchRequest(BaseModel):
+    query: str = ""
+    limit: int = 10
+
+
+class LectureExportRequest(BaseModel):
+    run_dir: str
+    topic: str = ""
+    mode: str = "local"  # local | notion
+
+
 class EventRequest(BaseModel):
     title: str
     start: str                       # "2026-07-09T08:00"

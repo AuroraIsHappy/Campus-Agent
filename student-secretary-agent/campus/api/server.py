@@ -18,7 +18,7 @@ from fastapi import FastAPI
 from campus.api.types import (
     AgentRunRequest, AgentChatRequest, DemoARequest, DemoBRequest, DemoCRequest, MemoryQuery, OnboardingRequest, PushRequest,
     EventRequest, AnniversaryRequest, LogQuery, ResearchTopicRequest,
-    ResearchRefreshRequest, NotionSyncRequest,
+    ResearchRefreshRequest, NotionSyncRequest, ZoteroSyncRequest, ZoteroSearchRequest,
     FlashcardsRequest, DeadlineRequest, QuizRunRequest, QuizGradeRequest,
     ResearchIdeaRequest, GithubTrendingRequest, FormatCheckRequest,
     HealthRequest, TravelPlanRequest, ClubMinutesRequest, RecruitingCopyRequest,
@@ -818,6 +818,22 @@ def create_app(backends: Optional[Backends] = None,
     def notes_notion_list(limit: int = 20):
         from campus.notes import notion
         return notion.list_notes(limit=limit)
+
+    # ---- Zotero integration (Phase 9 — GOAL.md 文献管理) ----
+    @app.get("/notes/zotero/status")
+    def zotero_status():
+        from campus.notes import zotero
+        return zotero.status()
+
+    @app.post("/notes/zotero/sync")
+    def zotero_sync(req: ZoteroSyncRequest):
+        from campus.notes import zotero
+        return zotero.sync_papers(req.papers, req.mode)
+
+    @app.post("/notes/zotero/search")
+    def zotero_search(req: ZoteroSearchRequest):
+        from campus.notes import zotero
+        return zotero.search(req.query, req.limit)
 
     # ---- Phase 7 product routes ----
     @app.post("/learning/flashcards")
