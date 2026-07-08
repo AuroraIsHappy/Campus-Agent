@@ -409,9 +409,22 @@ def _default_settings_status() -> dict:
     except Exception:
         branch = ""
     notion = _default_notes_status()
+    # Phase 8 Step 5: mobile health checks (real config + readiness, not just env bools)
+    try:
+        from campus.mobile.feishu import health_check as feishu_health
+        feishu = feishu_health()
+    except Exception:
+        feishu = {"ok": False, "configured": bool(os.environ.get("CAMPUS_FEISHU_CHAT_ID")),
+                  "error": "feishu module unavailable"}
+    try:
+        from campus.mobile.qq_bot_api import QQBotAPIClient
+        qq = QQBotAPIClient().health_check()
+    except Exception:
+        qq = {"ok": False, "configured": bool(os.environ.get("QQ_APP_ID")),
+              "error": "qq_bot module unavailable"}
     mobile = {
-        "feishu": bool(os.environ.get("CAMPUS_FEISHU_CHAT_ID")),
-        "qq": bool(os.environ.get("CAMPUS_QQ_BOT_APP_ID") or os.environ.get("QQ_BOT_APP_ID")),
+        "feishu": feishu,
+        "qq": qq,
     }
     providers = {
         "github": bool(os.environ.get("GITHUB_TOKEN")),
@@ -425,7 +438,7 @@ def _default_settings_status() -> dict:
         "llm": real_llm_status("auto"),
         "skills": skills,
         "notion": notion,
-        "mobile": {"ok": any(mobile.values()), "channels": mobile},
+        "mobile": {"ok": feishu.get("ok") or qq.get("ok"), "channels": mobile},
         "providers": providers,
         "smoke_command": "powershell -ExecutionPolicy Bypass -File .\\scripts\\smoke_demo.ps1",
     }

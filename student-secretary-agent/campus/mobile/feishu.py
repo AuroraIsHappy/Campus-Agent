@@ -64,3 +64,22 @@ class FeishuPusher:
 def _first_token(text: str) -> str:
     t = (text or "").strip().splitlines()
     return t[0][:40] if t else ""
+
+
+def health_check() -> dict:
+    """Check Feishu push readiness: env config + optional gateway probe.
+
+    Phase 8 Step 5: reports whether CAMPUS_FEISHU_CHAT_ID is set and the
+    ``hermes`` binary is available. Does NOT send a real message (that's the
+    push path's job) — just a config/binary readiness check.
+    """
+    import shutil
+    target = default_feishu_target()
+    binary = shutil.which("hermes") or ""
+    return {
+        "ok": bool(target and binary),
+        "configured": bool(target),
+        "target": target or "(set CAMPUS_FEISHU_CHAT_ID)",
+        "hermes_binary": binary or "(not in PATH)",
+        "error": "" if target and binary else "missing target or hermes binary",
+    }
