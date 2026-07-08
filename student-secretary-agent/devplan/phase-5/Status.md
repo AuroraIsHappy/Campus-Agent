@@ -12,8 +12,8 @@
 ## 任务（按 Plan §6 构建顺序）
 
 ### 1. Demo B 后端（地基）
-- ⏳ DB-T1 `campus/demo_b/types.py` + `__init__.py`（LectureDoc/ExtractedText/KGNode/KnowledgeGraph/ReviewDay/ReviewPlan/QuizQ/RunResult）
-- ⏳ DB-T2 `campus/demo_b/extractors.py`（ExtractorPort + PDF/DOCX/PPTX/MD/TXT 降级链）+ `tests/demo_b/test_core.py::抽取`
+- ✅ DB-T1 `campus/demo_b/types.py` + `__init__.py`（LectureDoc/ExtractedText/KGNode/KGEdge/KnowledgeGraph/ReviewDay/ReviewPlan/QuizQ/RunResult）
+- ✅ DB-T2 `campus/demo_b/extractors.py`（ExtractorPort + PDF/DOCX/PPTX/MD/TXT 降级链）+ `tests/demo_b/test_core.py`（**13 passed**，B-F1 抽取/降级/注入全绿）
 - ⏳ DB-T3 `campus/demo_b/knowledge_graph.py`（build_kg + 注入 extract_fn）+ 测试
 - ⏳ DB-T4 `campus/demo_b/resource_search.py`（search_resources + 复用 demo_c/ranker）+ 测试
 - ⏳ DB-T5 `campus/demo_b/review_planner.py`（build_review_plan + 复用 ebbinghaus；不超排）+ 测试
@@ -48,4 +48,4 @@
 - ⏳ V-T2 `Verification.md` 落档 + Status 全 ✅ → 删 /loop cron → M5
 
 ## 当前进度指针
-**下一步**：DB-T1（campus/demo_b/types.py）。
+**下一步**：DB-T3（campus/demo_b/knowledge_graph.py：build_kg + 注入 extract_fn + validate_kg）。
