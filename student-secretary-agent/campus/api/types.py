@@ -193,3 +193,15 @@ class InterviewReflectRequest(BaseModel):
     reflection: str
     practice_run_id: str = ""
     tags: str = ""
+
+
+class CorrectionRequest(BaseModel):
+    run_id: str
+    domain: str = ""
+    original: str = ""
+    corrected: str = ""
+    reason: str = ""
+
+
+class AgentNameRequest(BaseModel):
+    name: str

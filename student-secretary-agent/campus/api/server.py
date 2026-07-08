@@ -23,6 +23,7 @@ from campus.api.types import (
     HealthRequest, TravelPlanRequest, ClubMinutesRequest, RecruitingCopyRequest,
     EmailDraftRequest, JobSearchRequest, JobSaveRequest, InterviewPlanRequest,
     InterviewPracticeRequest, InterviewReflectRequest,
+    CorrectionRequest, AgentNameRequest,
 )
 
 __all__ = ["Backends", "create_app", "app", "start_scheduler", "stop_scheduler"]
@@ -761,6 +762,66 @@ def create_app(backends: Optional[Backends] = None,
         from campus import phase7
         return phase7.quiz_daily(topic, count)
 
+    # ---- auto-learn (Phase 8 Step 4) ----
+    @app.post("/agent/runs/{run_id}/correction")
+    def submit_correction(run_id: str, req: CorrectionRequest):
+        from campus.meta_agent.auto_learn import CorrectionStore
+        store = CorrectionStore()
+        c = store.add(run_id=run_id, domain=req.domain or "",
+                      original=req.original, corrected=req.corrected, reason=req.reason)
+        return {"ok": True, "correction": c.to_dict(), "total_corrections": store.count()}
+
+    @app.get("/agent/corrections")
+    def list_corrections(include_processed: bool = True):
+        from campus.meta_agent.auto_learn import CorrectionStore
+        store = CorrectionStore()
+        return {"corrections": store.list(include_processed=include_processed),
+                "total": store.count()}
+
+    @app.post("/admin/auto-learn")
+    def trigger_auto_learn(use_llm: bool = True):
+        from campus.meta_agent.auto_learn import AutoLearner
+        learner = AutoLearner()
+        report = learner.run(use_llm=use_llm)
+        return report.to_dict()
+
+    @app.get("/agent/skills")
+    def list_auto_skills():
+        from campus.meta_agent.auto_learn import SkillCreator
+        sc = SkillCreator()
+        return {"skills": sc.list_skills()}
+
+    # ---- agent name (Phase 8 Step 9) ----
+    @app.get("/agent/name")
+    def get_agent_name():
+        from campus.runtime.paths import state_dir
+        import os, json
+        path = os.path.join(state_dir(), "agent_config.json")
+        config = {}
+        try:
+            with open(path, encoding="utf-8") as f:
+                config = json.load(f)
+        except Exception:
+            pass
+        return {"ok": True, "name": config.get("name", "Campus"), "config": config}
+
+    @app.post("/agent/name")
+    def set_agent_name(req: AgentNameRequest):
+        from campus.runtime.paths import state_dir
+        import os, json
+        path = os.path.join(state_dir(), "agent_config.json")
+        config = {}
+        try:
+            with open(path, encoding="utf-8") as f:
+                config = json.load(f)
+        except Exception:
+            pass
+        config["name"] = req.name.strip()[:40] or "Campus"
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(config, f, ensure_ascii=False, indent=2)
+        return {"ok": True, "name": config["name"]}
+
     # ---- life routes (Phase 6) ----
     @app.post("/calendar")
     def calendar_add(req: EventRequest):
@@ -852,6 +913,11 @@ def start_scheduler(app: FastAPI, interval: float = _SCHEDULER_INTERVAL) -> None
                 _maybe_compress_memory()
             except Exception:
                 pass
+            # Phase 8 Step 4: nightly auto-learn (once per calendar day)
+            try:
+                _maybe_auto_learn()
+            except Exception:
+                pass
 
     t = threading.Thread(target=_loop, name="campus-life-scheduler", daemon=True)
     app.state.scheduler_thread = t
@@ -917,6 +983,31 @@ def _maybe_compress_memory() -> None:
             store.forget(rid)
     except Exception:
         pass  # never let compression kill the scheduler
+
+
+_LAST_AUTOLEARN_DAY = None
+
+
+def _maybe_auto_learn() -> None:
+    """Run auto-learn once per calendar day (idempotent day-dedup guard).
+
+    Reviews unprocessed corrections, classifies them (LLM if available, else
+    heuristic), and writes derived preferences/skills/knowledge. Uses the same
+    day-dedup pattern as ``_maybe_compress_memory``.
+    """
+    global _LAST_AUTOLEARN_DAY
+    import time as _t
+    today = _t.strftime("%Y-%m-%d")
+    if _LAST_AUTOLEARN_DAY == today:
+        return
+    _LAST_AUTOLEARN_DAY = today
+    try:
+        from campus.meta_agent.auto_learn import AutoLearner
+        learner = AutoLearner()
+        # use_llm=True, but AutoLearner falls back to heuristic if LLM unavailable
+        learner.run(use_llm=True)
+    except Exception:
+        pass  # never let auto-learn kill the scheduler
 
 
 # module-level app for ``uvicorn campus.api.server:app``.
