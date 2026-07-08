@@ -44,6 +44,7 @@ class OnboardingWizard:
         ("year", "你的年级或入学年份？（可留空）"),
         ("persona", "想要哪种秘书风格？默认 / 费曼 / 鲁迅"),
         ("providers", "你有哪些模型 API key？逗号分隔：glm / deepseek / qwen / openai"),
+        ("birthday", "你的生日是？（可留空，格式 MM-DD，用于提醒）"),
     ]
 
     def __init__(self, ask: AskFn, personas: Optional[Iterable[str]] = None) -> None:
@@ -73,9 +74,37 @@ class OnboardingWizard:
             year=answers.get("year", ""),
             persona=persona,
             provider_keys=provider_keys,
+            birthday=_normalize_birthday(answers.get("birthday", "")),
         )
         profile.recommended_skills = recommend_skills(profile)
         return profile
+
+
+def _normalize_birthday(raw: str) -> str:
+    """Coerce free-form birthday input to "MM-DD" (year-less), or "" if unparseable.
+
+    Accepts "MM-DD", "M-D", "YYYY-MM-DD" (drops the year), and Chinese forms
+    like "7月9日". Returns "" when the input doesn't look like a date so the
+    anniversary engine safely skips it.
+    """
+    import re as _re
+    s = (raw or "").strip()
+    if not s:
+        return ""
+    # Chinese "M月D日"
+    m = _re.search(r"(\d{1,2})\s*月\s*(\d{1,2})\s*日?", s)
+    if m:
+        mm, dd = int(m.group(1)), int(m.group(2))
+    else:
+        digits = _re.findall(r"\d+", s)
+        if len(digits) >= 2:
+            # YYYY-MM-DD -> take last two as M,D; MM-DD -> first two
+            mm, dd = (int(digits[-2]), int(digits[-1])) if len(digits) >= 3 else (int(digits[0]), int(digits[1]))
+        else:
+            return ""
+    if 1 <= mm <= 12 and 1 <= dd <= 31:
+        return f"{mm:02d}-{dd:02d}"
+    return ""
 
 
 def recommend_skills(profile: UserProfile) -> list[str]:

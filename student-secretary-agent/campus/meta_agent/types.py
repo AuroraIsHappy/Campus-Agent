@@ -15,7 +15,13 @@ SKILL_SOURCES = ("hermes", "cli_anything", "campus")
 
 @dataclass
 class UserProfile:
-    """Result of onboarding. ``provider_keys`` maps provider -> key (redacted on dump)."""
+    """Result of onboarding. ``provider_keys`` maps provider -> key (redacted on dump).
+
+    ``birthday`` (format "MM-DD", year-less) feeds the life module's anniversary
+    reminders; ``anniversaries`` is a list of ``{name, date, kind, note}`` dicts
+    for extra memorial days. Both default empty so old construction paths and
+    existing tests are unaffected.
+    """
     identity: str = ""
     major: str = ""
     year: str = ""
@@ -23,6 +29,8 @@ class UserProfile:
     provider_keys: dict[str, str] = field(default_factory=dict)
     recommended_skills: list[str] = field(default_factory=list)
     constraints: dict[str, Any] = field(default_factory=dict)
+    birthday: str = ""                       # "MM-DD" — feeds birthday reminders
+    anniversaries: list[dict] = field(default_factory=list)  # [{name,date,kind,note}]
 
     def to_public_dict(self) -> dict[str, Any]:
         return {
@@ -31,6 +39,8 @@ class UserProfile:
             "provider_keys": {k: ("***set" if v else "") for k, v in self.provider_keys.items()},
             "recommended_skills": list(self.recommended_skills),
             "constraints": dict(self.constraints),
+            "birthday": self.birthday,
+            "anniversaries": [dict(a) for a in self.anniversaries],
         }
 
     @property
