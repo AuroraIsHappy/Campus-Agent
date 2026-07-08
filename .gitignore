@@ -20,3 +20,4 @@ htmlcov/
 # --- Claude Code (local harness config, not committed) ---
 .claude/
 CLAUDE.md
+.codex/
