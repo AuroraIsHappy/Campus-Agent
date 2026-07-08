@@ -90,6 +90,7 @@ class FlashcardsRequest(BaseModel):
     topic: str
     source_text: str = ""
     count: int = 8
+    mode: str = "offline"
 
 
 class DeadlineRequest(BaseModel):
@@ -103,6 +104,7 @@ class QuizRunRequest(BaseModel):
     topic: str
     count: int = 5
     source_text: str = ""
+    mode: str = "offline"
 
 
 class QuizGradeRequest(BaseModel):
@@ -118,6 +120,7 @@ class ResearchIdeaRequest(BaseModel):
 class GithubTrendingRequest(BaseModel):
     topic: str = "student agent"
     language: str = "Python"
+    mode: str = "offline"
 
 
 class FormatCheckRequest(BaseModel):
@@ -138,23 +141,27 @@ class TravelPlanRequest(BaseModel):
     days: int = 2
     budget: int = 500
     preferences: str = ""
+    mode: str = "offline"
 
 
 class ClubMinutesRequest(BaseModel):
     topic: str
     notes: str = ""
+    mode: str = "offline"
 
 
 class RecruitingCopyRequest(BaseModel):
     org: str
     audience: str = "大一新生"
     tone: str = "热情"
+    mode: str = "offline"
 
 
 class EmailDraftRequest(BaseModel):
     purpose: str
     recipient: str = ""
     context: str = ""
+    mode: str = "offline"
 
 
 class JobSearchRequest(BaseModel):
@@ -171,6 +178,7 @@ class InterviewPlanRequest(BaseModel):
     role: str
     days: int = 7
     background: str = ""
+    mode: str = "offline"
 
 
 class InterviewPracticeRequest(BaseModel):

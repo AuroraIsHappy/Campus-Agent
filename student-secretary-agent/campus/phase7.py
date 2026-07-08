@@ -44,7 +44,22 @@ def _run(domain: str, workflow: str, title: str, result: dict[str, Any],
 
 # ---------------- Learning ----------------
 
-def flashcards(topic: str, source_text: str = "", count: int = 8) -> dict[str, Any]:
+def flashcards(topic: str, source_text: str = "", count: int = 8,
+               mode: str = "offline", memory_snippet: str = "") -> dict[str, Any]:
+    # Phase 8 Step 3: real LLM generation with offline fallback
+    if mode in ("real", "auto"):
+        from campus.runtime.workflow_llm import llm_generate
+        llm_result = llm_generate("learning", "flashcards",
+                                  {"topic": topic, "count": count}, memory_snippet=memory_snippet)
+        if llm_result and llm_result.get("flashcards"):
+            cards = llm_result["flashcards"][:max(1, count)]
+            review_nodes = _seed_review_nodes(topic, len(cards))
+            return _run("learning", "learning_flashcards", f"生成 {topic} flashcards",
+                        {"ok": True, "topic": topic, "flashcards": cards,
+                         "source_mode": llm_result.get("source_mode", "real_llm"),
+                         "review_nodes": len(review_nodes)},
+                        intent="flashcards",
+                        plan=f"# Flashcards Plan (LLM)\n\n- topic: {topic}\n- count: {len(cards)}\n")
     seeds = _sentences(source_text) or [
         f"{topic} 的核心概念",
         f"{topic} 的典型例题",
@@ -83,7 +98,18 @@ def list_deadlines() -> dict[str, Any]:
     return {"deadlines": sorted(tasks, key=lambda t: t.get("due") or "9999")}
 
 
-def quiz_run(topic: str, count: int = 5, source_text: str = "") -> dict[str, Any]:
+def quiz_run(topic: str, count: int = 5, source_text: str = "",
+             mode: str = "offline", memory_snippet: str = "") -> dict[str, Any]:
+    if mode in ("real", "auto"):
+        from campus.runtime.workflow_llm import llm_generate
+        llm_result = llm_generate("learning", "quiz",
+                                  {"topic": topic, "count": count}, memory_snippet=memory_snippet)
+        if llm_result and llm_result.get("questions"):
+            questions = llm_result["questions"][:max(1, count)]
+            return _run("learning", "learning_quiz_run", f"{topic} 每日 quiz",
+                        {"ok": True, "topic": topic, "questions": questions,
+                         "source_mode": llm_result.get("source_mode", "real_llm")},
+                        intent="quiz")
     bits = _sentences(source_text) or [topic, "今日学习内容", "关键概念", "练习反馈"]
     questions = []
     for i in range(max(1, count)):
@@ -259,7 +285,20 @@ def research_idea(idea: str, mode: str = "offline") -> dict[str, Any]:
                 intent="research_idea")
 
 
-def github_trending(topic: str = "student agent", language: str = "Python") -> dict[str, Any]:
+def github_trending(topic: str = "student agent", language: str = "Python",
+                    mode: str = "offline", memory_snippet: str = "") -> dict[str, Any]:
+    if mode in ("real", "auto"):
+        from campus.runtime.workflow_llm import llm_generate
+        llm_result = llm_generate("research", "github_trending",
+                                  {"topic": topic, "language": language}, memory_snippet=memory_snippet)
+        if llm_result and llm_result.get("items"):
+            return _run("research", "research_github_trending", f"GitHub trending: {topic}",
+                        {"ok": True, "source_mode": llm_result.get("source_mode", "real_llm"),
+                         "source_error": "",
+                         "summary": f"为 {topic} 生成 {len(llm_result['items'])} 个推荐项目。",
+                         "items": llm_result["items"],
+                         "questions": ["项目是否活跃？", "README 是否可复现？", "license 是否允许使用？"]},
+                        intent="github_trending")
     items = [
         {"name": f"{_slug(topic)}-starter", "url": "https://github.com/example/starter",
          "language": language, "stars": 1240, "reason": "适合作为入门工程模板"},
@@ -308,7 +347,18 @@ def health_list() -> dict[str, Any]:
     return {"records": _read(path, [])}
 
 
-def travel_plan(destination: str, days: int = 2, budget: int = 500, preferences: str = "") -> dict[str, Any]:
+def travel_plan(destination: str, days: int = 2, budget: int = 500, preferences: str = "",
+                mode: str = "offline", memory_snippet: str = "") -> dict[str, Any]:
+    if mode in ("real", "auto"):
+        from campus.runtime.workflow_llm import llm_generate
+        llm_result = llm_generate("life", "travel_plan",
+                                  {"destination": destination, "days": days, "budget": budget},
+                                  memory_snippet=memory_snippet)
+        if llm_result and llm_result.get("itinerary"):
+            return _run("life", "life_travel_plan", f"{destination} 旅行计划",
+                        {"ok": True, "destination": destination, "days": days,
+                         "preferences": preferences, "itinerary": llm_result["itinerary"],
+                         "source_mode": llm_result.get("source_mode", "real_llm")}, intent="travel")
     itinerary = [
         {"day": d, "morning": f"{destination} 城市/校园路线", "afternoon": "博物馆/公园/书店",
          "evening": "轻松晚餐 + 复盘照片", "budget": round(budget / max(1, days))}
@@ -331,14 +381,39 @@ def campus_guide(query: str = "") -> dict[str, Any]:
 
 # ---------------- Club ----------------
 
-def meeting_minutes(topic: str, notes: str = "") -> dict[str, Any]:
+def meeting_minutes(topic: str, notes: str = "",
+                    mode: str = "offline", memory_snippet: str = "") -> dict[str, Any]:
+    if mode in ("real", "auto"):
+        from campus.runtime.workflow_llm import llm_generate
+        llm_result = llm_generate("club", "meeting_minutes",
+                                  {"topic": topic, "notes": notes}, memory_snippet=memory_snippet)
+        if llm_result and llm_result.get("minutes"):
+            return _run("club", "club_meeting_minutes", topic,
+                        {"ok": True, "topic": topic,
+                         "summary": f"{topic} 会议纪要已生成（LLM）。",
+                         "minutes": llm_result["minutes"],
+                         "source_mode": llm_result.get("source_mode", "real_llm")},
+                        intent="meeting_minutes")
     actions = [s for s in _sentences(notes)[:5]] or ["确认负责人", "下次会议前交付初稿"]
     result = {"ok": True, "topic": topic, "summary": f"{topic} 会议纪要已生成。",
               "minutes": {"decisions": actions[:3], "todo": actions, "next_meeting": "下周同一时间确认进展"}}
     return _run("club", "club_meeting_minutes", topic, result, intent="meeting_minutes")
 
 
-def recruiting_copy(org: str, audience: str = "大一新生", tone: str = "热情") -> dict[str, Any]:
+def recruiting_copy(org: str, audience: str = "大一新生", tone: str = "热情",
+                    mode: str = "offline", memory_snippet: str = "") -> dict[str, Any]:
+    if mode in ("real", "auto"):
+        from campus.runtime.workflow_llm import llm_generate
+        llm_result = llm_generate("club", "recruiting_copy",
+                                  {"org": org, "audience": audience, "tone": tone},
+                                  memory_snippet=memory_snippet)
+        if llm_result and llm_result.get("copy"):
+            copy = llm_result["copy"]
+            copy.setdefault("tone", tone)
+            return _run("club", "club_recruiting_copy", f"{org} 招新文案",
+                        {"ok": True, "copy": copy,
+                         "source_mode": llm_result.get("source_mode", "real_llm")},
+                        intent="recruiting_copy")
     copy = {
         "headline": f"加入{org}，把你的想法做成真实项目",
         "body": f"面向{audience}，我们准备了低门槛培训、项目搭档和展示机会。欢迎喜欢行动的人来聊聊。",
@@ -349,7 +424,18 @@ def recruiting_copy(org: str, audience: str = "大一新生", tone: str = "热�
                 {"ok": True, "copy": copy}, intent="recruiting_copy")
 
 
-def email_draft(purpose: str, recipient: str = "", context: str = "") -> dict[str, Any]:
+def email_draft(purpose: str, recipient: str = "", context: str = "",
+                mode: str = "offline", memory_snippet: str = "") -> dict[str, Any]:
+    if mode in ("real", "auto"):
+        from campus.runtime.workflow_llm import llm_generate
+        llm_result = llm_generate("club", "email_draft",
+                                  {"purpose": purpose, "recipient": recipient, "context": context},
+                                  memory_snippet=memory_snippet)
+        if llm_result and llm_result.get("email"):
+            return _run("club", "club_email_draft", purpose,
+                        {"ok": True, "email": llm_result["email"], "recipient": recipient,
+                         "source_mode": llm_result.get("source_mode", "real_llm")},
+                        intent="email_draft")
     text = f"{recipient or '老师/同学'}您好：\n\n我是校园项目负责人，想就“{purpose}”与您沟通。{context}\n\n如果方便，期待约一个 15 分钟的时间确认细节。谢谢！"
     return _run("club", "club_email_draft", purpose,
                 {"ok": True, "email": text, "recipient": recipient}, intent="email_draft")
@@ -384,7 +470,19 @@ def list_jobs() -> dict[str, Any]:
     return {"jobs": _read(path, [])}
 
 
-def interview_plan(role: str, days: int = 7, background: str = "") -> dict[str, Any]:
+def interview_plan(role: str, days: int = 7, background: str = "",
+                   mode: str = "offline", memory_snippet: str = "") -> dict[str, Any]:
+    if mode in ("real", "auto"):
+        from campus.runtime.workflow_llm import llm_generate
+        llm_result = llm_generate("career", "interview_plan",
+                                  {"role": role, "days": days, "background": background},
+                                  memory_snippet=memory_snippet)
+        if llm_result and (llm_result.get("plan") or llm_result.get("questions")):
+            return _run("career", "career_interview_plan", f"{role} 面试计划",
+                        {"ok": True, "role": role, "days": days, "background": background,
+                         "plan": llm_result.get("plan", []),
+                         "questions": llm_result.get("questions", []),
+                         "source_mode": llm_result.get("source_mode", "real_llm")}, intent="interview_plan")
     plan = [
         {"day": d, "focus": focus, "task": f"准备 {role}：{focus}", "minutes": 45}
         for d, focus in enumerate(["岗位拆解", "项目故事", "基础知识", "算法/案例", "模拟问答", "复盘补缺", "最终演练"][:max(1, days)], 1)

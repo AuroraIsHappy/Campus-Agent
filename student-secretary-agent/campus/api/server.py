@@ -644,7 +644,7 @@ def create_app(backends: Optional[Backends] = None,
     @app.post("/learning/flashcards")
     def learning_flashcards(req: FlashcardsRequest):
         from campus import phase7
-        return phase7.flashcards(req.topic, req.source_text, req.count)
+        return phase7.flashcards(req.topic, req.source_text, req.count, mode=req.mode)
 
     @app.post("/learning/deadlines")
     def learning_deadline_add(req: DeadlineRequest):
@@ -659,7 +659,7 @@ def create_app(backends: Optional[Backends] = None,
     @app.post("/learning/quiz/run")
     def learning_quiz_run(req: QuizRunRequest):
         from campus import phase7
-        return phase7.quiz_run(req.topic, req.count, req.source_text)
+        return phase7.quiz_run(req.topic, req.count, req.source_text, mode=req.mode)
 
     @app.post("/learning/quiz/grade")
     def learning_quiz_grade(req: QuizGradeRequest):
@@ -679,7 +679,7 @@ def create_app(backends: Optional[Backends] = None,
     @app.post("/research/github/trending")
     def research_github(req: GithubTrendingRequest):
         from campus import phase7
-        return phase7.github_trending(req.topic, req.language)
+        return phase7.github_trending(req.topic, req.language, mode=req.mode)
 
     @app.post("/research/format/check")
     def research_format(req: FormatCheckRequest):
@@ -699,7 +699,7 @@ def create_app(backends: Optional[Backends] = None,
     @app.post("/life/travel_plan")
     def life_travel(req: TravelPlanRequest):
         from campus import phase7
-        return phase7.travel_plan(req.destination, req.days, req.budget, req.preferences)
+        return phase7.travel_plan(req.destination, req.days, req.budget, req.preferences, mode=req.mode)
 
     @app.get("/life/campus_guide")
     def life_guide(query: str = ""):
@@ -709,17 +709,17 @@ def create_app(backends: Optional[Backends] = None,
     @app.post("/club/meeting_minutes")
     def club_minutes(req: ClubMinutesRequest):
         from campus import phase7
-        return phase7.meeting_minutes(req.topic, req.notes)
+        return phase7.meeting_minutes(req.topic, req.notes, mode=req.mode)
 
     @app.post("/club/recruiting_copy")
     def club_recruiting(req: RecruitingCopyRequest):
         from campus import phase7
-        return phase7.recruiting_copy(req.org, req.audience, req.tone)
+        return phase7.recruiting_copy(req.org, req.audience, req.tone, mode=req.mode)
 
     @app.post("/club/email_draft")
     def club_email(req: EmailDraftRequest):
         from campus import phase7
-        return phase7.email_draft(req.purpose, req.recipient, req.context)
+        return phase7.email_draft(req.purpose, req.recipient, req.context, mode=req.mode)
 
     @app.post("/career/jobs/search")
     def career_jobs_search(req: JobSearchRequest):
@@ -739,7 +739,7 @@ def create_app(backends: Optional[Backends] = None,
     @app.post("/career/interview_plan")
     def career_interview(req: InterviewPlanRequest):
         from campus import phase7
-        return phase7.interview_plan(req.role, req.days, req.background)
+        return phase7.interview_plan(req.role, req.days, req.background, mode=req.mode)
 
     @app.post("/career/interview/practice")
     def career_interview_practice(req: InterviewPracticeRequest):
