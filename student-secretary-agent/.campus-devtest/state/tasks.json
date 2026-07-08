@@ -690,5 +690,50 @@
     },
     "created_at": 1783535913,
     "updated_at": 1783535913
+  },
+  {
+    "id": "task_1783536910_333f9cd6",
+    "title": "完成第一章习题",
+    "body": "",
+    "status": "todo",
+    "domain": "learning",
+    "run_id": "",
+    "due": "2026-08-15",
+    "metadata": {
+      "course": "线性代数",
+      "kind": "deadline"
+    },
+    "created_at": 1783536910,
+    "updated_at": 1783536910
+  },
+  {
+    "id": "task_1783536910_e893bd8c",
+    "title": "完成第一章习题",
+    "body": "{\"ok\": true, \"deadline\": {\"id\": \"task_1783536910_333f9cd6\", \"title\": \"完成第一章习题\", \"body\": \"\", \"status\": \"todo\", \"domain\": \"learning\", \"run_id\": \"\", \"due\": \"2026-08-15\", \"metadata\": {\"course\": \"线性代数\", \"kind\": \"deadline\"}, \"created_at\": 1783536910, \"updated_at\": 1783536910}, \"source_mode\": \"local\"}",
+    "status": "done",
+    "domain": "learning",
+    "run_id": "run_20260709_025510_f37fe818",
+    "due": "",
+    "metadata": {
+      "intent": "deadline",
+      "workflow": "learning_deadline"
+    },
+    "created_at": 1783536910,
+    "updated_at": 1783536910
+  },
+  {
+    "id": "task_1783540480_670bbfcc",
+    "title": "帮我生成操作系统 flashcards",
+    "body": "帮我生成操作系统 flashcards",
+    "status": "done",
+    "domain": "learning",
+    "run_id": "run_20260709_035440_a73e1a6e",
+    "due": "",
+    "metadata": {
+      "intent": "learning_plan",
+      "workflow": "demo_c_learning_plan"
+    },
+    "created_at": 1783540480,
+    "updated_at": 1783540480
   }
 ]

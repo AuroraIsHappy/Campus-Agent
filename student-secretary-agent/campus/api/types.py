@@ -34,6 +34,14 @@ class AgentRunRequest(BaseModel):
     context: dict = {}
 
 
+class AgentChatRequest(BaseModel):
+    message: str
+    mode: str = "auto"            # offline | auto | real
+    conversation_id: str = ""     # empty → new conversation
+    persona: str = ""             # empty → resolve from onboarding profile
+    context: dict = {}            # extra routing hints (e.g. confirmed_path)
+
+
 class MemoryQuery(BaseModel):
     query: str
     k: int = 5

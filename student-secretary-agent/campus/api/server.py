@@ -16,7 +16,7 @@ from typing import Any, Callable, Optional
 from fastapi import FastAPI
 
 from campus.api.types import (
-    AgentRunRequest, DemoARequest, DemoBRequest, DemoCRequest, MemoryQuery, OnboardingRequest, PushRequest,
+    AgentRunRequest, AgentChatRequest, DemoARequest, DemoBRequest, DemoCRequest, MemoryQuery, OnboardingRequest, PushRequest,
     EventRequest, AnniversaryRequest, LogQuery, ResearchTopicRequest,
     ResearchRefreshRequest, NotionSyncRequest,
     FlashcardsRequest, DeadlineRequest, QuizRunRequest, QuizGradeRequest,
@@ -397,6 +397,82 @@ def _default_agent_get_run(run_id: str) -> dict:
     return data
 
 
+def _default_agent_chat(req: AgentChatRequest) -> dict:
+    """Chat-first endpoint (Phase 9 — GOAL.md 飞书式聊天).
+
+    Runs the agent (reusing ``_default_agent_run``), then composes a persona-
+    styled natural-language reply from the structured result + conversation
+    history + recalled memory. Persists the turn to ``ConversationStore``.
+
+    Supports clarification flows: if the agent result carries ``needs_clarify``
+    + ``clarify_options`` (e.g. fuzzy lecture path), the reply asks the user to
+    confirm rather than silently proceeding.
+    """
+    from campus.conversation.store import ConversationStore
+    from campus.conversation.reply import compose_reply, resolve_persona_name
+
+    store = ConversationStore()
+    persona_name = resolve_persona_name(req.persona)
+    history = store.history(req.conversation_id) if req.conversation_id else []
+    memory_snippet = _try_recall_memory(req.message, k=3)
+
+    # Pass context (e.g. confirmed_path, sync_calendar) through to the agent run.
+    run_req = AgentRunRequest(message=req.message, mode=req.mode,
+                              context=req.context or {})
+
+    # Run the agent. Inject clarification context: if the user is confirming a
+    # prior ambiguous choice, the context carries the resolved path so the run
+    # proceeds without re-asking.
+    result = _default_agent_run(run_req)
+
+    # Compose the persona-styled reply from the structured result.
+    composed = compose_reply(
+        message=req.message, run_result=result,
+        persona_name=persona_name, history=history,
+        memory_snippet=memory_snippet,
+    )
+
+    # Persist user + assistant turns.
+    now_ts = __import__("time").time()
+    added = store.append(conversation_id=req.conversation_id, role="user",
+                         content=req.message, now=int(now_ts))
+    conv_id = added["conversation_id"]
+    store.append(conversation_id=conv_id, role="assistant",
+                 content=composed["reply"], run_id=result.get("run_id", ""),
+                 persona=persona_name, now=int(now_ts))
+
+    return {
+        "ok": result.get("ok", False),
+        "reply": composed["reply"],
+        "run_id": result.get("run_id", ""),
+        "status": result.get("status", ""),
+        "domain": result.get("domain", ""),
+        "intent": result.get("intent", ""),
+        "artifacts": result.get("artifacts", []),
+        "multiagent": result.get("multiagent", False),
+        "conversation_id": conv_id,
+        "persona": persona_name,
+        "source_mode": composed["source_mode"],
+        "needs_clarify": composed["needs_clarify"],
+        "clarify_options": composed["clarify_options"],
+        "error": result.get("error", ""),
+    }
+
+
+def _default_conversation_list() -> dict:
+    from campus.conversation.store import ConversationStore
+    return {"conversations": ConversationStore().list()}
+
+
+def _default_conversation_get(conversation_id: str) -> dict:
+    from campus.conversation.store import ConversationStore
+    conv = ConversationStore().get(conversation_id)
+    if not conv:
+        return {"ok": False, "error": "conversation not found"}
+    conv["ok"] = True
+    return conv
+
+
 def _default_settings_status() -> dict:
     import subprocess
     from campus.runtime.llm_config import real_llm_status
@@ -632,6 +708,19 @@ def create_app(backends: Optional[Backends] = None,
     def agent_get_run(run_id: str):
         b = app.state.backends.agent_get_run
         return b(run_id) if b else _default_agent_get_run(run_id)
+
+    @app.post("/agent/chat")
+    def agent_chat(req: AgentChatRequest):
+        """Chat-first endpoint: natural-language assistant reply over /agent/run."""
+        return _default_agent_chat(req)
+
+    @app.get("/agent/conversations")
+    def agent_conversations():
+        return _default_conversation_list()
+
+    @app.get("/agent/conversations/{conversation_id}")
+    def agent_conversation(conversation_id: str):
+        return _default_conversation_get(conversation_id)
 
     @app.get("/runs")
     def list_runs():

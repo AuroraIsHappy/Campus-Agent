@@ -2866,5 +2866,150 @@
     "context": {},
     "created_at": 1783535912,
     "updated_at": 1783535913
+  },
+  "run_20260709_025510_f37fe818": {
+    "id": "run_20260709_025510_f37fe818",
+    "message": "完成第一章习题",
+    "intent": "deadline",
+    "domain": "learning",
+    "selected_workflow": "learning_deadline",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_025510_f37fe818",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_025510_f37fe818\\Plan.md",
+        "kind": "document",
+        "created_at": 1783536910
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_025510_f37fe818\\Status.md",
+        "kind": "document",
+        "created_at": 1783536910
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_025510_f37fe818\\Verification.md",
+        "kind": "document",
+        "created_at": 1783536910
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_025510_f37fe818\\run_result.json",
+        "kind": "json",
+        "created_at": 1783536910
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_025510_f37fe818\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783536910
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "deadline": {
+        "id": "task_1783536910_333f9cd6",
+        "title": "完成第一章习题",
+        "body": "",
+        "status": "todo",
+        "domain": "learning",
+        "run_id": "",
+        "due": "2026-08-15",
+        "metadata": {
+          "course": "线性代数",
+          "kind": "deadline"
+        },
+        "created_at": 1783536910,
+        "updated_at": 1783536910
+      },
+      "source_mode": "local"
+    },
+    "context": {},
+    "created_at": 1783536910,
+    "updated_at": 1783536910
+  },
+  "run_20260709_035440_a73e1a6e": {
+    "id": "run_20260709_035440_a73e1a6e",
+    "message": "帮我生成操作系统 flashcards",
+    "intent": "learning_plan",
+    "domain": "learning",
+    "selected_workflow": "demo_c_learning_plan",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_035440_a73e1a6e",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_035440_a73e1a6e\\Plan.md",
+        "kind": "document",
+        "created_at": 1783540480
+      },
+      {
+        "name": "SourceRun.txt",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_035440_a73e1a6e\\SourceRun.txt",
+        "kind": "reference",
+        "created_at": 1783540480
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_035440_a73e1a6e\\Status.md",
+        "kind": "document",
+        "created_at": 1783540480
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_035440_a73e1a6e\\Verification.md",
+        "kind": "document",
+        "created_at": 1783540480
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_035440_a73e1a6e\\run_result.json",
+        "kind": "json",
+        "created_at": 1783540480
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_035440_a73e1a6e\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783540480
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "mode": "offline",
+      "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\demo_c-offline-20260709-035440",
+      "recommendation": "帮我生成操作系统 flashcards 官方入门文档",
+      "score": 0.63,
+      "days": 30,
+      "quiz_questions": 3,
+      "plan_md_head": "# 学习计划: 帮我生成操作系统 flashcards",
+      "real_llm": {
+        "ok": false,
+        "mode": "offline",
+        "hermes_binary": "",
+        "hermes_importable": false,
+        "hermes_import_error": "No module named 'hermes_cli'",
+        "env_files": [
+          "C:\\Users\\Lenovo\\AppData\\Local\\hermes\\.env",
+          "C:\\Users\\Lenovo\\.hermes\\.env"
+        ],
+        "configured_keys": [
+          "GLM_API_KEY"
+        ],
+        "readiness": "blocked",
+        "fixes": [
+          "Use a Python environment that can import hermes_cli, or add .venv/Lib/site-packages to PYTHONPATH.",
+          "Optional: add hermes CLI to PATH for shell-based operations; API real mode imports hermes_cli directly."
+        ],
+        "error": "Use a Python environment that can import hermes_cli, or add .venv/Lib/site-packages to PYTHONPATH.; Optional: add hermes CLI to PATH for shell-based operations; API real mode imports hermes_cli directly."
+      }
+    },
+    "context": {},
+    "created_at": 1783540480,
+    "updated_at": 1783540480
   }
 }
