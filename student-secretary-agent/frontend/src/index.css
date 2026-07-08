@@ -1,5 +1,5 @@
-/* Campus skin — warm cozy palette (Phase 8) */
-@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap");
+/* Campus skin — warm yellow palette (Phase 9) */
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -17,27 +17,69 @@ body,
 
 body {
   @apply font-sans antialiased;
-  background-color: #faf8f5;
+  background-color: #fdf6e3;
 }
 
 @layer components {
   .campus-card {
-    @apply rounded-2xl border border-ink-200 bg-white p-5 shadow-sm;
+    @apply rounded-2xl border border-ink-200 bg-[#fffef9] p-5 shadow-sm;
   }
   .campus-btn {
     @apply inline-flex items-center gap-2 rounded-xl bg-campus-500 px-4 py-2 text-sm
       font-semibold text-white transition hover:bg-campus-600 disabled:opacity-50;
   }
   .campus-btn-ghost {
-    @apply inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white
+    @apply inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-[#fffef9]
       px-4 py-2 text-sm font-medium text-ink-700 transition hover:bg-ink-100;
   }
   .campus-input {
-    @apply w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm
+    @apply w-full rounded-xl border border-ink-200 bg-[#fffef9] px-3 py-2 text-sm
       outline-none focus:border-campus-400 focus:ring-2 focus:ring-campus-200;
   }
   .campus-chip {
     @apply inline-flex items-center rounded-full bg-campus-50 px-2.5 py-0.5
       text-xs font-medium text-campus-700;
   }
+}
+
+/* chat message bubbles */
+.chat-user {
+  @apply ml-auto max-w-[75%] rounded-2xl rounded-br-md bg-campus-400 px-4 py-2.5
+    text-sm text-white shadow-sm;
+}
+.chat-assistant {
+  @apply mr-auto max-w-[80%] rounded-2xl rounded-bl-md bg-[#fffef9] px-4 py-2.5
+    text-sm text-ink-800 shadow-sm border border-ink-200;
+}
+.chat-assistant p {
+  @apply my-1;
+}
+.chat-assistant ul, .chat-assistant ol {
+  @apply my-1 pl-5;
+}
+.chat-assistant ul {
+  @apply list-disc;
+}
+.chat-assistant ol {
+  @apply list-decimal;
+}
+.chat-assistant a {
+  @apply text-campus-700 underline hover:text-campus-800 break-all;
+}
+.chat-assistant code {
+  @apply rounded bg-ink-100 px-1 py-0.5 font-mono text-xs text-ink-700;
+}
+.chat-assistant pre {
+  @apply my-2 overflow-x-auto rounded-lg bg-ink-900 p-3 font-mono text-xs text-ink-100;
+}
+.chat-assistant pre code {
+  @apply bg-transparent p-0 text-ink-100;
+}
+
+/* mindmap tree */
+.mindmap-node {
+  @apply rounded-lg border border-ink-200 bg-[#fffef9] px-3 py-1.5 text-sm text-ink-800;
+}
+.mindmap-chapter {
+  @apply border-campus-300 bg-campus-50 font-semibold text-campus-800;
 }

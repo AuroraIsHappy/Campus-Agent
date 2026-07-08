@@ -1,4 +1,4 @@
-/** Tailwind config + Campus skin — 浅黄/卡其暖色系. */
+/** Tailwind config + Campus skin — 暖黄/卡其色系 (Phase 9 更暖更黄). */
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
@@ -12,13 +12,13 @@ export default {
           800: "#854d0e", 900: "#713f12",
         },
         ink: {
-          50: "#faf9f5", 100: "#f2efe6", 200: "#e5e0d3", 300: "#d4cdba",
-          400: "#a89e87", 500: "#8a7f68", 600: "#6b6253", 700: "#524a3e",
-          800: "#3d372e", 900: "#2a2620",
+          50: "#fdf8ec", 100: "#f5efe0", 200: "#ebe3cf", 300: "#d9cfb6",
+          400: "#b3a888", 500: "#94896a", 600: "#756b51", 700: "#5b533f",
+          800: "#423d30", 900: "#2c2820",
         },
       },
       fontFamily: {
-        sans: ['"Nunito"', '"PingFang SC"', '"Microsoft YaHei"', '"Segoe UI"', "system-ui", "sans-serif"],
+        sans: ['"Plus Jakarta Sans"', '"PingFang SC"', '"Microsoft YaHei"', '"Segoe UI"', "system-ui", "sans-serif"],
         mono: ['"JetBrains Mono"', "ui-monospace", "monospace"],
       },
       borderRadius: {

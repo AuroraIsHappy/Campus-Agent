@@ -64,6 +64,7 @@ export interface Task {
   due?: string;
   run_id?: string;
   body?: string;
+  metadata?: Record<string, unknown>;
 }
 export interface RunRecord {
   id: string;
@@ -86,6 +87,36 @@ export interface AgentRunResult {
   error: string;
   multiagent?: boolean;
   source_mode?: string;
+}
+
+export interface ChatReply {
+  ok: boolean;
+  reply: string;
+  run_id: string;
+  status: string;
+  domain: string;
+  intent: string;
+  artifacts: { name: string; path: string; kind: string }[];
+  multiagent?: boolean;
+  conversation_id: string;
+  persona: string;
+  source_mode?: string;
+  needs_clarify?: boolean;
+  clarify_options?: string[];
+  error: string;
+  job?: Record<string, unknown>;
+}
+
+export interface ConversationSummary {
+  id: string;
+  title: string;
+  created_at: number;
+  updated_at: number;
+  message_count: number;
+}
+
+export interface Conversation extends ConversationSummary {
+  messages: { role: string; content: string; run_id?: string; persona?: string; ts: number }[];
 }
 export interface CalEvent {
   id?: string;
@@ -148,6 +179,22 @@ export const api = {
     jpost<AgentRunResult>("/agent/run", body),
   agentRuns: () => jget<{ runs: RunRecord[] }>("/agent/runs"),
   agentRunDetail: (id: string) => jget<RunRecord & { ok: boolean }>(`/agent/runs/${id}`),
+  // Phase 9: chat-first endpoint
+  agentChat: (body: { message: string; mode?: string; conversation_id?: string; persona?: string; context?: Record<string, unknown> }) =>
+    jpost<ChatReply>("/agent/chat", body),
+  conversations: () => jget<{ conversations: ConversationSummary[] }>("/agent/conversations"),
+  conversation: (id: string) => jget<Conversation>(`/agent/conversations/${id}`),
+  // Phase 9: Zotero
+  zoteroStatus: () => jget<{ ok: boolean; user_id_configured: boolean; api_key_configured: boolean; mode: string }>("/notes/zotero/status"),
+  zoteroSync: (papers: Record<string, unknown>[], mode = "local") =>
+    jpost<{ ok: boolean; created: number; local_path: string; zotero_ok: boolean; error?: string }>("/notes/zotero/sync", { papers, mode }),
+  zoteroSearch: (query: string, limit = 10) =>
+    jpost<{ ok: boolean; items: Record<string, unknown>[]; error?: string }>("/notes/zotero/search", { query, limit }),
+  // Phase 9: scheduled jobs
+  jobs: () => jget<{ jobs: Record<string, unknown>[] }>("/jobs"),
+  jobAdd: (body: { message: string; rule: string; channel?: string; target?: string }) =>
+    jpost<{ ok: boolean; job: Record<string, unknown> }>("/jobs", body),
+  jobDelete: (id: string) => jdel<{ ok: boolean; id: string }>(`/jobs/${id}`),
   settingsStatus: () => jget<SettingsStatus>("/settings/status"),
   demoStatus: () => jget<DemoStatus>("/demo/status"),
   recall: (query: string, k = 5) => jpost<{ results: MemoryHit[] }>("/memory", { query, k }),
