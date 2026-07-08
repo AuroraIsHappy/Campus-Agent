@@ -67,7 +67,6 @@ npm run electron:dev
 |---|---|---|
 | **飞书 Feishu** | ✅ 真路径 | 复用已配的 `hermes send --to feishu:<chat_id>`（gateway 需在跑）。设 `CAMPUS_FEISHU_CHAT_ID=<chat_id>` 或调用时传 target。 |
 | QQ Bot | 端口 + 注入 | q.qq.com 申请 AppID/Secret；在 `campus/mobile/qq_bot.py` 注入 `sender`。本期确定性测试覆盖，真凭证接线为手动步骤。 |
-| 企业微 WeCom | 端口 + 注入 | 同上，CorpID/Secret/AgentID。 |
 
 ```bash
 python -c "from campus.mobile import push; print(push('feishu', None, 'hello from campus'))"
