@@ -39,10 +39,6 @@ def _doc(path: str, ok: bool = True, error: str = "") -> LectureDoc:
     return LectureDoc(path=path, ext=ext, size_bytes=size)
 
 
-def _wrap(path: str, text: str) -> ExtractedText:
-    return ExtractedText(doc=_doc(path), text=(text or ""), ok=bool(text))
-
-
 def extract_pdf(path: str) -> ExtractedText:
     """PDF: prefer PyMuPDF (fitz), fall back to pypdf. ok=False if both absent/fail."""
     doc = _doc(path)

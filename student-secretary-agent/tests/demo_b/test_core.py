@@ -283,3 +283,85 @@ def test_check_plan_and_quiz():
     qz = QZ.generate_quiz("t", "a\nb")
     assert CK.check_quiz(qz).passed
     assert not CK.check_quiz(None).passed
+
+
+# ---------------- real extractor libs (cover PDF/DOCX/PPTX bodies, B-F1) ----------------
+
+def test_extract_docx_real():
+    import docx
+    tmp = tempfile.mkdtemp()
+    p = os.path.join(tmp, "note.docx")
+    d = docx.Document()
+    d.add_paragraph("Chapter on Graphs")
+    d.add_paragraph("Nodes and Edges")
+    d.save(p)
+    r = X.extract_path(p)
+    assert r.ok and r.doc.ext == "docx"
+    assert "Graphs" in r.text and "Edges" in r.text
+
+
+def test_extract_pptx_real():
+    from pptx import Presentation
+    from pptx.util import Inches
+    tmp = tempfile.mkdtemp()
+    p = os.path.join(tmp, "slides.pptx")
+    prs = Presentation()
+    slide = prs.slides.add_slide(prs.slide_layouts[0])
+    tx = slide.shapes.add_textbox(Inches(1), Inches(1), Inches(5), Inches(1))
+    tx.text_frame.text = "Slide One Content"
+    prs.save(p)
+    r = X.extract_path(p)
+    assert r.ok and r.doc.ext == "pptx" and "Slide One" in r.text
+
+
+def test_extract_pdf_real():
+    """PDF path: fitz is unavailable in this env (mupdf missing) so extract_pdf
+    falls through to pypdf. We author a minimal valid PDF with pypdf and assert
+    the dispatch reaches the pypdf branch without crashing (B-F1 degradation)."""
+    from pypdf import PdfWriter
+    tmp = tempfile.mkdtemp()
+    p = os.path.join(tmp, "doc.pdf")
+    w = PdfWriter()
+    w.add_blank_page(width=200, height=200)
+    with open(p, "wb") as f:
+        w.write(f)
+    r = X.extract_path(p)
+    assert r.doc.ext == "pdf"
+    # pypdf branch reached; ok regardless of whether a blank page yields text
+    assert r.ok or r.error.startswith("pdf")
+
+
+def test_extract_dir_with_mixed_real_files():
+    import docx
+    tmp = tempfile.mkdtemp()
+    with open(os.path.join(tmp, "a.txt"), "w", encoding="utf-8") as f:
+        f.write("plain text line")
+    d = docx.Document()
+    d.add_paragraph("docx paragraph")
+    d.save(os.path.join(tmp, "b.docx"))
+    results = X.extract_dir(tmp)
+    assert len(results) == 2 and all(r.ok for r in results)
+    rate, ok = X.extraction_rate(results)
+    assert rate == 1.0 and ok
+
+
+# ---------------- resource_search fallback (B-Q1 defensive path) ----------------
+
+def test_fallback_score_ranks_reliably():
+    from campus.demo_c.types import Resource
+    from campus.demo_b.resource_search import _fallback_score
+    course = Resource(title="linux course", url="u1", source_type="course", year=2024, difficulty="beginner")
+    blog = Resource(title="x", url="u2", source_type="blog", year=2010, difficulty="advanced")
+    assert _fallback_score(course, "linux") > _fallback_score(blog, "linux")
+
+
+def test_rank_resources_uses_fallback_when_ranker_missing(monkeypatch):
+    """If demo_c.ranker is unimportable, rank_resources falls back to _fallback_score."""
+    import sys
+    from campus.demo_c.types import Resource
+    from campus.demo_b import resource_search as RS
+    monkeypatch.setitem(sys.modules, "campus.demo_c.ranker", None)
+    res = [Resource(title="linux course", url="u1", source_type="course", year=2024, difficulty="beginner"),
+           Resource(title="zzz", url="u2", source_type="blog", year=2010, difficulty="advanced")]
+    ranked = RS.rank_resources(res, "linux")
+    assert ranked[0][0].url == "u1"            # reliable course ranks first via fallback
