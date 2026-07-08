@@ -287,6 +287,18 @@ def research_idea(idea: str, mode: str = "offline") -> dict[str, Any]:
 
 def github_trending(topic: str = "student agent", language: str = "Python",
                     mode: str = "offline", memory_snippet: str = "") -> dict[str, Any]:
+    # Phase 8 Step 6: real GitHub API search (preferred over LLM for trending repos)
+    if mode in ("real", "auto"):
+        from campus.research.search_providers import github_search, github_available
+        if github_available():
+            gh_items = github_search(topic, language=language, max_results=5)
+            if gh_items:
+                return _run("research", "research_github_trending", f"GitHub trending: {topic}",
+                            {"ok": True, "source_mode": "real_github_api", "source_error": "",
+                             "summary": f"为 {topic} 从 GitHub API 检索到 {len(gh_items)} 个热门项目。",
+                             "items": gh_items,
+                             "questions": ["项目是否活跃？", "README 是否可复现？", "license 是否允许使用？"]},
+                            intent="github_trending")
     if mode in ("real", "auto"):
         from campus.runtime.workflow_llm import llm_generate
         llm_result = llm_generate("research", "github_trending",

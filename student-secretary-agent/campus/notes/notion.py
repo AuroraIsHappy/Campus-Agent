@@ -12,8 +12,13 @@ def _base() -> str:
 
 
 def status() -> dict:
-    token = bool(os.environ.get("NOTION_TOKEN") or os.environ.get("NOTION_API_TOKEN"))
-    db = os.environ.get("NOTION_RESEARCH_DATA_SOURCE_ID") or os.environ.get("NOTION_RESEARCH_DATABASE_ID") or ""
+    # Phase 8 Step 6: accept NOTION_INTEGRATION_TOKEN (the official env name)
+    # as well as NOTION_TOKEN / NOTION_API_TOKEN
+    token = bool(os.environ.get("NOTION_TOKEN") or os.environ.get("NOTION_API_TOKEN")
+                 or os.environ.get("NOTION_INTEGRATION_TOKEN"))
+    db = (os.environ.get("NOTION_RESEARCH_DATA_SOURCE_ID")
+          or os.environ.get("NOTION_RESEARCH_DATABASE_ID")
+          or os.environ.get("NOTION_DATABASE_ID") or "")
     return {
         "ok": token and bool(db),
         "token_configured": token,
@@ -21,6 +26,63 @@ def status() -> dict:
         "mode": "notion_ready" if token and db else "local_only",
         "local_mirror_dir": _base(),
     }
+
+
+def _token() -> str:
+    return (os.environ.get("NOTION_TOKEN")
+            or os.environ.get("NOTION_API_TOKEN")
+            or os.environ.get("NOTION_INTEGRATION_TOKEN") or "")
+
+
+def _db_id() -> str:
+    return (os.environ.get("NOTION_RESEARCH_DATA_SOURCE_ID")
+            or os.environ.get("NOTION_RESEARCH_DATABASE_ID")
+            or os.environ.get("NOTION_DATABASE_ID") or "")
+
+
+def list_notes(limit: int = 20) -> dict:
+    """List research notes from the Notion database (Phase 8 Step 6 bidirectional).
+
+    Returns {ok, notes: [{id, title, url, summary}], error}. Falls back to local
+    Markdown files if Notion isn't configured.
+    """
+    st = status()
+    if not st["ok"]:
+        # local fallback: list Markdown files
+        import glob
+        base = _base()
+        files = sorted(glob.glob(os.path.join(base, "*.md")), reverse=True)[:limit]
+        notes = [{"title": os.path.basename(f), "path": f, "source": "local"} for f in files]
+        return {"ok": True, "notes": notes, "source": "local", "status": st}
+    try:
+        token = _token()
+        db = _db_id()
+        body = json.dumps({
+            "page_size": min(limit, 100),
+            "sorts": [{"property": "Name", "direction": "descending"}],
+        }).encode("utf-8")
+        req = urllib.request.Request(
+            f"https://api.notion.com/v1/databases/{db}/query",
+            data=body,
+            headers={"Authorization": f"Bearer {token}",
+                     "Content-Type": "application/json",
+                     "Notion-Version": "2022-06-28"},
+            method="POST")
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+        notes = []
+        for page in payload.get("results", []):
+            props = page.get("properties", {})
+            title_prop = props.get("Name", {}).get("title", [])
+            title = title_prop[0].get("plain_text", "") if title_prop else ""
+            summary = props.get("Summary", {}).get("rich_text", [])
+            summary_text = summary[0].get("plain_text", "") if summary else ""
+            notes.append({"id": page.get("id", ""), "title": title,
+                          "url": page.get("url", ""), "summary": summary_text,
+                          "source": "notion"})
+        return {"ok": True, "notes": notes, "source": "notion", "status": st}
+    except Exception as e:
+        return {"ok": False, "notes": [], "error": str(e)[:200], "status": st}
 
 
 def _slug(s: str) -> str:
@@ -79,8 +141,8 @@ def sync_digest(digest: dict, mode: str = "local") -> dict:
 
 
 def _create_notion_page(digest: dict) -> str:
-    token = os.environ.get("NOTION_TOKEN") or os.environ.get("NOTION_API_TOKEN") or ""
-    db = os.environ.get("NOTION_RESEARCH_DATA_SOURCE_ID") or os.environ.get("NOTION_RESEARCH_DATABASE_ID") or ""
+    token = _token()
+    db = _db_id()
     title = (digest.get("topic") or {}).get("title") or digest.get("topic_id") or "Research digest"
     summary = digest.get("summary", "")
     body = {

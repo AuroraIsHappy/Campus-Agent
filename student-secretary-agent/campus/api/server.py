@@ -654,6 +654,11 @@ def create_app(backends: Optional[Backends] = None,
         b = app.state.backends.notes_status
         return b() if b else {"ok": False}
 
+    @app.get("/notes/notion/list")
+    def notes_notion_list(limit: int = 20):
+        from campus.notes import notion
+        return notion.list_notes(limit=limit)
+
     # ---- Phase 7 product routes ----
     @app.post("/learning/flashcards")
     def learning_flashcards(req: FlashcardsRequest):
