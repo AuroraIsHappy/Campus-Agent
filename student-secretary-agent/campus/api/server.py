@@ -802,6 +802,15 @@ def create_app(backends: Optional[Backends] = None,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
     logger = logging.getLogger("campus")
 
+    # Phase 9.1: load ~/.hermes/.env at startup so all integrations (Notion,
+    # Zotero, GitHub, Feishu, etc.) see their keys immediately — not just when
+    # ask_llm() is first called. Safe no-op if hermes_cli isn't installed.
+    try:
+        from campus.runtime.llm_turn import bootstrap_env
+        bootstrap_env()
+    except Exception:
+        pass
+
     is_prod = os.environ.get("CAMPUS_ENV", "dev").lower() == "prod"
     kwargs = {"title": "Campus-Agent API", "version": "0.8.0"}
     if is_prod:
@@ -928,6 +937,20 @@ def create_app(backends: Optional[Backends] = None,
 
     @app.get("/profile")
     def profile():
+        """Return the user's onboarding profile, reading from memory PREFERENCES
+        if it was saved (Phase 9.1 fix: previously returned empty for configured users)."""
+        try:
+            from campus.memory.json_store import JsonFileStore
+            from campus.memory.types import PREFERENCES
+            rec = JsonFileStore().get(PREFERENCES, "onboarding_profile")
+            if rec and rec.metadata:
+                return {"ok": True, "profile": {
+                    "identity": rec.metadata.get("identity", ""),
+                    "major": rec.metadata.get("major", ""),
+                    "persona": rec.metadata.get("persona", "default"),
+                }}
+        except Exception:
+            pass
         return app.state.backends.onboarding_run({})
 
     @app.get("/tasks")
