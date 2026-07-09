@@ -4,6 +4,9 @@ Mocks ``ask_llm`` (module global) so no Hermes / no network is needed. Asserts t
 gate-role verdict routing (Supervisor.run_debate depends on metadata['verdict'])
 and the content-role payload extraction.
 """
+import sys
+import types
+
 import campus.runtime.llm_turn as lt
 from campus.runtime.ports import APPROVE, PENDING, REJECT, VERDICT_KEY, Task
 
@@ -101,13 +104,22 @@ def test_token_estimate_scales_with_length(monkeypatch):
 
 def test_ask_llm_captures_stdout_and_returns_rc(monkeypatch):
     """Patch run_oneshot (not ask_llm) so bootstrap_env + ask_llm actually run."""
-    import hermes_cli.oneshot as oneshot
+    # Inject stub hermes_cli modules so the local imports inside ask_llm succeed
+    # even when the real hermes_cli package is not installed.
+    fake_oneshot = types.ModuleType("hermes_cli.oneshot")
 
     def _fake_run_oneshot(*a, **k):
         print("CAPTURED_MODEL_OUTPUT")
         return 0
 
-    monkeypatch.setattr(oneshot, "run_oneshot", _fake_run_oneshot)
+    fake_oneshot.run_oneshot = _fake_run_oneshot
+
+    fake_pkg = types.ModuleType("hermes_cli")
+    fake_pkg.oneshot = fake_oneshot
+
+    monkeypatch.setitem(sys.modules, "hermes_cli", fake_pkg)
+    monkeypatch.setitem(sys.modules, "hermes_cli.oneshot", fake_oneshot)
+
     text, rc = lt.ask_llm("hi", model="glm-4.6", provider="zai", toolsets=None)
     assert text == "CAPTURED_MODEL_OUTPUT"
     assert rc == 0
