@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { api, type DemoAResult, type DemoBResult, type DemoCResult, type DemoStatus, type MemoryHit, type Profile, type Task, type CalEvent, type Anniversary, type DailyLog, type ResearchDigest, type ResearchTopic, type RunRecord, type AgentRunResult, type SettingsStatus } from "./api";
+import { api, type DemoStatus, type MemoryHit, type Profile, type Task, type CalEvent, type Anniversary, type DailyLog, type ResearchDigest, type ResearchTopic, type RunRecord, type AgentRunResult, type SettingsStatus } from "./api";
 
 function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
@@ -21,6 +21,111 @@ function Card({ title, children }: { title?: string; children: ReactNode }) {
 
 function Err({ e }: { e: string | null }) {
   return e ? <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{e}</p> : null;
+}
+
+function SourceBadge({ mode }: { mode?: string }) {
+  if (!mode) return null;
+  const isLLM = mode.includes("llm") || mode.includes("real");
+  return <span className={`ml-2 inline-block rounded-full px-2 py-0.5 text-xs ${isLLM ? "bg-emerald-100 text-emerald-700" : "bg-ink-100 text-ink-600"}`}>{isLLM ? "✨ AI 生成" : "模板"}</span>;
+}
+
+function Spinner({ label }: { label?: string }) {
+  return (
+    <span className="inline-flex items-center gap-2">
+      <svg className="h-4 w-4 animate-spin text-campus-500" viewBox="0 0 24 24" fill="none">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+      </svg>
+      {label || "生成中…"}
+    </span>
+  );
+}
+
+function LinkList({ items }: { items: { name?: string; title?: string; url?: string; reason?: string; stars?: number }[] }) {
+  if (!items || items.length === 0) return null;
+  return (
+    <div className="space-y-2">
+      {items.map((it, i) => (
+        <div key={i} className="rounded-lg border border-ink-100 p-2.5 text-sm">
+          <div className="flex items-center gap-2">
+            {it.url ? (
+              <a href={it.url} target="_blank" rel="noopener noreferrer" className="font-medium text-campus-600 underline decoration-campus-300 underline-offset-2 hover:text-campus-700">
+                {it.name || it.title || it.url}
+              </a>
+            ) : (
+              <span className="font-medium">{it.name || it.title}</span>
+            )}
+            {it.stars !== undefined && <span className="text-xs text-ink-400">★ {it.stars}</span>}
+          </div>
+          {it.reason && <p className="mt-1 text-ink-700/70">{it.reason}</p>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const WEEKDAYS = ["一", "二", "三", "四", "五", "六", "日"];
+
+function MonthCalendar({ events, onDelete }: { events: CalEvent[]; onDelete: (id: string) => void }) {
+  const [viewDate, setViewDate] = useState(new Date());
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+  // events grouped by date (YYYY-MM-DD)
+  const byDate: Record<string, CalEvent[]> = {};
+  for (const e of events) {
+    const d = (e.start || "").slice(0, 10);
+    if (d) (byDate[d] ||= []).push(e);
+  }
+
+  // build calendar grid: first day offset (Mon=0), days in month
+  const firstDay = new Date(year, month, 1);
+  let offset = firstDay.getDay() - 1; // Mon=0
+  if (offset < 0) offset = 6;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const cells: (number | null)[] = [];
+  for (let i = 0; i < offset; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  const monthLabel = `${year} 年 ${month + 1} 月`;
+  const prevMonth = () => setViewDate(new Date(year, month - 1, 1));
+  const nextMonth = () => setViewDate(new Date(year, month + 1, 1));
+
+  return (
+    <div>
+      <div className="mb-3 flex items-center justify-between">
+        <button onClick={prevMonth} className="rounded px-2 py-1 text-sm text-ink-600 hover:bg-ink-100">‹</button>
+        <span className="font-medium text-ink-800">{monthLabel}</span>
+        <button onClick={nextMonth} className="rounded px-2 py-1 text-sm text-ink-600 hover:bg-ink-100">›</button>
+      </div>
+      <div className="grid grid-cols-7 gap-1 text-center text-xs text-ink-500">
+        {WEEKDAYS.map(w => <div key={w} className="py-1 font-medium">{w}</div>)}
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {cells.map((d, i) => {
+          if (d === null) return <div key={i} className="min-h-16 rounded-lg bg-ink-50/50" />;
+          const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+          const dayEvents = byDate[dateStr] || [];
+          const isToday = dateStr === todayStr;
+          return (
+            <div key={i} className={`min-h-16 rounded-lg border p-1 text-xs ${isToday ? "border-campus-400 bg-campus-50" : "border-ink-100"}`}>
+              <div className={`mb-0.5 font-medium ${isToday ? "text-campus-700" : "text-ink-600"}`}>{d}</div>
+              {dayEvents.slice(0, 2).map((e, j) => (
+                <div key={j} className="group relative truncate rounded bg-campus-100 px-1 py-0.5 text-campus-700" title={e.title}>
+                  {e.title}
+                  {e.id && <button onClick={() => onDelete(e.id!)} className="ml-1 hidden text-red-400 group-hover:inline">×</button>}
+                </div>
+              ))}
+              {dayEvents.length > 2 && <div className="text-ink-400">+{dayEvents.length - 2} 更多</div>}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 /* ---------------- Dashboard ---------------- */
@@ -83,7 +188,6 @@ export function DashboardPage() {
 /* ---------------- Secretary ---------------- */
 export function SecretaryPage() {
   const [message, setMessage] = useState("我想学 Linux，帮我安排 30 天计划");
-  const [mode, setMode] = useState("offline");
   const [result, setResult] = useState<AgentRunResult | null>(null);
   const [runs, setRuns] = useState<RunRecord[]>([]);
   const [err, setErr] = useState<string | null>(null);
@@ -93,7 +197,7 @@ export function SecretaryPage() {
   useEffect(() => { refresh(); }, []);
   const run = () => {
     setBusy(true); setErr(null);
-    api.agentRun({ message, mode })
+    api.agentRun({ message })
       .then((r) => { setResult(r); return refresh(); })
       .catch((e: Error) => setErr(e.message))
       .finally(() => setBusy(false));
@@ -104,16 +208,9 @@ export function SecretaryPage() {
       <PageHeader title="秘书" subtitle="一句话交给 Campus-Agent，自动路由到学习、科研、生活、社团或职业工作流。" />
       <Err e={err} />
       <Card title="新任务">
-        <div className="grid gap-3 md:grid-cols-[1fr_160px]">
+        <div className="grid gap-3 md:grid-cols-[1fr_auto]">
           <textarea className="campus-input min-h-28" value={message} onChange={(e) => setMessage(e.target.value)} />
-          <div className="grid content-start gap-2">
-            <select className="campus-input" value={mode} onChange={(e) => setMode(e.target.value)}>
-              <option value="offline">offline</option>
-              <option value="auto">auto</option>
-              <option value="real">real</option>
-            </select>
-            <button className="campus-btn" onClick={run} disabled={busy || !message.trim()}>{busy ? "运行中..." : "开始"}</button>
-          </div>
+          <button className="campus-btn" onClick={run} disabled={busy || !message.trim()}>{busy ? <Spinner /> : "开始"}</button>
         </div>
         {result && (
           <div className="mt-4 grid gap-3 md:grid-cols-4">
@@ -123,6 +220,7 @@ export function SecretaryPage() {
             <Metric label="产物" value={String(result.artifacts.length)} />
           </div>
         )}
+        {result?.source_mode && <p className="mt-2 text-xs text-ink-700/50">来源：{result.source_mode}{result.multiagent ? " · 多智能体" : ""}</p>}
       </Card>
       <Card title="最近运行">
         <ul className="space-y-2 text-sm">
@@ -189,100 +287,6 @@ export function OnboardingPage() {
     </>
   );
 }
-
-/* ---------------- Demo B ---------------- */
-export function DemoCenterPage() {
-  const [status, setStatus] = useState<DemoStatus | null>(null);
-  const [mode, setMode] = useState("offline");
-  const [topic, setTopic] = useState("校园低碳实践");
-  const [region, setRegion] = useState("北京高校社区");
-  const [goal, setGoal] = useState("7 天入门机器学习");
-  const [days, setDays] = useState(7);
-  const [aRes, setARes] = useState<DemoAResult | null>(null);
-  const [cRes, setCRes] = useState<DemoCResult | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-  const [busy, setBusy] = useState<string | null>(null);
-
-  useEffect(() => {
-    api.demoStatus().then(setStatus).catch((e: Error) => setErr(e.message));
-  }, []);
-
-  const runA = () => {
-    setBusy("a"); setErr(null);
-    api.demoARun({ topic, region, window: "2026 暑期", mode })
-      .then(setARes).catch((e: Error) => setErr(e.message)).finally(() => setBusy(null));
-  };
-  const runC = () => {
-    setBusy("c"); setErr(null);
-    api.demoCRun({ goal, days, minutes: 20, quiz_n: 3, mode })
-      .then(setCRes).catch((e: Error) => setErr(e.message)).finally(() => setBusy(null));
-  };
-
-  return (
-    <>
-      <PageHeader title="Demo 中心" subtitle="社会实践策划、学习计划、真实 LLM 状态检查。" />
-      <Err e={err} />
-      <div className="mb-4 grid gap-4 lg:grid-cols-3">
-        <Card title="运行模式">
-          <select className="campus-input" value={mode} onChange={(e) => setMode(e.target.value)}>
-            <option value="offline">offline</option>
-            <option value="auto">auto</option>
-            <option value="real">real</option>
-          </select>
-          {status && (
-            <div className="mt-3 text-sm text-ink-700/70">
-              <p>LLM：{status.llm.ok ? "可用" : "未就绪"}</p>
-              <p>Hermes：{status.llm.hermes_importable ? "import ok" : "不可导入"}</p>
-              <p>Skills dir：{status.external_dir_configured ? "已挂载" : "未挂载"}</p>
-              <p>内置技能：{status.vendor.length + status.campus.length}</p>
-              {status.missing_core.length > 0 && <p className="text-amber-700">缺少：{status.missing_core.join(", ")}</p>}
-              {!status.llm.ok && status.llm.fixes && status.llm.fixes.length > 0 && (
-                <p className="mt-2 text-amber-700">{status.llm.fixes[0]}</p>
-              )}
-            </div>
-          )}
-        </Card>
-        <Card title="Demo A 社会实践">
-          <div className="grid gap-2 text-sm">
-            <input className="campus-input" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="实践主题" />
-            <input className="campus-input" value={region} onChange={(e) => setRegion(e.target.value)} placeholder="地区" />
-            <button className="campus-btn" onClick={runA} disabled={busy !== null}>{busy === "a" ? "生成中..." : "生成策划案"}</button>
-          </div>
-          {aRes && (
-            <div className="mt-3 grid gap-2 text-sm">
-              <Metric label="状态" value={aRes.ok ? "成功" : "失败"} />
-              <Metric label="外联对象" value={String(aRes.outreach_count)} />
-              <Metric label="邮件草稿" value={String(aRes.email_segments)} />
-              <Metric label="模式" value={aRes.mode} />
-              <pre className="overflow-x-auto rounded-lg bg-ink-900 p-2 text-xs text-ink-100">{aRes.error || aRes.run_dir}</pre>
-              {aRes.artifacts && aRes.artifacts.length > 0 && (
-                <p className="text-xs text-ink-700/60">产物 {aRes.artifacts.length} 个，已写入 run 目录。</p>
-              )}
-            </div>
-          )}
-        </Card>
-        <Card title="Demo C 学习计划">
-          <div className="grid gap-2 text-sm">
-            <input className="campus-input" value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="学习目标" />
-            <input className="campus-input" type="number" value={days} onChange={(e) => setDays(Number(e.target.value))} />
-            <button className="campus-btn" onClick={runC} disabled={busy !== null}>{busy === "c" ? "生成中..." : "生成学习计划"}</button>
-          </div>
-          {cRes && (
-            <div className="mt-3 grid gap-2 text-sm">
-              <Metric label="状态" value={cRes.ok ? "成功" : "失败"} />
-              <Metric label="天数" value={String(cRes.days)} />
-              <Metric label="Quiz" value={String(cRes.quiz_questions)} />
-              <Metric label="模式" value={cRes.mode} />
-              <pre className="overflow-x-auto rounded-lg bg-ink-900 p-2 text-xs text-ink-100">{cRes.error || cRes.run_dir}</pre>
-              {cRes.plan_md_head && <p className="text-xs text-ink-700/60">{cRes.plan_md_head}</p>}
-            </div>
-          )}
-        </Card>
-      </div>
-    </>
-  );
-}
-
 export function LearningPage() {
   const [topic, setTopic] = useState("线性代数");
   const [source, setSource] = useState("矩阵乘法、线性变换、特征值、正交分解");
@@ -295,12 +299,14 @@ export function LearningPage() {
   const [dashboard, setDashboard] = useState<{ today_tasks: Task[]; deadlines: Task[]; progress: { tasks: number; done: number } } | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [cardSource, setCardSource] = useState<string | undefined>();
+  const [quizSource, setQuizSource] = useState<string | undefined>();
 
   const refresh = () => api.learningDashboard().then(setDashboard).catch((e: Error) => setErr(e.message));
   useEffect(() => { refresh(); }, []);
-  const makeCards = () => { setBusy(true); api.flashcards({ topic, source_text: source, count: 6 }).then((r) => setCards(r.flashcards)).then(refresh).catch((e: Error) => setErr(e.message)).finally(() => setBusy(false)); };
+  const makeCards = () => { setBusy(true); api.flashcards({ topic, source_text: source, count: 6 }).then((r) => { setCards(r.flashcards); setCardSource(r.source_mode); }).then(refresh).catch((e: Error) => setErr(e.message)).finally(() => setBusy(false)); };
   const addDeadline = () => api.addDeadline({ title: deadlineTitle, due: deadlineDue, course: topic }).then(refresh).catch((e: Error) => setErr(e.message));
-  const runQuiz = () => { setBusy(true); api.quizRun({ topic, source_text: source, count: 4 }).then((r) => setQuestions(r.questions)).then(refresh).catch((e: Error) => setErr(e.message)).finally(() => setBusy(false)); };
+  const runQuiz = () => { setBusy(true); api.quizRun({ topic, source_text: source, count: 4 }).then((r) => { setQuestions(r.questions); setQuizSource(r.source_mode); }).then(refresh).catch((e: Error) => setErr(e.message)).finally(() => setBusy(false)); };
   const gradeQuiz = () => api.quizGrade({ topic, answers: questions.map((q) => ({ question_id: q.id, answer: answers[q.id] || "" })) }).then((r) => setGrade(r)).then(refresh).catch((e: Error) => setErr(e.message));
 
   return (
@@ -326,13 +332,15 @@ export function LearningPage() {
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
         <Card title="Flashcards">
-          <button className="campus-btn" onClick={makeCards} disabled={busy}>生成卡片</button>
+          <button className="campus-btn" onClick={makeCards} disabled={busy}>{busy ? <Spinner /> : "生成卡片"}</button>
           <div className="mt-3 grid gap-2">
+            {cards.length > 0 && <p className="text-xs text-ink-600"><SourceBadge mode={cardSource} /></p>}
             {cards.map((c) => <div key={c.id} className="rounded-lg border border-ink-100 p-3 text-sm"><p className="font-medium">{c.front}</p><p className="mt-1 text-ink-700/70">{c.back}</p><span className="campus-chip mt-2">due {c.due}</span></div>)}
           </div>
         </Card>
         <Card title="每日 Quiz">
-          <button className="campus-btn" onClick={runQuiz} disabled={busy}>生成 quiz</button>
+          <button className="campus-btn" onClick={runQuiz} disabled={busy}>{busy ? <Spinner /> : "生成 quiz"}</button>
+          {questions.length > 0 && <p className="mt-2 text-xs text-ink-600"><SourceBadge mode={quizSource} /></p>}
           <div className="mt-3 space-y-3">
             {questions.map((q) => (
               <label key={q.id} className="block text-sm">
@@ -345,63 +353,9 @@ export function LearningPage() {
           {grade && <p className="mt-3 rounded-lg bg-campus-50 p-3 text-sm text-campus-800">得分 {grade.score} · {grade.plan_adjustment}</p>}
         </Card>
       </div>
-      <DemoBPage />
     </>
   );
 }
-
-export function DemoBPage() {
-  const [path, setPath] = useState("");
-  const [exam, setExam] = useState("");
-  const [free, setFree] = useState(300);
-  const [res, setRes] = useState<DemoBResult | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  const run = () => {
-    setBusy(true);
-    setErr(null);
-    api.demoBRun(path, exam, { free_minutes: free })
-      .then(setRes)
-      .catch((e: Error) => setErr(e.message))
-      .finally(() => setBusy(false));
-  };
-
-  return (
-    <>
-      <PageHeader title="Demo B · 讲义复习计划" subtitle="扫描讲义 → 知识图谱 → 期末复习计划 + 每日 quiz。" />
-      <Card>
-        <div className="grid gap-3 md:grid-cols-3">
-          <label className="text-sm md:col-span-2">
-            讲义路径
-            <input className="campus-input mt-1" value={path} onChange={(e) => setPath(e.target.value)} placeholder="~/Courses/.../lectures" />
-          </label>
-          <label className="text-sm">
-            考试日期
-            <input className="campus-input mt-1" type="date" value={exam} onChange={(e) => setExam(e.target.value)} />
-          </label>
-          <label className="text-sm">
-            可用时间（分钟/天）
-            <input className="campus-input mt-1" type="number" value={free} onChange={(e) => setFree(Number(e.target.value))} />
-          </label>
-        </div>
-        <button className="campus-btn mt-4" onClick={run} disabled={busy || !path || !exam}>{busy ? "生成中…" : "生成复习计划"}</button>
-        <Err e={err} />
-        {res && (
-          <div className="mt-4 grid gap-3 md:grid-cols-4">
-            <Metric label="状态" value={res.ok ? "成功" : "失败"} />
-            <Metric label="知识节点" value={String(res.kg_nodes)} />
-            <Metric label="资源" value={String(res.resource_count)} />
-            <Metric label="计划天数" value={String(res.plan_days)} />
-            <pre className="md:col-span-4 overflow-x-auto rounded-lg bg-ink-900 p-3 text-xs text-ink-100">{res.run_dir}</pre>
-          </div>
-        )}
-      </Card>
-    </>
-  );
-}
-
-/* ---------------- Research + Notes ---------------- */
 export function ResearchPage() {
   const [topics, setTopics] = useState<ResearchTopic[]>([]);
   const [runs, setRuns] = useState<ResearchDigest[]>([]);
@@ -413,7 +367,7 @@ export function ResearchPage() {
   const [githubTopic, setGithubTopic] = useState("student agent");
   const [githubItems, setGithubItems] = useState<{ name: string; url: string; stars: number; reason: string }[]>([]);
   const [formatTitle, setFormatTitle] = useState("Campus-Agent: A Personal Secretary for Students");
-  const [manuscript, setManuscript] = useState("Abstract: ...\nFig. 1 shows the system.\nReferences\n[1] Demo.");
+  const [manuscript, setManuscript] = useState("Abstract: ...\nFig. 1 shows the system.\nReferences\n[1] Author et al.");
   const [formatItems, setFormatItems] = useState<{ name: string; passed: boolean; detail: string }[]>([]);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -447,13 +401,13 @@ export function ResearchPage() {
   };
   const runIdea = () => {
     setBusy(true); setErr(null);
-    api.researchIdea({ idea, mode: "auto" })
+    api.researchIdea({ idea })
       .then((d) => { setLatest(d); refreshAll(); })
       .catch((e: Error) => setErr(e.message))
       .finally(() => setBusy(false));
   };
-  const runGithub = () => api.githubTrending({ topic: githubTopic }).then((r) => setGithubItems(r.items)).catch((e: Error) => setErr(e.message));
-  const runFormat = () => api.formatCheck({ title: formatTitle, manuscript }).then((r) => setFormatItems(r.items)).catch((e: Error) => setErr(e.message));
+  const runGithub = () => { setBusy(true); setErr(null); api.githubTrending({ topic: githubTopic }).then((r) => setGithubItems(r.items)).catch((e: Error) => setErr(e.message)).finally(() => setBusy(false)); };
+  const runFormat = () => { setBusy(true); setErr(null); api.formatCheck({ title: formatTitle, manuscript }).then((r) => setFormatItems(r.items)).catch((e: Error) => setErr(e.message)).finally(() => setBusy(false)); };
 
   return (
     <>
@@ -466,14 +420,14 @@ export function ResearchPage() {
         </Card>
         <Card title="GitHub 项目">
           <input className="campus-input" value={githubTopic} onChange={(e) => setGithubTopic(e.target.value)} />
-          <button className="campus-btn mt-2" onClick={runGithub}>找项目</button>
-          <ul className="mt-3 space-y-2 text-sm">{githubItems.map((g) => <li key={g.name} className="rounded border border-ink-100 p-2">{g.name} · {g.stars} stars<p className="text-xs text-ink-700/60">{g.reason}</p></li>)}</ul>
+          <button className="campus-btn mt-2" onClick={runGithub} disabled={busy}>{busy ? <Spinner /> : "找项目"}</button>
+          {githubItems.length > 0 && <div className="mt-3"><LinkList items={githubItems} /></div>}
         </Card>
         <Card title="格式检查">
           <input className="campus-input mb-2" value={formatTitle} onChange={(e) => setFormatTitle(e.target.value)} />
           <textarea className="campus-input min-h-20" value={manuscript} onChange={(e) => setManuscript(e.target.value)} />
-          <button className="campus-btn mt-2" onClick={runFormat}>检查</button>
-          <ul className="mt-3 space-y-1 text-sm">{formatItems.map((it) => <li key={it.name} className={it.passed ? "text-emerald-700" : "text-amber-700"}>{it.passed ? "PASS" : "TODO"} · {it.name}</li>)}</ul>
+          <button className="campus-btn mt-2" onClick={runFormat} disabled={busy}>{busy ? <Spinner /> : "检查"}</button>
+          <ul className="mt-3 space-y-1 text-sm">{formatItems.map((it) => <li key={it.name} className={it.passed ? "text-emerald-700" : "text-amber-700"}>{it.passed ? "✅ PASS" : "⚠️ TODO"} · {it.name} — {it.detail}</li>)}</ul>
         </Card>
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
@@ -508,7 +462,11 @@ export function ResearchPage() {
               <ul className="space-y-2">
                 {latest.papers.map((p, i) => (
                   <li key={i} className="rounded-lg border border-ink-100 p-2">
-                    <p className="font-medium">{p.title}</p>
+                    {p.url ? (
+                      <a href={p.url} target="_blank" rel="noopener noreferrer" className="font-medium text-campus-600 underline decoration-campus-300 underline-offset-2 hover:text-campus-700">{p.title}</a>
+                    ) : (
+                      <p className="font-medium">{p.title}</p>
+                    )}
                     <p className="text-xs text-ink-700/60">{p.year || ""} · score {p.score || ""}</p>
                     {p.abstract && <p className="mt-1 text-xs text-ink-700/70">{p.abstract}</p>}
                   </li>
@@ -676,6 +634,7 @@ export function LifePage() {
   const [trip, setTrip] = useState<Record<string, unknown>[]>([]);
   const [guideQuery, setGuideQuery] = useState("借教室");
   const [guides, setGuides] = useState<{ title: string; steps: string[] }[]>([]);
+  const [busy, setBusy] = useState(false);
 
   const refresh = () => {
     Promise.all([api.calendarList(), api.annivList(), api.dailyLogGet(undefined, 5)])
@@ -701,7 +660,7 @@ export function LifePage() {
 
   const runDaily = () => api.dailyLogRun().then(refresh).catch((e: Error) => setErr(e.message));
   const addHealth = () => api.healthAdd({ mood, sleep_hours: sleep, exercise }).then((r) => setHealth(r.records)).catch((e: Error) => setErr(e.message));
-  const makeTrip = () => api.travelPlan({ destination, days: 2, budget: 800 }).then((r) => setTrip(r.itinerary)).catch((e: Error) => setErr(e.message));
+  const makeTrip = () => { setBusy(true); api.travelPlan({ destination, days: 2, budget: 800 }).then((r) => setTrip(r.itinerary)).catch((e: Error) => setErr(e.message)).finally(() => setBusy(false)); };
   const findGuide = () => api.campusGuide(guideQuery).then((r) => setGuides(r.guides)).catch((e: Error) => setErr(e.message));
 
   return (
@@ -709,20 +668,8 @@ export function LifePage() {
       <PageHeader title="生活" subtitle="日程 · 生日纪念日提醒 · 每日秘书日志。" />
       <Err e={err} />
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card title="日程">
-          <ul className="space-y-1 text-sm">
-            {events.map((e, i) => (
-              <li key={i} className="flex items-center justify-between rounded border border-ink-100 px-2 py-1">
-                <span>
-                  <span className="font-mono text-xs text-campus-700">{e.start}</span>{" "}
-                  {e.title}{e.location ? `（${e.location}）` : ""}
-                  {e.rrule ? <span className="campus-chip ml-2">{e.rrule}</span> : null}
-                </span>
-                <button className="text-xs text-red-500 hover:underline" onClick={() => e.id && delEvent(e.id)}>删除</button>
-              </li>
-            ))}
-            {events.length === 0 && <li className="text-ink-700/60">暂无日程。</li>}
-          </ul>
+        <Card title="日程日历">
+          <MonthCalendar events={events} onDelete={delEvent} />
           <div className="mt-4 grid gap-2 border-t border-ink-100 pt-3 text-sm">
             <input className="campus-input" placeholder="标题（如：高数课）" value={title} onChange={(e) => setTitle(e.target.value)} />
             <div className="grid grid-cols-2 gap-2">
@@ -802,7 +749,7 @@ export function LifePage() {
         </Card>
         <Card title="旅行 / 娱乐计划">
           <input className="campus-input mb-2" value={destination} onChange={(e) => setDestination(e.target.value)} />
-          <button className="campus-btn" onClick={makeTrip}>生成计划</button>
+          <button className="campus-btn" onClick={makeTrip} disabled={busy}>{busy ? <Spinner /> : "生成计划"}</button>
           <ul className="mt-3 space-y-2 text-sm">{trip.map((d, i) => <li key={i} className="rounded border border-ink-100 p-2">Day {String(d.day)} · {String(d.morning)} / {String(d.afternoon)}</li>)}</ul>
         </Card>
         <Card title="校园办事指南">
@@ -825,29 +772,29 @@ export function ClubPage() {
   const [copy, setCopy] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
   return (
     <>
-      <PageHeader title="社团 / 实践" subtitle="会议纪要、招新文案、邮件草稿和社会实践 Demo。" />
+      <PageHeader title="社团 / 实践" subtitle="会议纪要、招新文案、邮件草稿。" />
       <Err e={err} />
       <div className="grid gap-4 lg:grid-cols-3">
         <Card title="会议纪要">
           <input className="campus-input mb-2" value={topic} onChange={(e) => setTopic(e.target.value)} />
           <textarea className="campus-input min-h-24" value={notes} onChange={(e) => setNotes(e.target.value)} />
-          <button className="campus-btn mt-2" onClick={() => api.meetingMinutes({ topic, notes }).then((r) => setMinutes(r.minutes.todo)).catch((e: Error) => setErr(e.message))}>生成</button>
+          <button className="campus-btn mt-2" onClick={() => { setBusy("minutes"); api.meetingMinutes({ topic, notes }).then((r) => setMinutes(r.minutes.todo)).catch((e: Error) => setErr(e.message)).finally(() => setBusy(null)); }} disabled={busy !== null}>{busy === "minutes" ? <Spinner /> : "生成"}</button>
           <ul className="mt-3 space-y-1 text-sm">{minutes.map((m, i) => <li key={i}>- {m}</li>)}</ul>
         </Card>
         <Card title="招新文案">
           <input className="campus-input mb-2" value={org} onChange={(e) => setOrg(e.target.value)} />
-          <button className="campus-btn" onClick={() => api.recruitingCopy({ org }).then((r) => setCopy(`${r.copy.headline}\n${r.copy.body}`)).catch((e: Error) => setErr(e.message))}>生成</button>
+          <button className="campus-btn" onClick={() => { setBusy("copy"); api.recruitingCopy({ org }).then((r) => setCopy(`${r.copy.headline}\n${r.copy.body}`)).catch((e: Error) => setErr(e.message)).finally(() => setBusy(null)); }} disabled={busy !== null}>{busy === "copy" ? <Spinner /> : "生成"}</button>
           {copy && <pre className="mt-3 whitespace-pre-wrap rounded-lg bg-ink-900 p-3 text-xs text-ink-100">{copy}</pre>}
         </Card>
         <Card title="邮件草稿">
           <input className="campus-input mb-2" value={purpose} onChange={(e) => setPurpose(e.target.value)} />
-          <button className="campus-btn" onClick={() => api.emailDraft({ purpose, recipient: "老师" }).then((r) => setEmail(r.email)).catch((e: Error) => setErr(e.message))}>生成</button>
+          <button className="campus-btn" onClick={() => { setBusy("email"); api.emailDraft({ purpose, recipient: "老师" }).then((r) => setEmail(r.email)).catch((e: Error) => setErr(e.message)).finally(() => setBusy(null)); }} disabled={busy !== null}>{busy === "email" ? <Spinner /> : "生成"}</button>
           {email && <pre className="mt-3 whitespace-pre-wrap rounded-lg bg-ink-900 p-3 text-xs text-ink-100">{email}</pre>}
         </Card>
       </div>
-      <DemoCenterPage />
     </>
   );
 }
@@ -856,32 +803,32 @@ export function ClubPage() {
 export function CareerPage() {
   const [query, setQuery] = useState("AI 产品经理");
   const [city, setCity] = useState("上海");
-  const [jobs, setJobs] = useState<{ id: string; title: string; company: string; city: string; fit: number; reason: string }[]>([]);
+  const [jobs, setJobs] = useState<{ id: string; title: string; company: string; city: string; url?: string; fit: number; reason: string }[]>([]);
   const [role, setRole] = useState("AI 产品经理实习生");
   const [plan, setPlan] = useState<{ day: number; focus: string; task: string; minutes: number }[]>([]);
   const [questions, setQuestions] = useState<string[]>([]);
   const [saved, setSaved] = useState<Record<string, unknown>[]>([]);
   const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
   useEffect(() => { api.savedJobs().then((r) => setSaved(r.jobs)).catch(() => undefined); }, []);
-  const search = () => api.jobSearch({ query, city }).then((r) => setJobs(r.jobs)).catch((e: Error) => setErr(e.message));
-  const save = (job: Record<string, unknown>) => api.saveJob(job).then((r) => setSaved(r.jobs)).catch((e: Error) => setErr(e.message));
-  const makePlan = () => api.interviewPlan({ role, days: 7 }).then((r) => { setPlan(r.plan); setQuestions(r.questions); }).catch((e: Error) => setErr(e.message));
+  const search = () => { setBusy("search"); setErr(null); api.jobSearch({ query, city }).then((r) => setJobs(r.jobs)).catch((e: Error) => setErr(e.message)).finally(() => setBusy(null)); };
+  const makePlan = () => { setBusy("plan"); setErr(null); api.interviewPlan({ role, days: 7 }).then((r) => { setPlan(r.plan); setQuestions(r.questions); }).catch((e: Error) => setErr(e.message)).finally(() => setBusy(null)); };
   return (
     <>
-      <PageHeader title="职业" subtitle="实习 fallback 搜索、岗位保存和面试计划。" />
+      <PageHeader title="职业" subtitle="实习搜索、岗位保存和面试计划。" />
       <Err e={err} />
       <div className="grid gap-4 lg:grid-cols-2">
         <Card title="实习搜索">
           <div className="grid gap-2 md:grid-cols-[1fr_140px_auto]">
             <input className="campus-input" value={query} onChange={(e) => setQuery(e.target.value)} />
             <input className="campus-input" value={city} onChange={(e) => setCity(e.target.value)} />
-            <button className="campus-btn" onClick={search}>搜索</button>
+            <button className="campus-btn" onClick={search} disabled={busy !== null}>{busy === "search" ? <Spinner /> : "搜索"}</button>
           </div>
-          <ul className="mt-3 space-y-2 text-sm">{jobs.map((j) => <li key={j.id} className="rounded border border-ink-100 p-3"><div className="flex justify-between gap-2"><span className="font-medium">{j.title} · {j.company}</span><button className="text-campus-700" onClick={() => save(j)}>保存</button></div><p className="text-xs text-ink-700/60">{j.city} · fit {j.fit} · {j.reason}</p></li>)}</ul>
+          {jobs.length > 0 && <div className="mt-3"><LinkList items={jobs.map(j => ({ name: `${j.title} · ${j.company}`, url: j.url, reason: `${j.city} · 匹配度 ${j.fit} · ${j.reason}` }))} /></div>}
         </Card>
         <Card title="面试计划">
           <input className="campus-input mb-2" value={role} onChange={(e) => setRole(e.target.value)} />
-          <button className="campus-btn" onClick={makePlan}>生成 7 天计划</button>
+          <button className="campus-btn" onClick={makePlan} disabled={busy !== null}>{busy === "plan" ? <Spinner /> : "生成 7 天计划"}</button>
           <ul className="mt-3 space-y-2 text-sm">{plan.map((p) => <li key={p.day} className="rounded border border-ink-100 p-2">Day {p.day} · {p.focus} · {p.minutes}min</li>)}</ul>
           {questions.length > 0 && <p className="mt-3 text-sm text-campus-700">练习题：{questions[0]}</p>}
         </Card>
@@ -897,18 +844,53 @@ export function CareerPage() {
 export function SettingsPage() {
   const [status, setStatus] = useState<SettingsStatus | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  useEffect(() => { api.settingsStatus().then(setStatus).catch((e: Error) => setErr(e.message)); }, []);
+  const [agentName, setAgentName] = useState("Campus");
+  const [nameInput, setNameInput] = useState("");
+  const [autoLearnReport, setAutoLearnReport] = useState<string | null>(null);
+  useEffect(() => {
+    api.settingsStatus().then(setStatus).catch((e: Error) => setErr(e.message));
+    api.getAgentName().then(r => { setAgentName(r.name); setNameInput(r.name); }).catch(() => {});
+  }, []);
+  const saveName = () => {
+    api.setAgentName(nameInput).then(r => setAgentName(r.name)).catch((e: Error) => setErr(e.message));
+  };
+  const runAutoLearn = () => {
+    setAutoLearnReport("running...");
+    api.triggerAutoLearn(false).then(r => {
+      setAutoLearnReport(`processed: ${r.processed} | preferences: ${r.preferences_written} | skills: ${r.skills_created + r.skills_updated} | knowledge: ${r.knowledge_written}`);
+    }).catch((e: Error) => setAutoLearnReport(`error: ${e.message}`));
+  };
+  const mobile = status?.mobile as { ok: boolean; channels?: { feishu?: { ok?: boolean; configured?: boolean }; qq?: { ok?: boolean; configured?: boolean } } } | undefined;
   return (
     <>
       <PageHeader title="设置" subtitle="本地路径、LLM、skills、Notion、移动推送和外部 provider readiness。" />
       <Err e={err} />
+      <div className="mb-6 rounded-xl border border-campus-200 bg-campus-50/50 p-5">
+        <h3 className="mb-3 font-semibold text-campus-800">Agent 名称</h3>
+        <div className="flex gap-2">
+          <input
+            value={nameInput}
+            onChange={e => setNameInput(e.target.value)}
+            className="flex-1 rounded-lg border border-ink-200 px-3 py-2 text-sm focus:border-campus-400 focus:outline-none"
+            placeholder="给你的秘书起个名字"
+          />
+          <button onClick={saveName} className="rounded-lg bg-campus-600 px-4 py-2 text-sm font-medium text-white hover:bg-campus-700 transition">保存</button>
+        </div>
+        <p className="mt-2 text-xs text-ink-700/60">当前名称「{agentName}」会显示在侧边栏。改名后刷新页面生效。</p>
+      </div>
+      <div className="mb-6 rounded-xl border border-ink-200 bg-white p-5">
+        <h3 className="mb-3 font-semibold text-ink-800">Auto-Learn（从用户纠正学习）</h3>
+        <p className="mb-3 text-sm text-ink-700/70">回顾用户对 run 产物的修正，自动写入偏好记忆或创建/更新 skill。每日定时运行，也可手动触发。</p>
+        <button onClick={runAutoLearn} className="rounded-lg bg-ink-800 px-4 py-2 text-sm font-medium text-white hover:bg-ink-900 transition">手动触发 Auto-Learn</button>
+        {autoLearnReport && <p className="mt-2 text-sm text-ink-700/80">{autoLearnReport}</p>}
+      </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <Card title="CAMPUS_HOME">
           <pre className="overflow-x-auto text-xs">{status?.campus_home || "loading"}</pre>
           <p className="mt-2 text-sm text-ink-700/70">branch {status?.branch || "unknown"} · v{status?.version || ""}</p>
         </Card>
         <Card title="LLM">
-          <p className="text-lg font-semibold">{status?.llm.ok ? "ready" : "offline fallback"}</p>
+          <p className="text-lg font-semibold">{status?.llm.ok ? "✅ ready" : "⚪ offline fallback"}</p>
           <p className="text-sm text-ink-700/70">{status?.llm.error || "真实模型可用"}</p>
         </Card>
         <Card title="Skills">
@@ -916,12 +898,15 @@ export function SettingsPage() {
           <p className="text-sm text-ink-700/70">missing: {status?.skills.missing_core.join(", ") || "none"}</p>
         </Card>
         <Card title="Notion">
-          <p className="text-lg font-semibold">{status?.notion.ok ? "ready" : "local mirror"}</p>
+          <p className="text-lg font-semibold">{status?.notion.ok ? "✅ ready" : "⚪ local mirror"}</p>
           <p className="text-sm text-ink-700/70">{status?.notion.local_mirror_dir}</p>
         </Card>
         <Card title="Mobile">
-          <p className="text-lg font-semibold">{status?.mobile.ok ? "configured" : "not configured"}</p>
-          <p className="text-sm text-ink-700/70">{JSON.stringify(status?.mobile.channels || {})}</p>
+          <p className="text-lg font-semibold">{status?.mobile.ok ? "✅ configured" : "⚪ not configured"}</p>
+          <div className="mt-1 text-sm text-ink-700/70">
+            <p>飞书: {mobile?.channels?.feishu?.ok ? "✅" : mobile?.channels?.feishu?.configured ? "⚠️ auth" : "⚪"}</p>
+            <p>QQ: {mobile?.channels?.qq?.ok ? "✅" : mobile?.channels?.qq?.configured ? "⚠️ auth" : "⚪"}</p>
+          </div>
         </Card>
         <Card title="Smoke">
           <pre className="whitespace-pre-wrap text-xs">{status?.smoke_command}</pre>

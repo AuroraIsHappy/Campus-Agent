@@ -55,8 +55,11 @@ def test_feishu_empty_message_failure():
 
 # ---------------- QQ Bot / WeCom (ports + injectable sender) ----------------
 
-def test_qq_no_sender_is_failure_not_raise():
-    r = QQBotPusher().send("group_1", "hi")
+def test_qq_no_sender_is_failure_not_raise(monkeypatch):
+    # force no real QQ env so the auto-init doesn't pick up real keys
+    for k in ("QQ_APP_ID", "QQ_CLIENT_SECRET"):
+        monkeypatch.delenv(k, raising=False)
+    r = QQBotPusher(sender=None).send("group_1", "hi")
     assert not r.ok and r.channel == "qq" and "configured" in r.error
 
 

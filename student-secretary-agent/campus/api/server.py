@@ -9,19 +9,22 @@ Run for real:  ``uvicorn campus.api.server:app`` (after ``create_app()``).
 """
 from __future__ import annotations
 import os
+import json
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
 from fastapi import FastAPI
 
 from campus.api.types import (
-    AgentRunRequest, DemoARequest, DemoBRequest, DemoCRequest, MemoryQuery, OnboardingRequest, PushRequest,
+    AgentRunRequest, AgentChatRequest, DemoARequest, DemoBRequest, DemoCRequest, MemoryQuery, OnboardingRequest, PushRequest,
     EventRequest, AnniversaryRequest, LogQuery, ResearchTopicRequest,
-    ResearchRefreshRequest, NotionSyncRequest,
+    ResearchRefreshRequest, NotionSyncRequest, ZoteroSyncRequest, ZoteroSearchRequest,
     FlashcardsRequest, DeadlineRequest, QuizRunRequest, QuizGradeRequest,
     ResearchIdeaRequest, GithubTrendingRequest, FormatCheckRequest,
     HealthRequest, TravelPlanRequest, ClubMinutesRequest, RecruitingCopyRequest,
     EmailDraftRequest, JobSearchRequest, JobSaveRequest, InterviewPlanRequest,
+    InterviewPracticeRequest, InterviewReflectRequest,
+    CorrectionRequest, AgentNameRequest,
 )
 
 __all__ = ["Backends", "create_app", "app", "start_scheduler", "stop_scheduler"]
@@ -101,9 +104,40 @@ def _default_demo_a(req: DemoARequest) -> dict:
 
 def _default_demo_b(req: DemoBRequest) -> dict:
     from campus.demo_b import pipeline as _p
-    r = _p.run_demo_b(req.path, req.exam_date, free_minutes=req.free_minutes,
-                      start_date=req.start_date, topic=req.topic)
-    return _result_dict(r)
+    from campus.demo_b import path_resolver as _pr
+    import os
+
+    path = req.path
+    # Phase 9: fuzzy path resolution (GOAL.md 模糊路径 + 自动确认)
+    # If the path doesn't point to a real file/dir, treat it as a fuzzy query
+    # and resolve candidates from ~/Desktop, ~/Documents, etc.
+    needs_clarify = False
+    clarify_options: list = []
+    if path and not os.path.exists(os.path.expanduser(path)):
+        resolver_fn = None
+        try:
+            resolver_fn = _pr.make_llm_resolver_fn()
+        except Exception:
+            pass
+        resolution = _pr.resolve_lecture_path(path, resolver_fn=resolver_fn)
+        if resolution["resolved"]:
+            path = resolution["resolved"]
+        elif resolution["needs_clarify"]:
+            return {"ok": False, "needs_clarify": True,
+                    "clarify_options": resolution["clarify_options"],
+                    "candidates": resolution["candidates"],
+                    "message": f"在 {path} 附近找到多个可能的讲义文件，请确认是哪一个。"}
+        else:
+            return {"ok": False, "needs_clarify": False,
+                    "error": f"未找到匹配 '{path}' 的讲义文件。请提供完整路径。"}
+
+    r = _p.run_demo_b(path, req.exam_date, free_minutes=req.free_minutes,
+                      start_date=req.start_date, topic=req.topic,
+                      export_notion=bool(getattr(req, "export_notion", False)),
+                      sync_calendar=getattr(req, "sync_calendar", ""))
+    d = _result_dict(r)
+    d["topic"] = req.topic or ""
+    return d
 
 
 def _default_demo_c(req: DemoCRequest) -> dict:
@@ -148,9 +182,54 @@ def _default_memory_recall(query: str, k: int) -> list:
 
 
 def _default_onboarding(answers: dict) -> dict:
-    # production: campus.meta_agent.onboarding wizard; deterministic canned default
-    return {"ok": True, "profile": {"identity": answers.get("identity", ""),
-            "major": answers.get("major", ""), "persona": answers.get("persona", "default")}}
+    # Phase 8 Step 1: wired to the real OnboardingWizard. The frontend sends a
+    # dict of answers; the wizard normalizes providers/persona + recommends skills.
+    # If answers are sparse, we still return what we have + the question list so
+    # the frontend can drive a multi-step form.
+    from campus.meta_agent.onboarding import OnboardingWizard, recommend_skills
+
+    questions = [{"key": k, "question": q} for k, q in OnboardingWizard.QUESTIONS]
+
+    # If the caller passed a full answer set, run the wizard to produce a profile.
+    required = {"identity", "major", "persona"}
+    if required.issubset({k for k, v in (answers or {}).items() if v}):
+        def _ask(q: str) -> str:
+            # map question → answer by key (QUESTIONS order is stable)
+            for k, question in OnboardingWizard.QUESTIONS:
+                if question == q:
+                    return str((answers or {}).get(k, ""))
+            return ""
+        try:
+            profile = OnboardingWizard(ask=_ask).run()
+            skills = recommend_skills(profile)
+            # persist the profile to memory so future sessions recall it
+            try:
+                from campus.memory.json_store import JsonFileStore
+                from campus.memory.types import PREFERENCES
+                store = JsonFileStore()
+                store.remember(layer=PREFERENCES, key="onboarding_profile",
+                               content=str(profile.__dict__),
+                               metadata={"identity": profile.identity,
+                                         "major": profile.major,
+                                         "persona": profile.persona},
+                               pinned=True)
+            except Exception:
+                pass
+            return {"ok": True, "profile": profile.__dict__,
+                    "recommended_skills": skills, "questions": questions}
+        except Exception as e:
+            return {"ok": False, "error": str(e),
+                    "profile": {"identity": answers.get("identity", ""),
+                                "major": answers.get("major", ""),
+                                "persona": answers.get("persona", "default")},
+                    "questions": questions}
+
+    # partial answers → return questions so the frontend can continue the form
+    return {"ok": True,
+            "profile": {"identity": answers.get("identity", ""),
+                        "major": answers.get("major", ""),
+                        "persona": answers.get("persona", "default")},
+            "questions": questions}
 
 
 def _default_tasks() -> list:
@@ -200,6 +279,13 @@ def _default_notes_status() -> dict:
 
 def _classify_agent_message(message: str) -> tuple[str, str, str]:
     m = (message or "").lower()
+    # Phase 9: lecture summary → Demo B (知识图谱/思维导图/复习计划)
+    if any(k in m for k in ("讲义", "总结课程", "summarize lecture", "lecture notes",
+                            "知识图谱", "思维导图", "mind map")):
+        return "lecture_summary", "learning", "demo_b_lecture_pipeline"
+    # Phase 9: Zotero / literature management
+    if any(k in m for k in ("zotero", "存到文献库", "存论文", "文献管理")):
+        return "literature_manage", "research", "zotero_sync"
     if any(k in m for k in ("学习", "复习", "quiz", "flashcard", "课程", "lecture", "计划", "learn")):
         return "learning_plan", "learning", "demo_c_learning_plan"
     if any(k in m for k in ("科研", "论文", "paper", "research", "github", "文献")):
@@ -216,6 +302,7 @@ def _classify_agent_message(message: str) -> tuple[str, str, str]:
 def _default_agent_run(req: AgentRunRequest) -> dict:
     from campus.api.types import DemoARequest, DemoCRequest, ResearchRefreshRequest, ResearchTopicRequest
     from campus import phase7
+    from campus.runtime.llm_config import require_real_llm, resolve_mode
     from campus.runtime.stores import ArtifactStore, RunStore, TaskStore
 
     intent, domain, workflow = _classify_agent_message(req.message)
@@ -228,10 +315,57 @@ def _default_agent_run(req: AgentRunRequest) -> dict:
     status = "done"
     error = ""
     result: dict[str, Any] = {"ok": True}
+
+    # Phase 8 Step 1: real/auto + long-horizon tasks go through the MetaAgent →
+    # Odyssey multi-agent DAG (Planner↔Critic / Writer↔Reviewer adversarial
+    # debate) instead of the deterministic phase7 shortcut. Offline mode keeps
+    # the existing deterministic routing for backward compatibility + hermetic tests.
+    resolved = resolve_mode(req.mode)
+    use_meta = False
+    if resolved != "offline":
+        real, llm_status = require_real_llm(req.mode)
+        if real:
+            # long-horizon cue? delegate to MetaRunner for full multi-agent DAG.
+            from campus.meta_agent.meta_agent import LONG_KEYWORDS
+            is_long = len(req.message) > 20 or any(k in req.message for k in LONG_KEYWORDS)
+            if is_long:
+                use_meta = True
+
     try:
-        if domain == "learning":
-            days = int(req.context.get("days", 30)) if isinstance(req.context, dict) else 30
-            result = _default_demo_c(DemoCRequest(goal=req.message, days=days, mode=req.mode))
+        if use_meta:
+            from campus.meta_agent.runner import MetaRunner
+            mr = MetaRunner()
+            mem = _try_recall_memory(req.message, k=3)
+            r = mr.run(req.message, mode=req.mode, domain=domain,
+                       context=req.context, memory_snippet=mem)
+            if r.ok:
+                # MetaRunner already persisted its own run record + artifacts;
+                # adopt its run_id and skip the manual artifact import below.
+                status = r.final_status or "done"
+                result = {"ok": True, "kind": r.kind, "summary": r.summary,
+                          "debates": r.debates, "dag": r.dag, "mode": req.mode,
+                          "multiagent": True, "artifacts": r.artifacts}
+                # mark the pre-created record as superseded by the meta run
+                runs.update(rec.id, status="superseded",
+                            result={"meta_run_id": r.run_id, "multiagent": True})
+                rec = runs.get(r.run_id) or rec  # adopt the meta run record
+            else:
+                status = "failed"
+                error = r.error
+                result = {"ok": False, "error": error, "multiagent": True}
+        elif domain == "learning":
+            # Phase 9: lecture-summary intent → Demo B (KG + mindmap + review plan)
+            if intent == "lecture_summary":
+                confirmed_path = (req.context or {}).get("confirmed_path", "")
+                path = confirmed_path or req.message
+                exam_date = (req.context or {}).get("exam_date", "")
+                result = _default_demo_b(DemoBRequest(
+                    path=path, exam_date=exam_date,
+                    export_notion=bool((req.context or {}).get("export_notion", False)),
+                    sync_calendar=(req.context or {}).get("sync_calendar", "")))
+            else:
+                days = int(req.context.get("days", 30)) if isinstance(req.context, dict) else 30
+                result = _default_demo_c(DemoCRequest(goal=req.message, days=days, mode=req.mode))
         elif domain == "club":
             result = _default_demo_a(DemoARequest(topic=req.message[:80] or "校园活动", mode=req.mode))
         elif domain == "research":
@@ -250,11 +384,16 @@ def _default_agent_run(req: AgentRunRequest) -> dict:
         status = "failed"
         error = str(e)
         result = {"ok": False, "error": error}
-    imported = artifacts.import_paths(rec.id, result.get("artifacts", []))
+    # MetaRunner already persisted its own run record + artifacts; skip the
+    # manual artifact import for the multi-agent path (artifacts are already dicts).
+    if use_meta and result.get("multiagent"):
+        imported = result.get("artifacts", [])
+    else:
+        imported = artifacts.import_paths(rec.id, result.get("artifacts", []))
     if result.get("run_dir"):
         imported.append(artifacts.write_text(rec.id, "SourceRun.txt", str(result["run_dir"]), "reference"))
-    artifacts.write_text(rec.id, "Status.md", f"# Status\n\n- status: {status}\n- error: {error}\n")
-    artifacts.write_text(rec.id, "Verification.md", f"# Verification\n\n- local fallback safe: yes\n- result ok: {bool(result.get('ok'))}\n")
+    artifacts.write_text(rec.id, "Status.md", f"# Status\n\n- status: {status}\n- error: {error}\n- multiagent: {bool(result.get('multiagent'))}\n")
+    artifacts.write_text(rec.id, "Verification.md", f"# Verification\n\n- local fallback safe: yes\n- result ok: {bool(result.get('ok'))}\n- multiagent: {bool(result.get('multiagent'))}\n")
     artifacts.write_json(rec.id, "run_result.json", result)
     manifest = artifacts.list(rec.id)
     tasks.create(title=req.message[:80] or intent, body=req.message, status=status,
@@ -269,7 +408,25 @@ def _default_agent_run(req: AgentRunRequest) -> dict:
         "status": status,
         "artifacts": manifest,
         "error": error,
+        "multiagent": bool(result.get("multiagent")),
     }
+
+
+def _try_recall_memory(query: str, k: int = 3) -> str:
+    """Best-effort layered memory recall for context injection. Never raises.
+
+    Phase 8 Step 2: uses ``recall_layered`` (tiered per-layer rules + RRF fusion +
+    token-budget packing) instead of the flat ``recall()`` scan. Returns a formatted
+    snippet ready to paste into an LLM prompt.
+    """
+    try:
+        from campus.memory.json_store import JsonFileStore
+        from campus.memory.recall_strategy import recall_layered
+        store = JsonFileStore()
+        packed = recall_layered(store, query, token_budget=1500)
+        return packed.snippet
+    except Exception:
+        return ""
 
 
 def _default_agent_list_runs() -> dict:
@@ -288,6 +445,200 @@ def _default_agent_get_run(run_id: str) -> dict:
     return data
 
 
+def _try_parse_schedule_intent(message: str) -> Optional[dict]:
+    """Detect a 'remind me every X at Y' intent and return a job spec, or None.
+
+    Recognizes patterns like:
+      "每天8点提醒我背单词"  → daily 08:00
+      "每天早上9点提醒我"    → daily 09:00
+      "每周日晚上8点发我周报" → weekly 6 20:00
+      "3天后提醒我交作业"    → once <iso+3d>
+    """
+    import re
+    import datetime as _dt
+    m = message.strip()
+
+    # every day at HH[:MM]
+    pat = re.search(r"每天.*(早|上午|晚)?上?\s*(\d{1,2})\s*[点时](?:\s*(\d{1,2})\s*分)?", m)
+    if pat and ("提醒" in m or "发" in m or "推送" in m):
+        hour = int(pat.group(2))
+        if pat.group(1) == "晚" or "晚上" in m:
+            hour = hour if hour >= 12 else hour + 12
+        minute = int(pat.group(3)) if pat.group(3) else 0
+        # extract the task after "提醒我/让我"
+        task = re.search(r"(?:提醒我|让我|发我|推送)\s*(.+)", m)
+        task_text = task.group(1).strip() if task else m
+        return {"rule": f"daily {hour:02d}:{minute:02d}",
+                "message": f"⏰ 提醒：{task_text}"}
+
+    # every week <day> at HH
+    weekday_map = {"一": 0, "二": 1, "三": 2, "四": 3, "五": 4, "六": 5, "日": 6, "天": 6}
+    pat = re.search(r"每周(.)\s*(?:晚上?)?\s*(\d{1,2})\s*[点时]", m)
+    if pat and ("提醒" in m or "发" in m):
+        wd = weekday_map.get(pat.group(1), 0)
+        hour = int(pat.group(2))
+        task = re.search(r"(?:提醒我|让我|发我|推送)\s*(.+)", m)
+        task_text = task.group(1).strip() if task else m
+        return {"rule": f"weekly {wd} {hour:02d}:00",
+                "message": f"⏰ 提醒：{task_text}"}
+
+    # in N days
+    pat = re.search(r"(\d+)\s*天后.*(?:提醒|记得)", m)
+    if pat:
+        days = int(pat.group(1))
+        task = re.search(r"(?:提醒我|记得)\s*(.+)", m)
+        task_text = task.group(1).strip() if task else m
+        when = (_dt.datetime.now() + _dt.timedelta(days=days)).replace(
+            hour=9, minute=0, second=0, microsecond=0)
+        return {"rule": f"once {when.strftime('%Y-%m-%dT%H:%M')}",
+                "message": f"⏰ 提醒：{task_text}"}
+
+    return None
+
+
+def _default_agent_chat(req: AgentChatRequest) -> dict:
+    """Chat-first endpoint (Phase 9 — GOAL.md 飞书式聊天).
+
+    Runs the agent (reusing ``_default_agent_run``), then composes a persona-
+    styled natural-language reply from the structured result + conversation
+    history + recalled memory. Persists the turn to ``ConversationStore``.
+
+    Supports clarification flows: if the agent result carries ``needs_clarify``
+    + ``clarify_options`` (e.g. fuzzy lecture path), the reply asks the user to
+    confirm rather than silently proceeding.
+
+    Phase 9: also detects "schedule a reminder" intents ("每天8点提醒我背单词")
+    and registers a user-defined job directly, replying with confirmation.
+    """
+    from campus.conversation.store import ConversationStore
+    from campus.conversation.reply import compose_reply, resolve_persona_name
+
+    # Phase 9: schedule-intent short-circuit (register a job, skip the agent run)
+    sched = _try_parse_schedule_intent(req.message)
+    if sched:
+        try:
+            from campus.life.job_store import JobStore, parse_rule
+            import os as _os
+            parsed = parse_rule(sched["rule"])
+            if parsed["type"] != "invalid":
+                channel = _os.environ.get("CAMPUS_QUIZ_PUSH_CHANNEL", "feishu")
+                target = _os.environ.get("CAMPUS_FEISHU_CHAT_ID", "")
+                job = JobStore().add(message=sched["message"], rule=sched["rule"],
+                                     channel=channel, target=target)
+                reply = (f"好的，已为你设置定时任务：\n"
+                         f"• 内容：{sched['message']}\n"
+                         f"• 规则：{sched['rule']}\n"
+                         f"• 推送频道：{channel}\n"
+                         f"到点会自动提醒你～")
+                store = ConversationStore()
+                now_ts = __import__("time").time()
+                added = store.append(conversation_id=req.conversation_id, role="user",
+                                     content=req.message, now=int(now_ts))
+                conv_id = added["conversation_id"]
+                store.append(conversation_id=conv_id, role="assistant", content=reply,
+                             now=int(now_ts))
+                return {"ok": True, "reply": reply, "run_id": "",
+                        "status": "job_registered", "domain": "life",
+                        "intent": "schedule_reminder", "artifacts": [],
+                        "multiagent": False, "conversation_id": conv_id,
+                        "persona": resolve_persona_name(req.persona),
+                        "source_mode": "template", "needs_clarify": False,
+                        "clarify_options": [], "error": "",
+                        "job": job}
+        except Exception:
+            pass  # fall through to normal agent run
+
+    store = ConversationStore()
+    persona_name = resolve_persona_name(req.persona)
+    history = store.history(req.conversation_id) if req.conversation_id else []
+    memory_snippet = _try_recall_memory(req.message, k=3)
+
+    # Phase 9.1: PREFERENCES injected every turn (full-layer, not retrieved)
+    preferences_block = ""
+    try:
+        from campus.memory.preferences import load_preferences_block
+        preferences_block = load_preferences_block()
+    except Exception:
+        pass
+
+    # Pass context (e.g. confirmed_path, sync_calendar) through to the agent run.
+    run_req = AgentRunRequest(message=req.message, mode=req.mode,
+                              context=req.context or {})
+
+    # Run the agent. Inject clarification context: if the user is confirming a
+    # prior ambiguous choice, the context carries the resolved path so the run
+    # proceeds without re-asking.
+    result = _default_agent_run(run_req)
+
+    # Compose the persona-styled reply from the structured result.
+    # Phase 9.1: LLM is required — compose_reply raises RuntimeError if unavailable.
+    try:
+        composed = compose_reply(
+            message=req.message, run_result=result,
+            persona_name=persona_name, history=history,
+            memory_snippet=memory_snippet,
+            preferences_block=preferences_block,
+        )
+    except RuntimeError as e:
+        # LLM not available — return a clear error to the user (no silent fallback)
+        return {
+            "ok": False,
+            "reply": "",
+            "error": str(e),
+            "run_id": result.get("run_id", ""),
+            "status": result.get("status", ""),
+            "domain": result.get("domain", ""),
+            "intent": result.get("intent", ""),
+            "artifacts": result.get("artifacts", []),
+            "multiagent": False,
+            "conversation_id": req.conversation_id or "",
+            "persona": persona_name,
+            "source_mode": "error",
+            "needs_clarify": False,
+            "clarify_options": [],
+        }
+
+    # Persist user + assistant turns.
+    now_ts = __import__("time").time()
+    added = store.append(conversation_id=req.conversation_id, role="user",
+                         content=req.message, now=int(now_ts))
+    conv_id = added["conversation_id"]
+    store.append(conversation_id=conv_id, role="assistant",
+                 content=composed["reply"], run_id=result.get("run_id", ""),
+                 persona=persona_name, now=int(now_ts))
+
+    return {
+        "ok": result.get("ok", False),
+        "reply": composed["reply"],
+        "run_id": result.get("run_id", ""),
+        "status": result.get("status", ""),
+        "domain": result.get("domain", ""),
+        "intent": result.get("intent", ""),
+        "artifacts": result.get("artifacts", []),
+        "multiagent": result.get("multiagent", False),
+        "conversation_id": conv_id,
+        "persona": persona_name,
+        "source_mode": composed["source_mode"],
+        "needs_clarify": composed["needs_clarify"],
+        "clarify_options": composed["clarify_options"],
+        "error": result.get("error", ""),
+    }
+
+
+def _default_conversation_list() -> dict:
+    from campus.conversation.store import ConversationStore
+    return {"conversations": ConversationStore().list()}
+
+
+def _default_conversation_get(conversation_id: str) -> dict:
+    from campus.conversation.store import ConversationStore
+    conv = ConversationStore().get(conversation_id)
+    if not conv:
+        return {"ok": False, "error": "conversation not found"}
+    conv["ok"] = True
+    return conv
+
+
 def _default_settings_status() -> dict:
     import subprocess
     from campus.runtime.llm_config import real_llm_status
@@ -301,9 +652,22 @@ def _default_settings_status() -> dict:
     except Exception:
         branch = ""
     notion = _default_notes_status()
+    # Phase 8 Step 5: mobile health checks (real config + readiness, not just env bools)
+    try:
+        from campus.mobile.feishu import health_check as feishu_health
+        feishu = feishu_health()
+    except Exception:
+        feishu = {"ok": False, "configured": bool(os.environ.get("CAMPUS_FEISHU_CHAT_ID")),
+                  "error": "feishu module unavailable"}
+    try:
+        from campus.mobile.qq_bot_api import QQBotAPIClient
+        qq = QQBotAPIClient().health_check()
+    except Exception:
+        qq = {"ok": False, "configured": bool(os.environ.get("QQ_APP_ID")),
+              "error": "qq_bot module unavailable"}
     mobile = {
-        "feishu": bool(os.environ.get("CAMPUS_FEISHU_CHAT_ID")),
-        "qq": bool(os.environ.get("CAMPUS_QQ_BOT_APP_ID") or os.environ.get("QQ_BOT_APP_ID")),
+        "feishu": feishu,
+        "qq": qq,
     }
     providers = {
         "github": bool(os.environ.get("GITHUB_TOKEN")),
@@ -311,13 +675,13 @@ def _default_settings_status() -> dict:
     }
     return {
         "ok": True,
-        "version": "0.7.0",
+        "version": "0.8.0",
         "branch": branch,
         "campus_home": campus_home(),
         "llm": real_llm_status("auto"),
         "skills": skills,
         "notion": notion,
-        "mobile": {"ok": any(mobile.values()), "channels": mobile},
+        "mobile": {"ok": feishu.get("ok") or qq.get("ok"), "channels": mobile},
         "providers": providers,
         "smoke_command": "powershell -ExecutionPolicy Bypass -File .\\scripts\\smoke_demo.ps1",
     }
@@ -431,14 +795,54 @@ def create_app(backends: Optional[Backends] = None,
     it get the loop ON in prod, OFF when the env flag is set). Pass False to
     force-disable (e.g. in TestClient suites).
     """
-    app = FastAPI(title="Campus-Agent API", version="0.6.0")
+    # Phase 8 Step 7: logging + prod config
+    import logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+    logger = logging.getLogger("campus")
+
+    is_prod = os.environ.get("CAMPUS_ENV", "dev").lower() == "prod"
+    kwargs = {"title": "Campus-Agent API", "version": "0.8.0"}
+    if is_prod:
+        kwargs["docs_url"] = None      # disable /docs (Swagger) in prod
+        kwargs["redoc_url"] = None     # disable /redoc in prod
+    app = FastAPI(**kwargs)
     app.state.backends = backends or _default_backends()
     app.state.scheduler_thread = None
     app.state.scheduler_stop = None
 
+    # Phase 8 Step 7: CORS (configurable for production)
+    from fastapi.middleware.cors import CORSMiddleware
+    cors_origins = os.environ.get("CAMPUS_CORS_ORIGINS",
+                                  "http://localhost:5173,http://127.0.0.1:5173").split(",")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[o.strip() for o in cors_origins if o.strip()],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    logger.info("Campus-Agent API starting (env=%s, version=0.8.0)",
+                os.environ.get("CAMPUS_ENV", "dev"))
+
     @app.get("/health")
     def health():
-        return {"ok": True, "service": "campus-api"}
+        """Liveness + readiness check. Verifies CAMPUS_HOME is writable."""
+        import os, tempfile
+        from campus.runtime.paths import campus_home
+        try:
+            home = campus_home()
+            os.makedirs(home, exist_ok=True)
+            # writable check
+            test_file = os.path.join(home, ".health_probe")
+            with open(test_file, "w") as f:
+                f.write("ok")
+            os.remove(test_file)
+            return {"ok": True, "service": "campus-api", "version": "0.8.0",
+                    "campus_home": home, "ready": True}
+        except Exception as e:
+            return {"ok": True, "service": "campus-api", "ready": False, "error": str(e)}
 
     @app.post("/demo_b/run")
     def demo_b_run(req: DemoBRequest):
@@ -471,6 +875,19 @@ def create_app(backends: Optional[Backends] = None,
         b = app.state.backends.agent_get_run
         return b(run_id) if b else _default_agent_get_run(run_id)
 
+    @app.post("/agent/chat")
+    def agent_chat(req: AgentChatRequest):
+        """Chat-first endpoint: natural-language assistant reply over /agent/run."""
+        return _default_agent_chat(req)
+
+    @app.get("/agent/conversations")
+    def agent_conversations():
+        return _default_conversation_list()
+
+    @app.get("/agent/conversations/{conversation_id}")
+    def agent_conversation(conversation_id: str):
+        return _default_conversation_get(conversation_id)
+
     @app.get("/runs")
     def list_runs():
         b = app.state.backends.agent_list_runs
@@ -480,7 +897,30 @@ def create_app(backends: Optional[Backends] = None,
 
     @app.post("/memory")
     def memory(q: MemoryQuery):
-        return {"results": app.state.backends.memory_recall(q.query, q.k)}
+        return {"results": app.state.backends.memory_recall(q.query, k=q.k)}
+
+    @app.get("/memory/all")
+    def memory_all(layer: Optional[str] = None):
+        """List all memory records (optionally filtered by layer).
+
+        Lets the user browse + manage their stored memories from the frontend
+        (Phase 9.1 — manual memory cleanup to avoid unbounded growth).
+        """
+        from campus.memory.json_store import JsonFileStore
+        store = JsonFileStore()
+        if layer:
+            records = store.list_layer(layer)
+        else:
+            records = store.all()
+        return {"records": [r.to_dict() for r in records], "count": len(records)}
+
+    @app.delete("/memory/{record_id}")
+    def memory_delete(record_id: str):
+        """Delete a single memory record by ID (Phase 9.1 — manual cleanup)."""
+        from campus.memory.json_store import JsonFileStore
+        store = JsonFileStore()
+        ok = store.forget(record_id)
+        return {"ok": ok, "id": record_id}
 
     @app.post("/onboarding")
     def onboarding(req: OnboardingRequest):
@@ -533,11 +973,32 @@ def create_app(backends: Optional[Backends] = None,
         b = app.state.backends.notes_status
         return b() if b else {"ok": False}
 
+    @app.get("/notes/notion/list")
+    def notes_notion_list(limit: int = 20):
+        from campus.notes import notion
+        return notion.list_notes(limit=limit)
+
+    # ---- Zotero integration (Phase 9 — GOAL.md 文献管理) ----
+    @app.get("/notes/zotero/status")
+    def zotero_status():
+        from campus.notes import zotero
+        return zotero.status()
+
+    @app.post("/notes/zotero/sync")
+    def zotero_sync(req: ZoteroSyncRequest):
+        from campus.notes import zotero
+        return zotero.sync_papers(req.papers, req.mode)
+
+    @app.post("/notes/zotero/search")
+    def zotero_search(req: ZoteroSearchRequest):
+        from campus.notes import zotero
+        return zotero.search(req.query, req.limit)
+
     # ---- Phase 7 product routes ----
     @app.post("/learning/flashcards")
     def learning_flashcards(req: FlashcardsRequest):
         from campus import phase7
-        return phase7.flashcards(req.topic, req.source_text, req.count)
+        return phase7.flashcards(req.topic, req.source_text, req.count, mode=req.mode)
 
     @app.post("/learning/deadlines")
     def learning_deadline_add(req: DeadlineRequest):
@@ -552,7 +1013,7 @@ def create_app(backends: Optional[Backends] = None,
     @app.post("/learning/quiz/run")
     def learning_quiz_run(req: QuizRunRequest):
         from campus import phase7
-        return phase7.quiz_run(req.topic, req.count, req.source_text)
+        return phase7.quiz_run(req.topic, req.count, req.source_text, mode=req.mode)
 
     @app.post("/learning/quiz/grade")
     def learning_quiz_grade(req: QuizGradeRequest):
@@ -572,7 +1033,7 @@ def create_app(backends: Optional[Backends] = None,
     @app.post("/research/github/trending")
     def research_github(req: GithubTrendingRequest):
         from campus import phase7
-        return phase7.github_trending(req.topic, req.language)
+        return phase7.github_trending(req.topic, req.language, mode=req.mode)
 
     @app.post("/research/format/check")
     def research_format(req: FormatCheckRequest):
@@ -592,7 +1053,7 @@ def create_app(backends: Optional[Backends] = None,
     @app.post("/life/travel_plan")
     def life_travel(req: TravelPlanRequest):
         from campus import phase7
-        return phase7.travel_plan(req.destination, req.days, req.budget, req.preferences)
+        return phase7.travel_plan(req.destination, req.days, req.budget, req.preferences, mode=req.mode)
 
     @app.get("/life/campus_guide")
     def life_guide(query: str = ""):
@@ -602,17 +1063,17 @@ def create_app(backends: Optional[Backends] = None,
     @app.post("/club/meeting_minutes")
     def club_minutes(req: ClubMinutesRequest):
         from campus import phase7
-        return phase7.meeting_minutes(req.topic, req.notes)
+        return phase7.meeting_minutes(req.topic, req.notes, mode=req.mode)
 
     @app.post("/club/recruiting_copy")
     def club_recruiting(req: RecruitingCopyRequest):
         from campus import phase7
-        return phase7.recruiting_copy(req.org, req.audience, req.tone)
+        return phase7.recruiting_copy(req.org, req.audience, req.tone, mode=req.mode)
 
     @app.post("/club/email_draft")
     def club_email(req: EmailDraftRequest):
         from campus import phase7
-        return phase7.email_draft(req.purpose, req.recipient, req.context)
+        return phase7.email_draft(req.purpose, req.recipient, req.context, mode=req.mode)
 
     @app.post("/career/jobs/search")
     def career_jobs_search(req: JobSearchRequest):
@@ -632,7 +1093,87 @@ def create_app(backends: Optional[Backends] = None,
     @app.post("/career/interview_plan")
     def career_interview(req: InterviewPlanRequest):
         from campus import phase7
-        return phase7.interview_plan(req.role, req.days, req.background)
+        return phase7.interview_plan(req.role, req.days, req.background, mode=req.mode)
+
+    @app.post("/career/interview/practice")
+    def career_interview_practice(req: InterviewPracticeRequest):
+        from campus import phase7
+        return phase7.interview_practice(req.role, req.question, req.answer, req.background)
+
+    @app.post("/career/interview/reflect")
+    def career_interview_reflect(req: InterviewReflectRequest):
+        from campus import phase7
+        return phase7.interview_reflect(req.role, req.reflection, req.practice_run_id, req.tags)
+
+    @app.get("/club/export_status")
+    def club_export_status():
+        from campus import phase7
+        return phase7.export_status()
+
+    @app.post("/learning/quiz/daily")
+    def learning_quiz_daily(topic: str = "", count: int = 5):
+        from campus import phase7
+        return phase7.quiz_daily(topic, count)
+
+    # ---- auto-learn (Phase 8 Step 4) ----
+    @app.post("/agent/runs/{run_id}/correction")
+    def submit_correction(run_id: str, req: CorrectionRequest):
+        from campus.meta_agent.auto_learn import CorrectionStore
+        store = CorrectionStore()
+        c = store.add(run_id=run_id, domain=req.domain or "",
+                      original=req.original, corrected=req.corrected, reason=req.reason)
+        return {"ok": True, "correction": c.to_dict(), "total_corrections": store.count()}
+
+    @app.get("/agent/corrections")
+    def list_corrections(include_processed: bool = True):
+        from campus.meta_agent.auto_learn import CorrectionStore
+        store = CorrectionStore()
+        return {"corrections": store.list(include_processed=include_processed),
+                "total": store.count()}
+
+    @app.post("/admin/auto-learn")
+    def trigger_auto_learn(use_llm: bool = True):
+        from campus.meta_agent.auto_learn import AutoLearner
+        learner = AutoLearner()
+        report = learner.run(use_llm=use_llm)
+        return report.to_dict()
+
+    @app.get("/agent/skills")
+    def list_auto_skills():
+        from campus.meta_agent.auto_learn import SkillCreator
+        sc = SkillCreator()
+        return {"skills": sc.list_skills()}
+
+    # ---- agent name (Phase 8 Step 9) ----
+    @app.get("/agent/name")
+    def get_agent_name():
+        from campus.runtime.paths import state_dir
+        import os, json
+        path = os.path.join(state_dir(), "agent_config.json")
+        config = {}
+        try:
+            with open(path, encoding="utf-8") as f:
+                config = json.load(f)
+        except Exception:
+            pass
+        return {"ok": True, "name": config.get("name", "Campus"), "config": config}
+
+    @app.post("/agent/name")
+    def set_agent_name(req: AgentNameRequest):
+        from campus.runtime.paths import state_dir
+        import os, json
+        path = os.path.join(state_dir(), "agent_config.json")
+        config = {}
+        try:
+            with open(path, encoding="utf-8") as f:
+                config = json.load(f)
+        except Exception:
+            pass
+        config["name"] = req.name.strip()[:40] or "Campus"
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(config, f, ensure_ascii=False, indent=2)
+        return {"ok": True, "name": config["name"]}
 
     # ---- life routes (Phase 6) ----
     @app.post("/calendar")
@@ -684,12 +1225,107 @@ def create_app(backends: Optional[Backends] = None,
             return {"ok": False, "error": "daily-log backend not configured"}
         return b()
 
+    # ---- mobile inbound command channel (Phase 8 — GOAL.md 移动端对话) ----
+    @app.post("/mobile/command")
+    def mobile_command(body: dict = None):
+        """Receive a user command from mobile (Feishu/QQ), run agent, reply + persist.
+
+        Body: {"message": "...", "channel": "feishu|qq", "target": "<chat_id>"}
+        Returns: {"ok", "reply", "run_id", "artifacts", "pushed"}
+        """
+        from campus.mobile.inbound import handle_mobile_command
+        body = body or {}
+        return handle_mobile_command(
+            message=body.get("message", ""),
+            channel=body.get("channel", "feishu"),
+            target=body.get("target"),
+        )
+
+    @app.post("/mobile/webhook/feishu")
+    def mobile_webhook_feishu(body: dict = None):
+        """Feishu event webhook: extract user message → run agent → push reply.
+
+        Accepts Feishu's event format ({event: {message: {content}}}) and
+        dispatches to handle_mobile_command. The reply is pushed back to the
+        same chat via the configured push channel.
+        """
+        from campus.mobile.inbound import handle_mobile_command
+        body = body or {}
+        # Feishu event format: {"event": {"message": {"content": "...", "chat_id": "..."}}}
+        event = body.get("event", body)
+        msg_raw = event.get("message", {}).get("content", "") or event.get("text", "")
+        # Feishu wraps content as JSON {"text":"..."}
+        if msg_raw.startswith("{"):
+            try:
+                msg_raw = json.loads(msg_raw).get("text", msg_raw)
+            except Exception:
+                pass
+        chat_id = event.get("message", {}).get("chat_id", "") or os.environ.get("CAMPUS_FEISHU_CHAT_ID", "")
+        if not msg_raw:
+            return {"ok": False, "error": "no message in webhook payload"}
+        return handle_mobile_command(
+            message=msg_raw,
+            channel="feishu",
+            target=chat_id,
+        )
+
+    @app.get("/mobile/commands")
+    def mobile_command_history():
+        """List recent mobile command history (for debugging/audit)."""
+        import json as _json
+        from campus.runtime.paths import state_dir
+        path = os.path.join(state_dir(), "mobile_commands.json")
+        try:
+            with open(path, encoding="utf-8") as f:
+                return {"ok": True, "commands": _json.load(f)}
+        except Exception:
+            return {"ok": True, "commands": []}
+
+    # ---- user-defined scheduled jobs (Phase 9 — GOAL.md 自定义定时任务) ----
+    @app.get("/jobs")
+    def jobs_list():
+        from campus.life.job_store import JobStore
+        return {"jobs": JobStore().list()}
+
+    @app.post("/jobs")
+    def jobs_add(body: dict = None):
+        """Register a scheduled job. Body: {message, rule, channel?, target?}.
+
+        rule: "daily 08:00" / "weekly 0 20:00" / "once 2026-07-12T09:00"
+        """
+        from campus.life.job_store import JobStore
+        body = body or {}
+        msg = body.get("message", "").strip()
+        rule = body.get("rule", "").strip()
+        if not msg or not rule:
+            return {"ok": False, "error": "message and rule are required"}
+        from campus.life.job_store import parse_rule
+        parsed = parse_rule(rule)
+        if parsed["type"] == "invalid":
+            return {"ok": False, "error": parsed.get("error", "invalid rule")}
+        channel = body.get("channel", os.environ.get("CAMPUS_QUIZ_PUSH_CHANNEL", "feishu"))
+        target = body.get("target", "")
+        job = JobStore().add(message=msg, rule=rule, channel=channel, target=target)
+        return {"ok": True, "job": job}
+
+    @app.delete("/jobs/{job_id}")
+    def jobs_delete(job_id: str):
+        from campus.life.job_store import JobStore
+        return {"ok": JobStore().delete(job_id), "id": job_id}
+
     # ---- background reminder loop ----
     enable = with_scheduler
     if enable is None:
         enable = not os.environ.get("CAMPUS_DISABLE_SCHEDULER")
     if enable:
         start_scheduler(app)
+
+    # Phase 8 Step 7: serve built frontend (production) if dist/ exists
+    import os.path as _osp
+    _frontend_dist = _osp.join(_osp.dirname(_osp.dirname(_osp.dirname(_osp.abspath(__file__)))), "frontend", "dist")
+    if _osp.isdir(_frontend_dist):
+        from fastapi.staticfiles import StaticFiles
+        app.mount("/", StaticFiles(directory=_frontend_dist, html=True), name="frontend")
 
     return app
 
@@ -720,6 +1356,30 @@ def start_scheduler(app: FastAPI, interval: float = _SCHEDULER_INTERVAL) -> None
                 run_daily(memory=_life_memory())
             except Exception:
                 pass  # never let the scheduler die; next tick retries
+            # Phase 8 Step 2: nightly memory compression (once per calendar day)
+            try:
+                _maybe_compress_memory()
+            except Exception:
+                pass
+            # Phase 8 Step 4: nightly auto-learn (once per calendar day)
+            try:
+                _maybe_auto_learn()
+            except Exception:
+                pass
+            # Phase 9.1: nightly PREFERENCES maintenance (dedup + prune stale)
+            try:
+                _maybe_maintain_preferences()
+            except Exception:
+                pass
+            # Phase 9: daily quiz push + user-defined scheduled jobs (every tick)
+            try:
+                _maybe_daily_quiz()
+            except Exception:
+                pass
+            try:
+                _run_scheduled_jobs()
+            except Exception:
+                pass
 
     t = threading.Thread(target=_loop, name="campus-life-scheduler", daemon=True)
     app.state.scheduler_thread = t
@@ -737,6 +1397,187 @@ def stop_scheduler(app: FastAPI, timeout: float = 5.0) -> bool:
         app.state.scheduler_thread = None
         return not t.is_alive()
     return True
+
+
+# ---- nightly memory compression (Phase 8 Step 2) -------------------------------
+
+_LAST_COMPRESS_DAY = None
+
+
+def _maybe_compress_memory() -> None:
+    """Run memory compress + prune once per calendar day (idempotent guard).
+
+    Sediments old TASK_LOG / DAILY_LOG records into a PREFERENCES summary and
+    prunes records older than the retention window (pinned records always kept).
+    Uses the default (no-LLM) summarizer to stay deterministic + free; a real LLM
+    summarizer can be injected later. Mirrors the ``reminders._sent_today`` day-dedup
+    pattern so the 60s scheduler tick only fires this once per day.
+    """
+    global _LAST_COMPRESS_DAY
+    import time as _t
+    today = _t.strftime("%Y-%m-%d")
+    if _LAST_COMPRESS_DAY == today:
+        return
+    _LAST_COMPRESS_DAY = today
+    try:
+        from campus.memory.json_store import JsonFileStore
+        from campus.memory.compress import compress, prune_by_window
+        from campus.memory.types import DAILY_LOG, PREFERENCES, TASK_LOG
+        store = JsonFileStore()
+        now = int(_t.time())
+        retention = 90 * 86400  # 90 days
+        # gather old non-pinned TASK_LOG + DAILY_LOG records for compression
+        old_recs = [r for r in store.all()
+                    if r.layer in (TASK_LOG, DAILY_LOG) and not r.pinned
+                    and (now - (r.created_at or 0)) > 7 * 86400]  # > 7 days old
+        if old_recs:
+            sediment = compress(old_recs, created_at=now)
+            if sediment is not None:
+                store.remember(layer=PREFERENCES, key=f"sediment-{today}",
+                               content=sediment.content,
+                               metadata={"sedimented_from": len(old_recs),
+                                         "sediment_date": today})
+        # prune very old non-pinned records
+        all_recs = store.all()
+        kept = prune_by_window(all_recs, now, retention)
+        pruned_ids = {r.id for r in all_recs} - {r.id for r in kept}
+        for rid in pruned_ids:
+            store.forget(rid)
+    except Exception:
+        pass  # never let compression kill the scheduler
+
+
+_LAST_AUTOLEARN_DAY = None
+
+
+def _maybe_auto_learn() -> None:
+    """Run auto-learn once per calendar day (idempotent day-dedup guard).
+
+    Reviews unprocessed corrections, classifies them (LLM if available, else
+    heuristic), and writes derived preferences/skills/knowledge. Uses the same
+    day-dedup pattern as ``_maybe_compress_memory``.
+    """
+    global _LAST_AUTOLEARN_DAY
+    import time as _t
+    today = _t.strftime("%Y-%m-%d")
+    if _LAST_AUTOLEARN_DAY == today:
+        return
+    _LAST_AUTOLEARN_DAY = today
+    try:
+        from campus.meta_agent.auto_learn import AutoLearner
+        learner = AutoLearner()
+        # use_llm=True, but AutoLearner falls back to heuristic if LLM unavailable
+        learner.run(use_llm=True)
+    except Exception:
+        pass  # never let auto-learn kill the scheduler
+
+
+# ---- PREFERENCES maintenance (Phase 9.1 — 定时清理保持状态新鲜) ----------------
+
+_LAST_PREF_MAINTAIN_DAY = None
+
+
+def _maybe_maintain_preferences() -> None:
+    """Nightly PREFERENCES cleanup: dedup by key + prune stale non-pinned.
+
+    Mirrors the day-dedup pattern of ``_maybe_compress_memory``. Keeps the
+    PREFERENCES layer small + fresh so every-turn injection stays high-signal.
+    """
+    global _LAST_PREF_MAINTAIN_DAY
+    import time as _t
+    today = _t.strftime("%Y-%m-%d")
+    if _LAST_PREF_MAINTAIN_DAY == today:
+        return
+    _LAST_PREF_MAINTAIN_DAY = today
+    try:
+        from campus.memory.preferences import maintain_preferences
+        result = maintain_preferences(memory=_life_memory())
+        if result.get("error"):
+            import logging
+            logging.getLogger("campus").warning(
+                "PREFERENCES maintain error: %s", result["error"])
+    except Exception:
+        pass  # never let maintenance kill the scheduler
+
+
+# ---- daily quiz push (Phase 9 — GOAL.md 定时 quiz 推送) -----------------------
+
+_LAST_QUIZ_DAY = None
+
+
+def _maybe_daily_quiz() -> None:
+    """Push a daily Ebbinghaus-due quiz to Feishu/QQ at the configured time.
+
+    Day-deduped so only one quiz fires per day. Generates the quiz from due
+    review nodes via ``phase7.quiz_daily``, stores it as a pending session
+    (so the user's reply routes to grading), and pushes the questions.
+    """
+    global _LAST_QUIZ_DAY
+    import time as _t
+    import datetime as _dt
+    today = _t.strftime("%Y-%m-%d")
+    now = _dt.datetime.now()
+    push_time = os.environ.get("CAMPUS_QUIZ_PUSH_TIME", "09:00")
+    try:
+        hh, mm = (int(x) for x in push_time.split(":")[:2])
+    except Exception:
+        hh, mm = 9, 0
+    # only fire at the configured hour (within the same minute window)
+    if now.hour != hh or now.minute != mm:
+        return
+    if _LAST_QUIZ_DAY == today:
+        return
+    _LAST_QUIZ_DAY = today
+    try:
+        from campus import phase7
+        from campus.learning.quiz_session import QuizSessionStore
+        from campus.mobile.cli import push as _push
+        channel = os.environ.get("CAMPUS_QUIZ_PUSH_CHANNEL", "feishu")
+        target = os.environ.get("CAMPUS_FEISHU_CHAT_ID", "") if channel == "feishu" \
+            else os.environ.get("QQBOT_HOME_CHANNEL", "")
+        result = phase7.quiz_daily(count=5)
+        questions = result.get("questions", [])
+        if not questions:
+            return
+        # store as pending session so inbound answers route to grading
+        QuizSessionStore().start(questions=questions,
+                                 topic=result.get("topic", "每日复习"),
+                                 channel=channel, target=target)
+        # format + push
+        lines = [f"📚 每日复习 quiz（{len(questions)} 题）", ""]
+        for i, q in enumerate(questions):
+            lines.append(f"Q{i+1}: {q.get('question', '')}")
+        lines += ["", "直接回复你的答案（如『1:xxx 2:xxx』或逐条回复），我会帮你批改并更新复习曲线。"]
+        msg = "\n".join(lines)
+        _push(channel, target, msg)
+    except Exception:
+        pass
+
+
+# ---- user-defined scheduled jobs (Phase 9 — GOAL.md 自定义定时任务) ------------
+
+def _run_scheduled_jobs() -> None:
+    """Check user-defined jobs and fire any that are due this minute.
+
+    Reuses the 60s scheduler tick + ``mobile.cli.push``. Each due job's
+    ``last_fired`` is updated for dedup.
+    """
+    import datetime as _dt
+    try:
+        from campus.life.job_store import JobStore, due_jobs
+        from campus.mobile.cli import push as _push
+        store = JobStore()
+        jobs = store.list()
+        now = _dt.datetime.now()
+        for j in due_jobs(jobs, now):
+            try:
+                _push(j.get("channel", "feishu"), j.get("target", ""),
+                      j.get("message", ""))
+                store.update_last_fired(j.get("id", ""), int(now.timestamp()))
+            except Exception:
+                pass
+    except Exception:
+        pass
 
 
 # module-level app for ``uvicorn campus.api.server:app``.

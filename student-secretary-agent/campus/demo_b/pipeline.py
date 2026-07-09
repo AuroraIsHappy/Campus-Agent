@@ -16,6 +16,7 @@ import os
 from campus.demo_b import (
     extractors as _ex, knowledge_graph as _kg, resource_search as _rs,
     review_planner as _rp, quiz as _quiz, checkers as _ck,
+    mindmap as _mm,
 )
 from campus.demo_b.types import RunResult, to_dict
 
@@ -70,17 +71,24 @@ def _write_verification(run_dir, checks, rate, kg, candidates, plan, ids) -> str
     return p
 
 
-def run_demo_b(path: str, exam_date: str, *,
+def run_demo_b(path: str, exam_date: str = "",
+               *,
                free_minutes: int = 120, start_date: str | None = None,
                topic: str | None = None, slot_minutes: int = 20,
                extract_fn=None, searcher=None, quiz_fn=None,
                memory=None, run_dir: str | None = None,
-               extractors=None) -> RunResult:
+               extractors=None,
+               export_notion: bool = False,
+               sync_calendar: str = "") -> RunResult:
     """Drive Demo B end-to-end. Returns RunResult.
 
     For deterministic testing pass ``extractors`` (fake table) / ``searcher`` /
     ``quiz_fn`` / ``extract_fn`` stubs and a temp ``path``; everything runs with
     no Hermes / no network / no real model.
+
+    Phase 9: ``export_notion`` writes the KG+plan+mindmap to Notion;
+    ``sync_calendar`` (``"local"``/``"feishu"``/``"both"``) syncs the review
+    plan to the local and/or Feishu calendar.
     """
     if run_dir is None:
         run_dir = new_run_dir()
@@ -133,6 +141,13 @@ def run_demo_b(path: str, exam_date: str, *,
            json.dumps(to_dict(day1_quiz), ensure_ascii=False, indent=2))
     _write(os.path.join(run_dir, "research_candidates.json"),
            json.dumps([r.__dict__ for r in candidates], ensure_ascii=False, indent=2))
+
+    # Phase 9: build review mind map from the KG (GOAL.md 复习思维导图)
+    mm = _mm.build_mindmap(kg)
+    _write(os.path.join(run_dir, "mindmap.md"), mm["markdown"])
+    _write(os.path.join(run_dir, "mindmap.mmd"), mm["mermaid"])
+    _write(os.path.join(run_dir, "mindmap.json"), mm["tree"])
+
     ver = _write_verification(run_dir, checks, rate, kg, candidates, plan,
                               {"topic": topic})
 
@@ -146,6 +161,30 @@ def run_demo_b(path: str, exam_date: str, *,
     )
     _write(os.path.join(run_dir, "run_result.json"),
            json.dumps(_jsonable(result), ensure_ascii=False, indent=2))
+
+    # Phase 9: optional Notion export (GOAL.md 导出到笔记软件)
+    notion_export = {"ok": False, "skipped": True}
+    if export_notion:
+        try:
+            from campus.notes.notion import sync_lecture_result
+            notion_export = sync_lecture_result(
+                {"run_dir": run_dir, "topic": topic}, mode="notion")
+        except Exception as e:
+            notion_export = {"ok": False, "error": str(e)[:200]}
+
+    # Phase 9: optional calendar sync (GOAL.md 同步飞书&本地日历)
+    calendar_sync = {"ok": False, "skipped": True}
+    if sync_calendar and plan.days:
+        try:
+            from campus.life.plan_calendar import sync_review_plan
+            local = sync_calendar in ("local", "both")
+            feishu = sync_calendar in ("feishu", "both")
+            calendar_sync = sync_review_plan(
+                plan, topic=topic, slot_time="20:00",
+                local=local, feishu=feishu)
+        except Exception as e:
+            calendar_sync = {"ok": False, "error": str(e)[:200]}
+
     _ = ver
     return result
 

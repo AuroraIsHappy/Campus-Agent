@@ -17,6 +17,9 @@ __all__ = ["MetaAgent", "LONG_KEYWORDS", "LONG_DAG"]
 LONG_KEYWORDS = (
     "策划案", "复习计划", "学习计划", "外联", "调研报告", "期末复习",
     "社会实践", "讲义", "知识图谱", "邮件草稿", "参观", "实习",
+    # Phase 9: English equivalents so English fuzzy requests also go long-horizon
+    "review plan", "study plan", "exam", "machine learning", "lecture notes",
+    "knowledge graph", "literature review", "research project", "internship",
 )
 
 # Long-task Odyssey role DAG (mirrors demo_a pipeline §3). critic debates planner;

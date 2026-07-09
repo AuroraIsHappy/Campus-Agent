@@ -23,8 +23,8 @@ if ($env:CAMPUS_PYTHON) { $candidates += $env:CAMPUS_PYTHON }
 if (Test-Path $VenvPython) { $candidates += $VenvPython }
 $cmdPython = Get-Command python -ErrorAction SilentlyContinue
 if ($cmdPython) { $candidates += $cmdPython.Source }
-$commonAnaconda = "D:\Anaconda\python.exe"
-if (Test-Path $commonAnaconda) { $candidates += $commonAnaconda }
+$cmdPython3 = Get-Command python3 -ErrorAction SilentlyContinue
+if ($cmdPython3) { $candidates += $cmdPython3.Source }
 
 $PythonCmd = $candidates | Where-Object { Test-Python $_ } | Select-Object -First 1
 if (-not $PythonCmd) {

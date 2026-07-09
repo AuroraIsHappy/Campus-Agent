@@ -129,12 +129,23 @@ class ArtifactStore:
                    kind: str = "json") -> dict[str, Any]:
         return self.write_text(run_id, name, json.dumps(data, ensure_ascii=False, indent=2), kind)
 
-    def import_paths(self, run_id: str, paths: list[str]) -> list[dict[str, Any]]:
+    def import_paths(self, run_id: str, paths: list) -> list[dict[str, Any]]:
+        """Import external artifact paths into this run's manifest.
+
+        Accepts a list of path strings OR a list of artifact dicts (``{name, path, kind}``)
+        — the latter is what ``phase7._run`` and ``MetaRunner`` already produce, so we
+        merge those in place instead of re-recording them.
+        """
         out = []
         for path in paths:
             if not path:
                 continue
-            out.append(self._record(run_id, os.path.basename(path), path, _kind_for(path)))
+            if isinstance(path, dict):
+                # already an artifact record — merge into the manifest as-is
+                out.append(self._record(run_id, path.get("name", "artifact"),
+                                        path.get("path", ""), path.get("kind", "file")))
+            else:
+                out.append(self._record(run_id, os.path.basename(path), path, _kind_for(path)))
         return out
 
     def list(self, run_id: str) -> list[dict[str, Any]]:

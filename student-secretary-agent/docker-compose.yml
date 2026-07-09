@@ -1,0 +1,25 @@
+version: "3.8"
+services:
+  campus:
+    build:
+      context: ..
+      dockerfile: student-secretary-agent/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - campus-data:/data
+      - ./skills:/app/skills
+    env_file:
+      - .env
+    environment:
+      - CAMPUS_HOME=/data/.campus
+      - CAMPUS_ENV=prod
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  campus-data:

@@ -63,14 +63,21 @@ def test_quiz_parse():
     assert q.questions[0].q == "Q1" and q.questions[0].answer == "A1"
 
 
-def test_memory_idempotent():
+def test_memory_idempotent(monkeypatch=None):
     tmp = tempfile.mkdtemp()
-    memory.MEMORY = os.path.join(tmp, "memory.json")
-    memory.PROGRESS_DIR = os.path.join(tmp, "progress")
-    memory.set_goal("linux")
-    memory.set_goal("linux")
-    assert memory.show()["goals"] == ["linux"]
-    memory.log_progress("linux", 1, "done")
-    memory.log_progress("linux", 1, "done2")
-    prog = json.loads(open(os.path.join(tmp, "progress", "linux.json"), encoding="utf-8").read())
-    assert len(prog["days"]) == 1
+    # Phase 8: demo_c memory now uses CAMPUS_HOME (L4 JsonFileStore), not a
+    # module-level MEMORY path. Set CAMPUS_HOME so both memory + progress land in tmp.
+    if monkeypatch is not None:
+        monkeypatch.setenv("CAMPUS_HOME", tmp)
+    else:
+        os.environ["CAMPUS_HOME"] = tmp
+    try:
+        memory.set_goal("linux")
+        memory.set_goal("linux")
+        assert memory.show()["goals"] == ["linux"]
+        memory.log_progress("linux", 1, "done")
+        memory.log_progress("linux", 1, "done2")
+        prog = json.loads(open(os.path.join(tmp, "progress", "linux.json"), encoding="utf-8").read())
+        assert len(prog["days"]) == 1
+    finally:
+        os.environ.pop("CAMPUS_HOME", None)

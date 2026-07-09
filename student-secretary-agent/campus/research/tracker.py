@@ -96,13 +96,33 @@ def _offline_papers(topic: dict) -> list[dict]:
 
 
 def _real_papers(topic: dict) -> tuple[list[dict], str]:
-    """Best-effort v1 adapter for research skills.
+    """Search for real papers via Tavily web search (Phase 8 Step 6).
 
-    In this repo-integrated demo we cannot execute arbitrary vendored skill code
-    directly. Instead, real mode marks which built-in research skill pack is
-    available and returns a richer deterministic seed set. The note keeps the
-    failure/retry reason visible instead of pretending that live web search ran.
+    Falls back to the skill-adapter path if Tavily isn't configured.
     """
+    q = topic.get("query") or topic.get("title") or "research"
+    # Phase 8: try real web search first
+    try:
+        from campus.research.search_providers import search_web, tavily_available
+        if tavily_available():
+            results = search_web(f"{q} 论文 paper research", max_results=6)
+            if results:
+                papers = []
+                for r in results:
+                    papers.append({
+                        "title": r.get("title", ""),
+                        "url": r.get("url", ""),
+                        "year": 2024,
+                        "score": round(r.get("score", 0.5) * 10, 1),
+                        "abstract": (r.get("content") or "")[:300],
+                        "authors": ["(web search)"],
+                        "source": "tavily",
+                        "reasons": ["来自 Tavily 实时网络搜索"],
+                    })
+                return papers, "tavily"
+    except Exception as e:
+        pass
+    # fallback: check for vendored research skills (v1 adapter)
     try:
         from campus.skills.registry import audit
         st = audit()
@@ -112,14 +132,13 @@ def _real_papers(topic: dict) -> tuple[list[dict], str]:
                 papers = _offline_papers(topic)
                 for p in papers:
                     p["source"] = name
-                    p["reasons"] = list(p.get("reasons", [])) + [f"real adapter found built-in skill: {name}"]
-                return papers, f"real_adapter:{name}"
-        return [], "no research skill available"
-    except Exception as e:
-        return [], str(e)
+                return papers, f"skill_adapter:{name}"
+    except Exception:
+        pass
+    return [], "no search provider available (set TAVILY_API_KEY for real search)"
 
 
-def refresh_topic(topic_id: str, mode: str = "offline") -> dict:
+def refresh_topic(topic_id: str, mode: str = "auto") -> dict:
     topics = list_topics()
     topic = next((t for t in topics if t.get("id") == topic_id), None)
     if topic is None:

@@ -1,0 +1,38 @@
+{
+  "ok": true,
+  "email": "老师/同学您好：\n\n我是校园项目负责人，想就“学Linux”与您沟通。学Linux\n\n如果方便，期待约一个 15 分钟的时间确认细节。谢谢！",
+  "recipient": "",
+  "run_id": "run_20260709_005608_ea5399fb",
+  "artifacts": [
+    {
+      "name": "Plan.md",
+      "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_ea5399fb\\Plan.md",
+      "kind": "document",
+      "created_at": 1783529768
+    },
+    {
+      "name": "Status.md",
+      "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_ea5399fb\\Status.md",
+      "kind": "document",
+      "created_at": 1783529768
+    },
+    {
+      "name": "Verification.md",
+      "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_ea5399fb\\Verification.md",
+      "kind": "document",
+      "created_at": 1783529768
+    },
+    {
+      "name": "run_result.json",
+      "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_ea5399fb\\run_result.json",
+      "kind": "json",
+      "created_at": 1783529768
+    },
+    {
+      "name": "artifact_manifest.json",
+      "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_005608_ea5399fb\\artifact_manifest.json",
+      "kind": "manifest",
+      "created_at": 1783529768
+    }
+  ]
+}

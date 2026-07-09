@@ -150,7 +150,13 @@ def extract_dir(path: str, extractors: Optional[dict] = None) -> list[ExtractedT
 
     Unsupported files are skipped (not counted in the denominator). Missing dir
     returns an empty list (pipeline surfaces this as extraction_rate=0).
+
+    Phase 9: if ``path`` is a single file (not a dir), extract just that file —
+    previously a single-file path silently yielded ``[]``.
     """
+    if os.path.isfile(path):
+        r = extract_path(path, extractors)
+        return [r] if r.ok else []
     if not os.path.isdir(path):
         return []
     out: list[ExtractedText] = []

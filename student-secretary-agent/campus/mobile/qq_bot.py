@@ -21,6 +21,10 @@ class QQBotPusher:
     channel = "qq"
 
     def __init__(self, sender: Optional[Sender] = None):
+        # Phase 8 Step 5: if no sender injected, try the real QQ Bot API client
+        if sender is None:
+            from campus.mobile.qq_bot_api import default_qq_sender
+            sender = default_qq_sender()
         self._sender = sender
 
     def send(self, target: Optional[str], message: str) -> PushReceipt:
