@@ -52,6 +52,15 @@ export interface MemoryHit {
   score: number;
   snippet: string;
 }
+export interface MemoryRecord {
+  id: string;
+  layer: string;
+  key: string;
+  content: string;
+  metadata?: Record<string, unknown>;
+  created_at: number;
+  pinned: boolean;
+}
 export interface Profile {
   ok: boolean;
   profile: { identity: string; major: string; persona: string };
@@ -198,6 +207,9 @@ export const api = {
   settingsStatus: () => jget<SettingsStatus>("/settings/status"),
   demoStatus: () => jget<DemoStatus>("/demo/status"),
   recall: (query: string, k = 5) => jpost<{ results: MemoryHit[] }>("/memory", { query, k }),
+  memoryAll: (layer?: string) =>
+    jget<{ records: MemoryRecord[]; count: number }>(`/memory/all${layer ? `?layer=${layer}` : ""}`),
+  memoryDelete: (id: string) => jdel<{ ok: boolean; id: string }>(`/memory/${id}`),
   onboard: (answers: Record<string, string>) => jpost<Profile>("/onboarding", { answers }),
   profile: () => jget<Profile>("/profile"),
   tasks: () => jget<{ tasks: Task[] }>("/tasks"),

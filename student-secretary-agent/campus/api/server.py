@@ -897,7 +897,30 @@ def create_app(backends: Optional[Backends] = None,
 
     @app.post("/memory")
     def memory(q: MemoryQuery):
-        return {"results": app.state.backends.memory_recall(q.query, q.k)}
+        return {"results": app.state.backends.memory_recall(q.query, k=q.k)}
+
+    @app.get("/memory/all")
+    def memory_all(layer: Optional[str] = None):
+        """List all memory records (optionally filtered by layer).
+
+        Lets the user browse + manage their stored memories from the frontend
+        (Phase 9.1 — manual memory cleanup to avoid unbounded growth).
+        """
+        from campus.memory.json_store import JsonFileStore
+        store = JsonFileStore()
+        if layer:
+            records = store.list_layer(layer)
+        else:
+            records = store.all()
+        return {"records": [r.to_dict() for r in records], "count": len(records)}
+
+    @app.delete("/memory/{record_id}")
+    def memory_delete(record_id: str):
+        """Delete a single memory record by ID (Phase 9.1 — manual cleanup)."""
+        from campus.memory.json_store import JsonFileStore
+        store = JsonFileStore()
+        ok = store.forget(record_id)
+        return {"ok": ok, "id": record_id}
 
     @app.post("/onboarding")
     def onboarding(req: OnboardingRequest):
