@@ -77,9 +77,11 @@ def build_log(today: date, *, events: Iterable[CalendarEvent],
 
 def write_log(memory, log: SecretaryLog) -> str:
     """Persist ``log`` to the DAILY_LOG layer (keyed by date). Returns the record id."""
+    import time as _t
+    ts = log.created_at or int(_t.time())
     return memory.remember(DAILY_LOG, log_key(log.date),
                            json.dumps(log.to_dict(), ensure_ascii=False),
-                           metadata={"date": log.date}, created_at=log.created_at or 0)
+                           metadata={"date": log.date}, created_at=ts)
 
 
 def _to_log(rec: Any) -> Optional[SecretaryLog]:
