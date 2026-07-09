@@ -3345,5 +3345,828 @@
     "context": {},
     "created_at": 1783543100,
     "updated_at": 1783543100
+  },
+  "run_20260709_091733_fb26c871": {
+    "id": "run_20260709_091733_fb26c871",
+    "message": "test",
+    "intent": "general_secretary",
+    "domain": "general",
+    "selected_workflow": "local_secretary",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091733_fb26c871",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091733_fb26c871\\Plan.md",
+        "kind": "document",
+        "created_at": 1783559853
+      },
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091755_3078254f\\Plan.md",
+        "kind": "document",
+        "created_at": 1783559875
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091755_3078254f\\Status.md",
+        "kind": "document",
+        "created_at": 1783559875
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091755_3078254f\\Verification.md",
+        "kind": "document",
+        "created_at": 1783559875
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091755_3078254f\\run_result.json",
+        "kind": "json",
+        "created_at": 1783559875
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091755_3078254f\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783559875
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091733_fb26c871\\Status.md",
+        "kind": "document",
+        "created_at": 1783559875
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091733_fb26c871\\Verification.md",
+        "kind": "document",
+        "created_at": 1783559875
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091733_fb26c871\\run_result.json",
+        "kind": "json",
+        "created_at": 1783559875
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091733_fb26c871\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783559875
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "email": "尊敬的【收件人姓名】老师：\n\n您好！\n\n关于【test】事宜，我想向您汇报如下进展：\n\n目前我们已完成了初步的准备工作，具体情况如下：\n- 已完成项目规划与时间安排\n- 相关人员分工已明确\n- 预计【具体日期】可进入实施阶段\n\n如有任何问题或需要进一步沟通的事项，请随时联系我。\n\n期待您的回复。\n\n祝好！\n\n【社团秘书姓名】\n【社团名称】\n【日期】",
+      "recipient": "",
+      "source_mode": "real_llm",
+      "run_id": "run_20260709_091755_3078254f",
+      "artifacts": [
+        {
+          "name": "Plan.md",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091755_3078254f\\Plan.md",
+          "kind": "document",
+          "created_at": 1783559875
+        },
+        {
+          "name": "Status.md",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091755_3078254f\\Status.md",
+          "kind": "document",
+          "created_at": 1783559875
+        },
+        {
+          "name": "Verification.md",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091755_3078254f\\Verification.md",
+          "kind": "document",
+          "created_at": 1783559875
+        },
+        {
+          "name": "run_result.json",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091755_3078254f\\run_result.json",
+          "kind": "json",
+          "created_at": 1783559875
+        },
+        {
+          "name": "artifact_manifest.json",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091755_3078254f\\artifact_manifest.json",
+          "kind": "manifest",
+          "created_at": 1783559875
+        }
+      ]
+    },
+    "context": {},
+    "created_at": 1783559853,
+    "updated_at": 1783559875
+  },
+  "run_20260709_091755_3078254f": {
+    "id": "run_20260709_091755_3078254f",
+    "message": "test",
+    "intent": "email_draft",
+    "domain": "club",
+    "selected_workflow": "club_email_draft",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091755_3078254f",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091755_3078254f\\Plan.md",
+        "kind": "document",
+        "created_at": 1783559875
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091755_3078254f\\Status.md",
+        "kind": "document",
+        "created_at": 1783559875
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091755_3078254f\\Verification.md",
+        "kind": "document",
+        "created_at": 1783559875
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091755_3078254f\\run_result.json",
+        "kind": "json",
+        "created_at": 1783559875
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091755_3078254f\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783559875
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "email": "尊敬的【收件人姓名】老师：\n\n您好！\n\n关于【test】事宜，我想向您汇报如下进展：\n\n目前我们已完成了初步的准备工作，具体情况如下：\n- 已完成项目规划与时间安排\n- 相关人员分工已明确\n- 预计【具体日期】可进入实施阶段\n\n如有任何问题或需要进一步沟通的事项，请随时联系我。\n\n期待您的回复。\n\n祝好！\n\n【社团秘书姓名】\n【社团名称】\n【日期】",
+      "recipient": "",
+      "source_mode": "real_llm"
+    },
+    "context": {},
+    "created_at": 1783559875,
+    "updated_at": 1783559875
+  },
+  "run_20260709_091929_d1512daa": {
+    "id": "run_20260709_091929_d1512daa",
+    "message": "test",
+    "intent": "general_secretary",
+    "domain": "general",
+    "selected_workflow": "local_secretary",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091929_d1512daa",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091929_d1512daa\\Plan.md",
+        "kind": "document",
+        "created_at": 1783559969
+      },
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_19434c0b\\Plan.md",
+        "kind": "document",
+        "created_at": 1783560123
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_19434c0b\\Status.md",
+        "kind": "document",
+        "created_at": 1783560123
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_19434c0b\\Verification.md",
+        "kind": "document",
+        "created_at": 1783560123
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_19434c0b\\run_result.json",
+        "kind": "json",
+        "created_at": 1783560123
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_19434c0b\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783560123
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091929_d1512daa\\Status.md",
+        "kind": "document",
+        "created_at": 1783560123
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091929_d1512daa\\Verification.md",
+        "kind": "document",
+        "created_at": 1783560123
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091929_d1512daa\\run_result.json",
+        "kind": "json",
+        "created_at": 1783560123
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091929_d1512daa\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783560123
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "email": "尊敬的老师：\n\n您好！\n\n关于「test」相关事宜，特此致函说明。请查阅附件或相关材料，如有任何疑问或需要进一步沟通的地方，请随时联系。\n\n感谢您的关注与支持！\n\n祝好！",
+      "recipient": "",
+      "source_mode": "real_llm",
+      "run_id": "run_20260709_092203_19434c0b",
+      "artifacts": [
+        {
+          "name": "Plan.md",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_19434c0b\\Plan.md",
+          "kind": "document",
+          "created_at": 1783560123
+        },
+        {
+          "name": "Status.md",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_19434c0b\\Status.md",
+          "kind": "document",
+          "created_at": 1783560123
+        },
+        {
+          "name": "Verification.md",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_19434c0b\\Verification.md",
+          "kind": "document",
+          "created_at": 1783560123
+        },
+        {
+          "name": "run_result.json",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_19434c0b\\run_result.json",
+          "kind": "json",
+          "created_at": 1783560123
+        },
+        {
+          "name": "artifact_manifest.json",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_19434c0b\\artifact_manifest.json",
+          "kind": "manifest",
+          "created_at": 1783560123
+        }
+      ]
+    },
+    "context": {},
+    "created_at": 1783559969,
+    "updated_at": 1783560123
+  },
+  "run_20260709_091937_b54df570": {
+    "id": "run_20260709_091937_b54df570",
+    "message": "你好",
+    "intent": "general_secretary",
+    "domain": "general",
+    "selected_workflow": "local_secretary",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091937_b54df570",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091937_b54df570\\Plan.md",
+        "kind": "document",
+        "created_at": 1783559977
+      },
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_fc9c8bc9\\Plan.md",
+        "kind": "document",
+        "created_at": 1783560123
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_fc9c8bc9\\Status.md",
+        "kind": "document",
+        "created_at": 1783560124
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_fc9c8bc9\\Verification.md",
+        "kind": "document",
+        "created_at": 1783560124
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_fc9c8bc9\\run_result.json",
+        "kind": "json",
+        "created_at": 1783560124
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_fc9c8bc9\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783560124
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091937_b54df570\\Status.md",
+        "kind": "document",
+        "created_at": 1783560124
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091937_b54df570\\Verification.md",
+        "kind": "document",
+        "created_at": 1783560124
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091937_b54df570\\run_result.json",
+        "kind": "json",
+        "created_at": 1783560124
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_091937_b54df570\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783560124
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "email": "尊敬的【收件人姓名】老师：\n\n您好！\n\n【正文内容】\n\n祝好！\n\n【社团秘书姓名】\n【社团名称】\n【日期】",
+      "recipient": "",
+      "source_mode": "real_llm",
+      "run_id": "run_20260709_092203_fc9c8bc9",
+      "artifacts": [
+        {
+          "name": "Plan.md",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_fc9c8bc9\\Plan.md",
+          "kind": "document",
+          "created_at": 1783560123
+        },
+        {
+          "name": "Status.md",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_fc9c8bc9\\Status.md",
+          "kind": "document",
+          "created_at": 1783560123
+        },
+        {
+          "name": "Verification.md",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_fc9c8bc9\\Verification.md",
+          "kind": "document",
+          "created_at": 1783560123
+        },
+        {
+          "name": "run_result.json",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_fc9c8bc9\\run_result.json",
+          "kind": "json",
+          "created_at": 1783560123
+        },
+        {
+          "name": "artifact_manifest.json",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_fc9c8bc9\\artifact_manifest.json",
+          "kind": "manifest",
+          "created_at": 1783560123
+        }
+      ]
+    },
+    "context": {},
+    "created_at": 1783559977,
+    "updated_at": 1783560124
+  },
+  "run_20260709_092203_19434c0b": {
+    "id": "run_20260709_092203_19434c0b",
+    "message": "test",
+    "intent": "email_draft",
+    "domain": "club",
+    "selected_workflow": "club_email_draft",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_19434c0b",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_19434c0b\\Plan.md",
+        "kind": "document",
+        "created_at": 1783560123
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_19434c0b\\Status.md",
+        "kind": "document",
+        "created_at": 1783560123
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_19434c0b\\Verification.md",
+        "kind": "document",
+        "created_at": 1783560123
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_19434c0b\\run_result.json",
+        "kind": "json",
+        "created_at": 1783560123
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_19434c0b\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783560123
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "email": "尊敬的老师：\n\n您好！\n\n关于「test」相关事宜，特此致函说明。请查阅附件或相关材料，如有任何疑问或需要进一步沟通的地方，请随时联系。\n\n感谢您的关注与支持！\n\n祝好！",
+      "recipient": "",
+      "source_mode": "real_llm"
+    },
+    "context": {},
+    "created_at": 1783560123,
+    "updated_at": 1783560123
+  },
+  "run_20260709_092203_fc9c8bc9": {
+    "id": "run_20260709_092203_fc9c8bc9",
+    "message": "你好",
+    "intent": "email_draft",
+    "domain": "club",
+    "selected_workflow": "club_email_draft",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_fc9c8bc9",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_fc9c8bc9\\Plan.md",
+        "kind": "document",
+        "created_at": 1783560123
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_fc9c8bc9\\Status.md",
+        "kind": "document",
+        "created_at": 1783560123
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_fc9c8bc9\\Verification.md",
+        "kind": "document",
+        "created_at": 1783560123
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_fc9c8bc9\\run_result.json",
+        "kind": "json",
+        "created_at": 1783560123
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092203_fc9c8bc9\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783560123
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "email": "尊敬的【收件人姓名】老师：\n\n您好！\n\n【正文内容】\n\n祝好！\n\n【社团秘书姓名】\n【社团名称】\n【日期】",
+      "recipient": "",
+      "source_mode": "real_llm"
+    },
+    "context": {},
+    "created_at": 1783560123,
+    "updated_at": 1783560123
+  },
+  "run_20260709_092507_b5e6ee32": {
+    "id": "run_20260709_092507_b5e6ee32",
+    "message": "你好",
+    "intent": "general_secretary",
+    "domain": "general",
+    "selected_workflow": "local_secretary",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092507_b5e6ee32",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092507_b5e6ee32\\Plan.md",
+        "kind": "document",
+        "created_at": 1783560307
+      },
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092519_9bbb4d74\\Plan.md",
+        "kind": "document",
+        "created_at": 1783560319
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092519_9bbb4d74\\Status.md",
+        "kind": "document",
+        "created_at": 1783560319
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092519_9bbb4d74\\Verification.md",
+        "kind": "document",
+        "created_at": 1783560319
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092519_9bbb4d74\\run_result.json",
+        "kind": "json",
+        "created_at": 1783560319
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092519_9bbb4d74\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783560319
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092507_b5e6ee32\\Status.md",
+        "kind": "document",
+        "created_at": 1783560319
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092507_b5e6ee32\\Verification.md",
+        "kind": "document",
+        "created_at": 1783560319
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092507_b5e6ee32\\run_result.json",
+        "kind": "json",
+        "created_at": 1783560319
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092507_b5e6ee32\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783560319
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "email": "尊敬的【收件人姓名】老师：\n\n您好！\n\n我是【社团名称】的【职位】，向您致以诚挚的问候。\n\n【此处可根据需要添加具体内容，如近期活动安排、重要通知等】\n\n如有任何疑问或需要进一步沟通，请随时与我联系。\n\n祝好！\n\n【发送人姓名】\n【社团名称】\n【联系方式】",
+      "recipient": "",
+      "source_mode": "real_llm",
+      "run_id": "run_20260709_092519_9bbb4d74",
+      "artifacts": [
+        {
+          "name": "Plan.md",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092519_9bbb4d74\\Plan.md",
+          "kind": "document",
+          "created_at": 1783560319
+        },
+        {
+          "name": "Status.md",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092519_9bbb4d74\\Status.md",
+          "kind": "document",
+          "created_at": 1783560319
+        },
+        {
+          "name": "Verification.md",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092519_9bbb4d74\\Verification.md",
+          "kind": "document",
+          "created_at": 1783560319
+        },
+        {
+          "name": "run_result.json",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092519_9bbb4d74\\run_result.json",
+          "kind": "json",
+          "created_at": 1783560319
+        },
+        {
+          "name": "artifact_manifest.json",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092519_9bbb4d74\\artifact_manifest.json",
+          "kind": "manifest",
+          "created_at": 1783560319
+        }
+      ]
+    },
+    "context": {},
+    "created_at": 1783560307,
+    "updated_at": 1783560319
+  },
+  "run_20260709_092519_9bbb4d74": {
+    "id": "run_20260709_092519_9bbb4d74",
+    "message": "你好",
+    "intent": "email_draft",
+    "domain": "club",
+    "selected_workflow": "club_email_draft",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092519_9bbb4d74",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092519_9bbb4d74\\Plan.md",
+        "kind": "document",
+        "created_at": 1783560319
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092519_9bbb4d74\\Status.md",
+        "kind": "document",
+        "created_at": 1783560319
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092519_9bbb4d74\\Verification.md",
+        "kind": "document",
+        "created_at": 1783560319
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092519_9bbb4d74\\run_result.json",
+        "kind": "json",
+        "created_at": 1783560319
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_092519_9bbb4d74\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783560319
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "email": "尊敬的【收件人姓名】老师：\n\n您好！\n\n我是【社团名称】的【职位】，向您致以诚挚的问候。\n\n【此处可根据需要添加具体内容，如近期活动安排、重要通知等】\n\n如有任何疑问或需要进一步沟通，请随时与我联系。\n\n祝好！\n\n【发送人姓名】\n【社团名称】\n【联系方式】",
+      "recipient": "",
+      "source_mode": "real_llm"
+    },
+    "context": {},
+    "created_at": 1783560319,
+    "updated_at": 1783560319
+  },
+  "run_20260709_100723_8f8e39ec": {
+    "id": "run_20260709_100723_8f8e39ec",
+    "message": "你好",
+    "intent": "general_secretary",
+    "domain": "general",
+    "selected_workflow": "local_secretary",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_100723_8f8e39ec",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_100723_8f8e39ec\\Plan.md",
+        "kind": "document",
+        "created_at": 1783562843
+      },
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_100723_8fb4caf4\\Plan.md",
+        "kind": "document",
+        "created_at": 1783562843
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_100723_8fb4caf4\\Status.md",
+        "kind": "document",
+        "created_at": 1783562843
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_100723_8fb4caf4\\Verification.md",
+        "kind": "document",
+        "created_at": 1783562843
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_100723_8fb4caf4\\run_result.json",
+        "kind": "json",
+        "created_at": 1783562843
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_100723_8fb4caf4\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783562843
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_100723_8f8e39ec\\Status.md",
+        "kind": "document",
+        "created_at": 1783562843
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_100723_8f8e39ec\\Verification.md",
+        "kind": "document",
+        "created_at": 1783562843
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_100723_8f8e39ec\\run_result.json",
+        "kind": "json",
+        "created_at": 1783562843
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_100723_8f8e39ec\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783562843
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "email": "老师/同学您好：\n\n我是校园项目负责人，想就“你好”与您沟通。你好\n\n如果方便，期待约一个 15 分钟的时间确认细节。谢谢！",
+      "recipient": "",
+      "run_id": "run_20260709_100723_8fb4caf4",
+      "artifacts": [
+        {
+          "name": "Plan.md",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_100723_8fb4caf4\\Plan.md",
+          "kind": "document",
+          "created_at": 1783562843
+        },
+        {
+          "name": "Status.md",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_100723_8fb4caf4\\Status.md",
+          "kind": "document",
+          "created_at": 1783562843
+        },
+        {
+          "name": "Verification.md",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_100723_8fb4caf4\\Verification.md",
+          "kind": "document",
+          "created_at": 1783562843
+        },
+        {
+          "name": "run_result.json",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_100723_8fb4caf4\\run_result.json",
+          "kind": "json",
+          "created_at": 1783562843
+        },
+        {
+          "name": "artifact_manifest.json",
+          "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_100723_8fb4caf4\\artifact_manifest.json",
+          "kind": "manifest",
+          "created_at": 1783562843
+        }
+      ]
+    },
+    "context": {},
+    "created_at": 1783562843,
+    "updated_at": 1783562843
+  },
+  "run_20260709_100723_8fb4caf4": {
+    "id": "run_20260709_100723_8fb4caf4",
+    "message": "你好",
+    "intent": "email_draft",
+    "domain": "club",
+    "selected_workflow": "club_email_draft",
+    "status": "done",
+    "run_dir": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_100723_8fb4caf4",
+    "artifacts": [
+      {
+        "name": "Plan.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_100723_8fb4caf4\\Plan.md",
+        "kind": "document",
+        "created_at": 1783562843
+      },
+      {
+        "name": "Status.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_100723_8fb4caf4\\Status.md",
+        "kind": "document",
+        "created_at": 1783562843
+      },
+      {
+        "name": "Verification.md",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_100723_8fb4caf4\\Verification.md",
+        "kind": "document",
+        "created_at": 1783562843
+      },
+      {
+        "name": "run_result.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_100723_8fb4caf4\\run_result.json",
+        "kind": "json",
+        "created_at": 1783562843
+      },
+      {
+        "name": "artifact_manifest.json",
+        "path": "C:\\Users\\Lenovo\\Desktop\\your_secretary\\student-secretary-agent\\.campus-devtest\\runs\\run_20260709_100723_8fb4caf4\\artifact_manifest.json",
+        "kind": "manifest",
+        "created_at": 1783562843
+      }
+    ],
+    "error": "",
+    "result": {
+      "ok": true,
+      "email": "老师/同学您好：\n\n我是校园项目负责人，想就“你好”与您沟通。你好\n\n如果方便，期待约一个 15 分钟的时间确认细节。谢谢！",
+      "recipient": ""
+    },
+    "context": {},
+    "created_at": 1783562843,
+    "updated_at": 1783562843
   }
 }

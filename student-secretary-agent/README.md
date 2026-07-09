@@ -145,13 +145,161 @@ DAILY_LOG    — 每日秘书日志
 
 ---
 
+## Meta-Agent（多智能体编排）
+
+Meta-Agent 是一个**确定性分类器 + 编排器桥接层**（`campus/meta_agent/`），坐在用户消息和多智能体引擎之间。它负责：判断任务复杂度 → 路由到合适的执行路径 → 驱动多角色 DAG 执行 → 对抗辩论保证质量。
+
+### 分类（keyword + length 启发式，无 LLM）
+
+`MetaAgent.classify(task)`（`meta_agent.py:48`）用两条规则判断：
+- 消息长度 > 20 字符 → 长程任务
+- 消息包含 `LONG_KEYWORDS` 中的关键词（"策划案""复习计划""讲义""machine learning""exam"…）→ 长程任务
+- 否则 → 短任务
+
+返回 `ClassifyDecision{kind: "long"|"short", reason, skills}`，其中 `skills` 由 `SkillRegistry.discover()` 匹配推荐。
+
+### 路由 → DAG 构建
+
+`build_dag(decision)`（`meta_agent.py:60`）：
+- **短任务** → 单节点 `hermes_direct`（Hermes 直达，一步完成）
+- **长任务** → 8 角色 DAG（`LONG_DAG`），含两个对抗闸门：
+
+```
+planner → [critic 对抗] → researcher → source_verifier → source_ranker → writer → [reviewer 对抗] → email
+```
+
+DAG 拓扑由 `parents` 字段编码，`campus/orchestrator/dag.py` 做拓扑排序 + 环检测（Kahn 算法 + DFS 三色染色）。
+
+### DAG 执行 + 对抗辩论
+
+`MetaRunner.run()`（`runner.py:130`）驱动完整流程：
+
+1. `classify` → `build_dag` → 创建 RunStore 记录
+2. 模式解析：real 模式用 `build_generic_turn`（真实 LLM），offline 用 `make_offline_turn`（确定性模板，测试用）
+3. **短任务**：`_run_short` → 单节点执行，无辩论
+4. **长任务**：`_run_long` → 逐角色执行，两处对抗辩论：
+   - **Planner↔Critic**（计划闸门）：critic 审查 planner 的计划，APPROVE 通过 / REJECT 返工
+   - **Writer↔Reviewer**（交付闸门）：reviewer 审查 writer 的产出，APPROVE 通过 / REJECT 返工
+5. `Supervisor`（`odyssey/supervisor.py`）执行 4 道闸门：
+   - **P2-S1 轮次上限**：辩论超过 `max_rounds`（默认 3）→ 强制通过并标注
+   - **P2-S2 死锁检测**：连续 `idle_rounds`（默认 2）无进展 → 升级为 `awaiting_human`
+   - **P2-S3 协议校验**：每个 handoff 必须携带有效 verdict（APPROVE/REJECT），否则抛 `ProtocolViolationError`
+   - **P2-S4 成本闸门**：单任务 token 超限 → `CostLimitExceeded`
+6. 产物：`Plan.md` / `Status.md` / `Verification.md` / `run_result.json` 持久化
+
+### 成本路由
+
+`cost.py` 定义三档模型分档：
+- **CHEAP**（scheduler, email）→ 0.25x 成本系数
+- **MID**（critic, reviewer, verifier）→ 1.0x
+- **STRONG**（planner, writer, researcher）→ 4.0x
+
+`BudgetGate` 累计花销，超预算的请求被拒（不扣费）。用户可在 `~/.campus/routing.yaml` 配置角色→{provider, model} 映射，不绑厂商。
+
+### Skill 发现
+
+`SkillRegistry`（`skill_discovery.py`）加载 100+ 条内置 skill 清单（`skill_pack.py`，来自 Hermes 内核 / CLI-Anything / Campus 三层）。`discover(need, k)` 用 CJK 感知的 token 重叠 + 可靠性评分（installed +0.5, maintained +0.3, known source +0.2）排序推荐。`pick_mode()` 决定执行方式：installed → direct，cli_anything → install_or_compose，否则 → compose。
+
+### Auto-Learn（纠错 → 偏好/skill 自动学习）
+
+`AutoLearner`（`auto_learn.py`）每日定时运行（或 `POST /admin/auto-learn` 手动触发）：
+1. 用户对 run 产物提交 correction（`POST /agent/runs/{id}/correction`）
+2. `CorrectionStore` 记录纠错（`~/.campus/corrections.json`）
+3. 每日回顾未处理纠错，按 domain 聚类
+4. LLM 分类（LLM 不可用时启发式）：≥2 条同 domain 纠错 → skill 缺陷，否则 → preference
+5. `preference` → 写入 PREFERENCES 层；`skill` → `SkillCreator` 创建/更新 `skills/<name>/SKILL.md`；`fact` → 写入 KNOWLEDGE 层
+
+---
+
+## Memory 多层机制
+
+Campus 使用 5 层结构化记忆（`campus/memory/types.py`），每层有独立的存入、更新、检索和维护规则。
+
+### 层级总览
+
+| 层 | 用途 | 检索方式 | 维护 |
+|---|---|---|---|
+| **PREFERENCES** | 用户长期偏好（身份/专业/人格/onboarding/纪念日/纠错偏好） | **每轮全量注入**（不检索） | 每日去重 + 清理过期 |
+| **TASK_LOG** | 长程任务的 EventLog/DecisionLog | RRF 语义检索（task-id 限定） | 每日压缩沉积 → PREFERENCES |
+| **TASK_BOARD** | 任务看板（todo/done） | 结构化查询（不注入 prompt） | 90 天保留 |
+| **KNOWLEDGE** | 知识库（讲义 KG 节点/纠错事实） | RRF 语义检索 top-k | 90 天保留 |
+| **DAILY_LOG** | 每日秘书日志（日程+任务+提醒汇总） | 按日期取最近 N 条 | 每日压缩沉积 → PREFERENCES |
+
+### PREFERENCES — 每轮全量注入
+
+用户偏好是小量、高价值数据，**不走检索打分，每轮全量注入** prompt：
+
+```
+load_preferences_block()  # campus/memory/preferences.py
+  → memory.list_layer(PREFERENCES)  # 读全部
+  → 排序：pinned 优先，然后按时间倒序
+  → 格式化：=== 用户偏好（每轮自动注入） ===
+  → 截断上限 2000 字符
+```
+
+`compose_reply` 每轮调用此函数，把偏好块直接拼入 LLM prompt（与语义检索的 `memory_snippet` 并列但独立）。
+
+**写入来源**：onboarding profile（pinned）、纪念日、提醒去重键、auto-learn 偏好、nightly 压缩沉积。
+
+**定时维护**（`_maybe_maintain_preferences`，调度器每日执行）：按 key 去重（保留最新）→ 清理 >180 天非 pinned 记录 → 上限 50 条（pinned 永远保留）。
+
+### TASK_LOG / KNOWLEDGE — RRF 语义检索
+
+这两层走 `recall_layered`（`recall_strategy.py`）的 RRF 融合检索：
+
+```
+recall_layered(store, query, token_budget=1500)
+  ├─ FTS 通道：token 重叠打分（CJK 单字分词）
+  ├─ Vector 通道：HashEmbedder 嵌入 + cosine 相似度
+  ├─ RRF 融合：score = 1/(60+rank_fts) + 1/(60+rank_vec)
+  ├─ recency boost：0.5 + 0.5 * 0.5^(age/30天)
+  ├─ pinned boost：×1.5
+  └─ token 预算打包：pinned 优先 → 按 score 排序 → 塞满 1500 token
+```
+
+- **TASK_LOG**：额外按 `task_id` 限定范围（只检索当前任务的日志）
+- **KNOWLEDGE**：取 top-5（`k_per_layer`）
+- **嵌入模型**：`HashEmbedder`（确定性 hash-bag，128 维，CJK 单字分词）。非真正的语义模型，但让重叠文本共享 bucket（cosine > 0）。可通过 `EmbedderPort` 替换为真实嵌入模型。
+
+### DAILY_LOG — 按日期取最近 N 条
+
+不按相关性检索，直接取最近 3 条（按 `created_at` 倒序），每条 score 0.5。写入由 `life/secretary_log.py` 每日触发，按日期 key 存储。
+
+### Nightly 压缩 + 清理（调度器每日执行）
+
+```
+_maybe_compress_memory()
+  ├─ 收集 >7 天的非 pinned TASK_LOG + DAILY_LOG
+  ├─ compress() → 沉积成一条 PREFERENCES 记录（key=sediment-{date}）
+  └─ prune_by_window() → 清理 >90 天的非 pinned 记录
+```
+
+`compress` 默认用无 LLM 的摘要器（取 metadata.summary 或 content 首行），可注入真实 LLM 摘要器。Pinned 记录在所有清理中永远保留。
+
+### 艾宾浩斯遗忘曲线
+
+`campus/memory/ebbinghaus.py`（纯函数，无时钟）：
+- **间隔序列**：`(1, 3, 7, 16, 35)` 天，表满后按 1.8x 增长
+- **advance**：答对 → reps+1，答错 → 重置为 0
+- **due_items**：`next_review(reps, last_ts) <= now` 的项目
+- 调用方（`phase7.py`）把 `reps_correct` / `due_ts` 存在 TaskStore 任务的 metadata 里，调度器到点检查 due → 生成 quiz → 推送
+
+### 两条检索路径共存
+
+1. **`recall_layered()`**（分层 RRF + token 预算打包）— 生成路径实际调用，产出 `memory_snippet` 注入 prompt
+2. **`load_preferences_block()`**（PREFERENCES 全量注入）— Phase 9.1 新增，每轮独立注入用户偏好
+
+两者在 `compose_reply` 中并列：偏好块直接注入 + 语义检索的 TASK_LOG/KNOWLEDGE/DAILY_LOG 作为补充上下文。
+
+---
+
 ## 安装与启动
 
 ### 方式一：Docker 一键启动（推荐，生产用）
 
 ```bash
 cd student-secretary-agent
-cp .env.example .env      # 填入你的 key（全部可选，不填走离线模式）
+cp .env.example .env      # 填入 GLM_API_KEY（必填）+ 其他可选 key
 docker compose up -d       # 构建并启动
 ```
 
@@ -194,7 +342,7 @@ QQ_APP_ID=xxx                     # QQ Bot 推送（可选）
 QQ_CLIENT_SECRET=xxx
 ```
 
-> **所有 key 都是可选的**——不配任何 key 也能跑离线模式（模板回复）。配了 GLM key 即解锁真实 AI 生成。
+> **LLM 必须接入**：`GLM_API_KEY` 是必填项——聊天回复、quiz 评分、讲义总结等核心功能依赖真实 LLM。未配置时 `/agent/chat` 会返回明确错误，引导用户配置。其他 key（Notion/Zotero/飞书/GitHub）可选，按需配置。
 
 #### 3. 启动后端
 

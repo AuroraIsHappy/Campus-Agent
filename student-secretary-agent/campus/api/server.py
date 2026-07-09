@@ -553,6 +553,14 @@ def _default_agent_chat(req: AgentChatRequest) -> dict:
     history = store.history(req.conversation_id) if req.conversation_id else []
     memory_snippet = _try_recall_memory(req.message, k=3)
 
+    # Phase 9.1: PREFERENCES injected every turn (full-layer, not retrieved)
+    preferences_block = ""
+    try:
+        from campus.memory.preferences import load_preferences_block
+        preferences_block = load_preferences_block()
+    except Exception:
+        pass
+
     # Pass context (e.g. confirmed_path, sync_calendar) through to the agent run.
     run_req = AgentRunRequest(message=req.message, mode=req.mode,
                               context=req.context or {})
@@ -563,11 +571,32 @@ def _default_agent_chat(req: AgentChatRequest) -> dict:
     result = _default_agent_run(run_req)
 
     # Compose the persona-styled reply from the structured result.
-    composed = compose_reply(
-        message=req.message, run_result=result,
-        persona_name=persona_name, history=history,
-        memory_snippet=memory_snippet,
-    )
+    # Phase 9.1: LLM is required — compose_reply raises RuntimeError if unavailable.
+    try:
+        composed = compose_reply(
+            message=req.message, run_result=result,
+            persona_name=persona_name, history=history,
+            memory_snippet=memory_snippet,
+            preferences_block=preferences_block,
+        )
+    except RuntimeError as e:
+        # LLM not available — return a clear error to the user (no silent fallback)
+        return {
+            "ok": False,
+            "reply": "",
+            "error": str(e),
+            "run_id": result.get("run_id", ""),
+            "status": result.get("status", ""),
+            "domain": result.get("domain", ""),
+            "intent": result.get("intent", ""),
+            "artifacts": result.get("artifacts", []),
+            "multiagent": False,
+            "conversation_id": req.conversation_id or "",
+            "persona": persona_name,
+            "source_mode": "error",
+            "needs_clarify": False,
+            "clarify_options": [],
+        }
 
     # Persist user + assistant turns.
     now_ts = __import__("time").time()
@@ -1314,6 +1343,11 @@ def start_scheduler(app: FastAPI, interval: float = _SCHEDULER_INTERVAL) -> None
                 _maybe_auto_learn()
             except Exception:
                 pass
+            # Phase 9.1: nightly PREFERENCES maintenance (dedup + prune stale)
+            try:
+                _maybe_maintain_preferences()
+            except Exception:
+                pass
             # Phase 9: daily quiz push + user-defined scheduled jobs (every tick)
             try:
                 _maybe_daily_quiz()
@@ -1413,6 +1447,34 @@ def _maybe_auto_learn() -> None:
         learner.run(use_llm=True)
     except Exception:
         pass  # never let auto-learn kill the scheduler
+
+
+# ---- PREFERENCES maintenance (Phase 9.1 — 定时清理保持状态新鲜) ----------------
+
+_LAST_PREF_MAINTAIN_DAY = None
+
+
+def _maybe_maintain_preferences() -> None:
+    """Nightly PREFERENCES cleanup: dedup by key + prune stale non-pinned.
+
+    Mirrors the day-dedup pattern of ``_maybe_compress_memory``. Keeps the
+    PREFERENCES layer small + fresh so every-turn injection stays high-signal.
+    """
+    global _LAST_PREF_MAINTAIN_DAY
+    import time as _t
+    today = _t.strftime("%Y-%m-%d")
+    if _LAST_PREF_MAINTAIN_DAY == today:
+        return
+    _LAST_PREF_MAINTAIN_DAY = today
+    try:
+        from campus.memory.preferences import maintain_preferences
+        result = maintain_preferences(memory=_life_memory())
+        if result.get("error"):
+            import logging
+            logging.getLogger("campus").warning(
+                "PREFERENCES maintain error: %s", result["error"])
+    except Exception:
+        pass  # never let maintenance kill the scheduler
 
 
 # ---- daily quiz push (Phase 9 — GOAL.md 定时 quiz 推送) -----------------------

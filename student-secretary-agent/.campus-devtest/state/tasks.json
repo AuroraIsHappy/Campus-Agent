@@ -780,5 +780,155 @@
     },
     "created_at": 1783543100,
     "updated_at": 1783543100
+  },
+  {
+    "id": "task_1783559875_f9d11cdb",
+    "title": "test",
+    "body": "{\"ok\": true, \"email\": \"尊敬的【收件人姓名】老师：\\n\\n您好！\\n\\n关于【test】事宜，我想向您汇报如下进展：\\n\\n目前我们已完成了初步的准备工作，具体情况如下：\\n- 已完成项目规划与时间安排\\n- 相关人员分工已明确\\n- 预计【具体日期】可进入实施阶段\\n\\n如有任何问题或需要进一步沟通的事项，请随时联系我。\\n\\n期待您的回复。\\n\\n祝好！\\n\\n【社团秘书姓名】\\n【社团名称】\\n【日期】\", \"recipient\": \"\", \"source_mode\": \"real_llm\"}",
+    "status": "done",
+    "domain": "club",
+    "run_id": "run_20260709_091755_3078254f",
+    "due": "",
+    "metadata": {
+      "intent": "email_draft",
+      "workflow": "club_email_draft"
+    },
+    "created_at": 1783559875,
+    "updated_at": 1783559875
+  },
+  {
+    "id": "task_1783559875_9f1d11f2",
+    "title": "test",
+    "body": "test",
+    "status": "done",
+    "domain": "general",
+    "run_id": "run_20260709_091733_fb26c871",
+    "due": "",
+    "metadata": {
+      "intent": "general_secretary",
+      "workflow": "local_secretary"
+    },
+    "created_at": 1783559875,
+    "updated_at": 1783559875
+  },
+  {
+    "id": "task_1783560123_f9ec716f",
+    "title": "test",
+    "body": "{\"ok\": true, \"email\": \"尊敬的老师：\\n\\n您好！\\n\\n关于「test」相关事宜，特此致函说明。请查阅附件或相关材料，如有任何疑问或需要进一步沟通的地方，请随时联系。\\n\\n感谢您的关注与支持！\\n\\n祝好！\", \"recipient\": \"\", \"source_mode\": \"real_llm\"}",
+    "status": "done",
+    "domain": "club",
+    "run_id": "run_20260709_092203_19434c0b",
+    "due": "",
+    "metadata": {
+      "intent": "email_draft",
+      "workflow": "club_email_draft"
+    },
+    "created_at": 1783560123,
+    "updated_at": 1783560123
+  },
+  {
+    "id": "task_1783560123_1e6a1be8",
+    "title": "test",
+    "body": "test",
+    "status": "done",
+    "domain": "general",
+    "run_id": "run_20260709_091929_d1512daa",
+    "due": "",
+    "metadata": {
+      "intent": "general_secretary",
+      "workflow": "local_secretary"
+    },
+    "created_at": 1783560123,
+    "updated_at": 1783560123
+  },
+  {
+    "id": "task_1783560123_7e3a6a33",
+    "title": "你好",
+    "body": "{\"ok\": true, \"email\": \"尊敬的【收件人姓名】老师：\\n\\n您好！\\n\\n【正文内容】\\n\\n祝好！\\n\\n【社团秘书姓名】\\n【社团名称】\\n【日期】\", \"recipient\": \"\", \"source_mode\": \"real_llm\"}",
+    "status": "done",
+    "domain": "club",
+    "run_id": "run_20260709_092203_fc9c8bc9",
+    "due": "",
+    "metadata": {
+      "intent": "email_draft",
+      "workflow": "club_email_draft"
+    },
+    "created_at": 1783560123,
+    "updated_at": 1783560123
+  },
+  {
+    "id": "task_1783560124_97a3f156",
+    "title": "你好",
+    "body": "你好",
+    "status": "done",
+    "domain": "general",
+    "run_id": "run_20260709_091937_b54df570",
+    "due": "",
+    "metadata": {
+      "intent": "general_secretary",
+      "workflow": "local_secretary"
+    },
+    "created_at": 1783560124,
+    "updated_at": 1783560124
+  },
+  {
+    "id": "task_1783560319_7f5e2f89",
+    "title": "你好",
+    "body": "{\"ok\": true, \"email\": \"尊敬的【收件人姓名】老师：\\n\\n您好！\\n\\n我是【社团名称】的【职位】，向您致以诚挚的问候。\\n\\n【此处可根据需要添加具体内容，如近期活动安排、重要通知等】\\n\\n如有任何疑问或需要进一步沟通，请随时与我联系。\\n\\n祝好！\\n\\n【发送人姓名】\\n【社团名称】\\n【联系方式】\", \"recipient\": \"\", \"source_mode\": \"real_llm\"}",
+    "status": "done",
+    "domain": "club",
+    "run_id": "run_20260709_092519_9bbb4d74",
+    "due": "",
+    "metadata": {
+      "intent": "email_draft",
+      "workflow": "club_email_draft"
+    },
+    "created_at": 1783560319,
+    "updated_at": 1783560319
+  },
+  {
+    "id": "task_1783560319_407fc2b4",
+    "title": "你好",
+    "body": "你好",
+    "status": "done",
+    "domain": "general",
+    "run_id": "run_20260709_092507_b5e6ee32",
+    "due": "",
+    "metadata": {
+      "intent": "general_secretary",
+      "workflow": "local_secretary"
+    },
+    "created_at": 1783560319,
+    "updated_at": 1783560319
+  },
+  {
+    "id": "task_1783562843_7a7c91a2",
+    "title": "你好",
+    "body": "{\"ok\": true, \"email\": \"老师/同学您好：\\n\\n我是校园项目负责人，想就“你好”与您沟通。你好\\n\\n如果方便，期待约一个 15 分钟的时间确认细节。谢谢！\", \"recipient\": \"\"}",
+    "status": "done",
+    "domain": "club",
+    "run_id": "run_20260709_100723_8fb4caf4",
+    "due": "",
+    "metadata": {
+      "intent": "email_draft",
+      "workflow": "club_email_draft"
+    },
+    "created_at": 1783562843,
+    "updated_at": 1783562843
+  },
+  {
+    "id": "task_1783562843_d13321c7",
+    "title": "你好",
+    "body": "你好",
+    "status": "done",
+    "domain": "general",
+    "run_id": "run_20260709_100723_8f8e39ec",
+    "due": "",
+    "metadata": {
+      "intent": "general_secretary",
+      "workflow": "local_secretary"
+    },
+    "created_at": 1783562843,
+    "updated_at": 1783562843
   }
 ]

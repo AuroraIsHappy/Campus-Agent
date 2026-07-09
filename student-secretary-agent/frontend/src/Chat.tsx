@@ -42,11 +42,20 @@ export function ChatPage() {
     api.agentChat({ message: msg, conversation_id: conversationId, mode: "auto" })
       .then((r) => {
         setConversationId(r.conversation_id);
-        setMessages((m) => [...m, { role: "assistant", content: r.reply, reply: r, ts: Date.now() }]);
+        if (!r.ok && r.error) {
+          // LLM not available or other server-side error — show a clear error
+          setMessages((m) => [...m, {
+            role: "assistant",
+            content: `⚠️ ${r.error}\n\n请在 ~/.hermes/.env 中配置 GLM_API_KEY 并确保 hermes_cli 可导入，然后重启后端。`,
+            ts: Date.now(),
+          }]);
+        } else {
+          setMessages((m) => [...m, { role: "assistant", content: r.reply, reply: r, ts: Date.now() }]);
+        }
         refreshConversations();
       })
       .catch((e: Error) => {
-        setMessages((m) => [...m, { role: "assistant", content: `⚠️ 出错了：${e.message}`, ts: Date.now() }]);
+        setMessages((m) => [...m, { role: "assistant", content: `⚠️ 网络错误：${e.message}`, ts: Date.now() }]);
       })
       .finally(() => setBusy(false));
   };

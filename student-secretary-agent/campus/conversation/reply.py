@@ -86,7 +86,8 @@ def _extract_content(result: dict[str, Any]) -> str:
 def compose_reply(message: str, run_result: dict[str, Any],
                   persona_name: str = "default",
                   history: Optional[list[dict[str, Any]]] = None,
-                  memory_snippet: str = "") -> dict[str, Any]:
+                  memory_snippet: str = "",
+                  preferences_block: str = "") -> dict[str, Any]:
     """Compose a persona-styled natural-language reply from a run result.
 
     Returns ``{"reply", "persona", "source_mode", "needs_clarify",
@@ -95,36 +96,27 @@ def compose_reply(message: str, run_result: dict[str, Any],
     - If the run result itself signals ambiguity (``needs_clarify`` with
       ``clarify_options``), the reply asks the user to confirm — this powers the
       fuzzy-lecture-path and any other confirm-before-proceed flow.
-    - If a real LLM is available, the reply is LLM-composed and persona-styled.
-    - Otherwise, falls back to ``mobile.inbound.format_reply`` (deterministic
-      template), so the chat still works offline.
+    - Requires a real LLM. If LLM is unavailable, raises RuntimeError (caller
+      returns an error to the user — no silent template fallback).
+    - PREFERENCES are injected every turn via ``preferences_block`` (full-layer,
+      not retrieved) — see ``campus.memory.preferences.load_preferences_block``.
     """
-    from campus.runtime.llm_config import require_real_llm, resolve_mode
+    from campus.runtime.llm_config import require_real_llm
 
     persona_name = (persona_name or "default").lower()
     needs_clarify = bool(run_result.get("needs_clarify"))
     clarify_options = run_result.get("clarify_options") or []
 
-    # ---- offline fallback (no LLM) ----
-    real, _status = require_real_llm("auto")
+    # ---- LLM required (no offline fallback) ----
+    real, status = require_real_llm("auto")
     if not real:
-        try:
-            from campus.mobile.inbound import format_reply
-            reply = format_reply(message, run_result)
-        except Exception:
-            reply = (f"已完成你的请求（{run_result.get('domain', '通用')}）。"
-                     f"运行编号 {run_result.get('run_id', '')}。")
-        # if clarification is needed, prepend the question
-        if needs_clarify and clarify_options:
-            opts = "\n".join(f"  {i+1}. {o}" for i, o in enumerate(clarify_options))
-            reply = f"我需要你确认一下：\n{opts}\n\n请回复你选择的编号或内容。" + reply
-        return {"reply": reply, "persona": persona_name,
-                "source_mode": "template", "needs_clarify": needs_clarify,
-                "clarify_options": clarify_options}
+        raise RuntimeError(
+            "LLM 未接入。请配置 GLM_API_KEY 到 ~/.hermes/.env 并确保 hermes_cli 可导入。"
+            f" 当前状态: {status.get('readiness', 'unknown')}")
 
     # ---- LLM-composed reply ----
     content = _extract_content(run_result)
-    status = run_result.get("status", "")
+    status_val = run_result.get("status", "")
     domain = run_result.get("domain", "")
     intent = run_result.get("intent", "")
     error = run_result.get("error", "")
@@ -153,16 +145,21 @@ def compose_reply(message: str, run_result: dict[str, Any],
     if hist:
         base_parts.append("")
         base_parts.append(hist)
+    # Phase 9.1: PREFERENCES injected every turn (full-layer, not retrieved)
+    if preferences_block:
+        base_parts.append("")
+        base_parts.append(preferences_block)
+    # memory_snippet still carries recalled TASK_LOG/KNOWLEDGE (semantic retrieval)
     if memory_snippet:
         base_parts.append("")
-        base_parts.append("=== 用户偏好/记忆（自动检索） ===")
+        base_parts.append("=== 相关记忆（语义检索） ===")
         base_parts.append(memory_snippet[:1200])
     base_parts.append("")
     base_parts.append("=== 任务执行结果（结构化） ===")
     if content:
         base_parts.append(content[:3000])
     else:
-        base_parts.append(f"（领域：{domain}，意图：{intent}，状态：{status}）")
+        base_parts.append(f"（领域：{domain}，意图：{intent}，状态：{status_val}）")
     if needs_clarify:
         opts = "\n".join(f"  {i+1}. {o}" for i, o in enumerate(clarify_options))
         base_parts.append("")
@@ -177,15 +174,15 @@ def compose_reply(message: str, run_result: dict[str, Any],
     try:
         from campus.runtime.llm_turn import ask_llm
         text, _rc = ask_llm(full_prompt, model="glm-4.6", provider="zai")
-        reply = (text or "").strip() or "（未能生成回复，请稍后再试。）"
+        reply = (text or "").strip()
+        if not reply:
+            reply = "（未能生成回复，请稍后再试。）"
         source_mode = "real_llm"
-    except Exception:
-        try:
-            from campus.mobile.inbound import format_reply
-            reply = format_reply(message, run_result)
-        except Exception:
-            reply = "抱歉，回复生成失败，但任务已完成。"
-        source_mode = "template_fallback"
+    except RuntimeError:
+        raise  # LLM-not-available error propagates to caller
+    except Exception as e:
+        # LLM call failed (timeout, network, etc.) — surface the error, no silent fallback
+        raise RuntimeError(f"LLM 调用失败: {e}") from e
 
     return {"reply": reply, "persona": persona_name,
             "source_mode": source_mode, "needs_clarify": needs_clarify,
