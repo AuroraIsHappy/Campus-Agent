@@ -15,8 +15,13 @@ from typing import Any, Callable, Optional
 from fastapi import FastAPI
 
 from campus.api.types import (
-    DemoBRequest, MemoryQuery, OnboardingRequest, PushRequest,
-    EventRequest, AnniversaryRequest, LogQuery,
+    AgentRunRequest, DemoARequest, DemoBRequest, DemoCRequest, MemoryQuery, OnboardingRequest, PushRequest,
+    EventRequest, AnniversaryRequest, LogQuery, ResearchTopicRequest,
+    ResearchRefreshRequest, NotionSyncRequest,
+    FlashcardsRequest, DeadlineRequest, QuizRunRequest, QuizGradeRequest,
+    ResearchIdeaRequest, GithubTrendingRequest, FormatCheckRequest,
+    HealthRequest, TravelPlanRequest, ClubMinutesRequest, RecruitingCopyRequest,
+    EmailDraftRequest, JobSearchRequest, JobSaveRequest, InterviewPlanRequest,
 )
 
 __all__ = ["Backends", "create_app", "app", "start_scheduler", "stop_scheduler"]
@@ -25,11 +30,20 @@ __all__ = ["Backends", "create_app", "app", "start_scheduler", "stop_scheduler"]
 @dataclass
 class Backends:
     """Injectable service callables. Any left None uses a sane default."""
+    demo_a_run: Callable[[DemoARequest], dict]
     demo_b_run: Callable[[DemoBRequest], dict]
+    demo_c_run: Callable[[DemoCRequest], dict]
+    demo_status: Callable[[], dict]
     memory_recall: Callable[[str, int], list]
     onboarding_run: Callable[[dict], dict]
     list_tasks: Callable[[], list]
     push_send: Callable[[str, Optional[str], str], dict]
+    research_add_topic: Optional[Callable[[ResearchTopicRequest], dict]] = None
+    research_list_topics: Optional[Callable[[], dict]] = None
+    research_refresh: Optional[Callable[[str, ResearchRefreshRequest], dict]] = None
+    research_runs: Optional[Callable[[], dict]] = None
+    notion_sync: Optional[Callable[[NotionSyncRequest], dict]] = None
+    notes_status: Optional[Callable[[], dict]] = None
     # life (Phase 6) — Optional so phase-5 callers that omit them still work
     calendar_add: Optional[Callable[[EventRequest], dict]] = None
     calendar_list: Optional[Callable[[Optional[str], Optional[str]], dict]] = None
@@ -38,15 +52,82 @@ class Backends:
     anniv_list: Optional[Callable[[], dict]] = None
     daily_log_get: Optional[Callable[[Optional[str], int], dict]] = None
     daily_log_run: Optional[Callable[[], dict]] = None
+    agent_run: Optional[Callable[[AgentRunRequest], dict]] = None
+    agent_list_runs: Optional[Callable[[], dict]] = None
+    agent_get_run: Optional[Callable[[str], dict]] = None
+    settings_status: Optional[Callable[[], dict]] = None
 
 
 # ---- default backends (real campus libs; deterministic where possible) ----
+
+def _default_demo_a(req: DemoARequest) -> dict:
+    from campus.demo_a.types import Brief, SampleSpec
+    from campus.demo_a import pipeline as _p
+    from campus.runtime.llm_config import require_real_llm, resolve_mode
+
+    real, status = require_real_llm(req.mode)
+    if resolve_mode(req.mode) == "real" and not status.get("ok"):
+        return {"ok": False, "mode": "real", "error": status["error"], "real_llm": status}
+
+    sample = SampleSpec(raw=req.sample_text or "# 样例\n## 背景\n## 预算\n## 时间表\n## 安全预案")
+    brief = Brief(topic=req.topic, region=req.region, window=req.window)
+    turn = None
+    opener = None
+    if not real:
+        from campus.demo_a.offline import make_offline_turn
+        run_dir = _p.new_run_dir()
+        opener = lambda url, timeout=5: 200
+        result = _p.run_demo_a(sample, brief, turn_factory=make_offline_turn,
+                               run_dir=run_dir, url_opener=opener, sup_max_rounds=1)
+    else:
+        try:
+            result = _p.run_demo_a(sample, brief)
+        except Exception as e:
+            return {"ok": False, "mode": "real", "error": str(e), "real_llm": status}
+    data = {
+        "ok": result.ok,
+        "mode": "real" if real else "offline",
+        "run_dir": result.run_dir,
+        "final_status": result.final_status,
+        "outreach_count": result.outreach_count,
+        "email_segments": result.email_segments,
+        "checks": [getattr(c, "__dict__", c) for c in result.checks],
+        "debates": result.debates,
+        "artifacts": result.artifacts,
+        "error": result.error,
+        "real_llm": status,
+    }
+    return data
 
 def _default_demo_b(req: DemoBRequest) -> dict:
     from campus.demo_b import pipeline as _p
     r = _p.run_demo_b(req.path, req.exam_date, free_minutes=req.free_minutes,
                       start_date=req.start_date, topic=req.topic)
     return _result_dict(r)
+
+
+def _default_demo_c(req: DemoCRequest) -> dict:
+    from campus.runtime.llm_config import require_real_llm, resolve_mode
+    real, status = require_real_llm(req.mode)
+    if resolve_mode(req.mode) == "real" and not status.get("ok"):
+        return {"ok": False, "mode": "real", "error": status["error"], "real_llm": status}
+    if real:
+        try:
+            from campus.demo_c.orchestrator import run_learning_plan
+            result = run_learning_plan(req.goal, days=req.days, slot_minutes=req.minutes, quiz_n=req.quiz_n)
+            result["mode"] = "real"
+        except Exception as e:
+            return {"ok": False, "mode": "real", "error": str(e), "real_llm": status}
+    else:
+        from campus.demo_c.offline import run_learning_plan_offline
+        result = run_learning_plan_offline(req.goal, days=req.days, slot_minutes=req.minutes, quiz_n=req.quiz_n)
+    result["real_llm"] = status
+    return result
+
+
+def _default_demo_status() -> dict:
+    from campus.skills.registry import audit
+    return audit()
 
 
 def _result_dict(r) -> dict:
@@ -58,7 +139,12 @@ def _result_dict(r) -> dict:
 
 
 def _default_memory_recall(query: str, k: int) -> list:
-    return []  # production wires a JsonFileStore; tests inject
+    from campus.memory.json_store import JsonFileStore
+    return [
+        {"key": r.record.key, "score": r.score, "snippet": r.snippet,
+         "layer": r.record.layer, "metadata": r.record.metadata}
+        for r in JsonFileStore().recall(query, k=k)
+    ]
 
 
 def _default_onboarding(answers: dict) -> dict:
@@ -68,7 +154,8 @@ def _default_onboarding(answers: dict) -> dict:
 
 
 def _default_tasks() -> list:
-    return []  # production: campus.runtime kanban; tests inject
+    from campus.runtime.stores import TaskStore
+    return TaskStore().list()
 
 
 def _default_push(channel: str, target: Optional[str], message: str) -> dict:
@@ -79,6 +166,161 @@ def _default_push(channel: str, target: Optional[str], message: str) -> dict:
                 "target": receipt.target, "error": receipt.error}
     except Exception as e:
         return {"ok": False, "channel": channel, "target": target, "error": str(e)}
+
+
+def _default_research_add_topic(req: ResearchTopicRequest) -> dict:
+    from campus.research import tracker
+    return tracker.add_topic(req.title, req.query, req.keywords, req.cadence)
+
+
+def _default_research_list_topics() -> dict:
+    from campus.research import tracker
+    return {"topics": tracker.list_topics()}
+
+
+def _default_research_refresh(topic_id: str, req: ResearchRefreshRequest) -> dict:
+    from campus.research import tracker
+    return tracker.refresh_topic(topic_id, req.mode)
+
+
+def _default_research_runs() -> dict:
+    from campus.research import tracker
+    return {"runs": tracker.list_runs()}
+
+
+def _default_notion_sync(req: NotionSyncRequest) -> dict:
+    from campus.notes import notion
+    return notion.sync_digest(req.digest, req.mode)
+
+
+def _default_notes_status() -> dict:
+    from campus.notes import notion
+    return notion.status()
+
+
+def _classify_agent_message(message: str) -> tuple[str, str, str]:
+    m = (message or "").lower()
+    if any(k in m for k in ("学习", "复习", "quiz", "flashcard", "课程", "lecture", "计划", "learn")):
+        return "learning_plan", "learning", "demo_c_learning_plan"
+    if any(k in m for k in ("科研", "论文", "paper", "research", "github", "文献")):
+        return "research_idea", "research", "research_topic_refresh"
+    if any(k in m for k in ("社团", "实践", "活动", "招新", "会议", "club")):
+        return "club_practice", "club", "demo_a_social_practice"
+    if any(k in m for k in ("健康", "旅行", "日程", "生日", "生活", "办事")):
+        return "life_task", "life", "local_life_secretary"
+    if any(k in m for k in ("实习", "面试", "简历", "career", "job")):
+        return "career_plan", "career", "local_career_secretary"
+    return "general_secretary", "general", "local_secretary"
+
+
+def _default_agent_run(req: AgentRunRequest) -> dict:
+    from campus.api.types import DemoARequest, DemoCRequest, ResearchRefreshRequest, ResearchTopicRequest
+    from campus import phase7
+    from campus.runtime.stores import ArtifactStore, RunStore, TaskStore
+
+    intent, domain, workflow = _classify_agent_message(req.message)
+    runs = RunStore()
+    artifacts = ArtifactStore(runs)
+    tasks = TaskStore()
+    rec = runs.create(message=req.message, intent=intent, domain=domain,
+                      selected_workflow=workflow, context=req.context)
+    artifacts.write_text(rec.id, "Plan.md", f"# Plan\n\n- request: {req.message}\n- workflow: {workflow}\n")
+    status = "done"
+    error = ""
+    result: dict[str, Any] = {"ok": True}
+    try:
+        if domain == "learning":
+            days = int(req.context.get("days", 30)) if isinstance(req.context, dict) else 30
+            result = _default_demo_c(DemoCRequest(goal=req.message, days=days, mode=req.mode))
+        elif domain == "club":
+            result = _default_demo_a(DemoARequest(topic=req.message[:80] or "校园活动", mode=req.mode))
+        elif domain == "research":
+            topic = _default_research_add_topic(ResearchTopicRequest(title=req.message[:80] or "research idea", query=req.message))
+            result = _default_research_refresh(topic["topic"]["id"], ResearchRefreshRequest(mode=req.mode))
+        elif domain == "life":
+            result = phase7.travel_plan(req.message[:40] or "周末", days=1, preferences=req.message)
+        elif domain == "career":
+            result = phase7.interview_plan(req.message[:40] or "实习岗位", days=7, background=req.message)
+        else:
+            result = phase7.email_draft(req.message[:80] or "沟通事项", context=req.message)
+        if not result.get("ok", False):
+            status = "failed"
+            error = result.get("error", "")
+    except Exception as e:
+        status = "failed"
+        error = str(e)
+        result = {"ok": False, "error": error}
+    imported = artifacts.import_paths(rec.id, result.get("artifacts", []))
+    if result.get("run_dir"):
+        imported.append(artifacts.write_text(rec.id, "SourceRun.txt", str(result["run_dir"]), "reference"))
+    artifacts.write_text(rec.id, "Status.md", f"# Status\n\n- status: {status}\n- error: {error}\n")
+    artifacts.write_text(rec.id, "Verification.md", f"# Verification\n\n- local fallback safe: yes\n- result ok: {bool(result.get('ok'))}\n")
+    artifacts.write_json(rec.id, "run_result.json", result)
+    manifest = artifacts.list(rec.id)
+    tasks.create(title=req.message[:80] or intent, body=req.message, status=status,
+                 domain=domain, run_id=rec.id, metadata={"intent": intent, "workflow": workflow})
+    runs.update(rec.id, status=status, error=error, result=result, artifacts=manifest)
+    return {
+        "ok": status != "failed",
+        "run_id": rec.id,
+        "intent": intent,
+        "domain": domain,
+        "selected_workflow": workflow,
+        "status": status,
+        "artifacts": manifest,
+        "error": error,
+    }
+
+
+def _default_agent_list_runs() -> dict:
+    from campus.runtime.stores import RunStore
+    return {"runs": RunStore().list()}
+
+
+def _default_agent_get_run(run_id: str) -> dict:
+    from campus.runtime.stores import ArtifactStore, RunStore
+    rec = RunStore().get(run_id)
+    if rec is None:
+        return {"ok": False, "error": "run not found"}
+    data = rec.__dict__
+    data["ok"] = True
+    data["artifacts"] = ArtifactStore().list(run_id)
+    return data
+
+
+def _default_settings_status() -> dict:
+    import subprocess
+    from campus.runtime.llm_config import real_llm_status
+    from campus.runtime.paths import campus_home
+    from campus.skills.registry import audit
+    skills = audit()
+    try:
+        branch = subprocess.check_output(["git", "branch", "--show-current"],
+                                         cwd=skills.get("repo_root") or None,
+                                         text=True, stderr=subprocess.DEVNULL).strip()
+    except Exception:
+        branch = ""
+    notion = _default_notes_status()
+    mobile = {
+        "feishu": bool(os.environ.get("CAMPUS_FEISHU_CHAT_ID")),
+        "qq": bool(os.environ.get("CAMPUS_QQ_BOT_APP_ID") or os.environ.get("QQ_BOT_APP_ID")),
+    }
+    providers = {
+        "github": bool(os.environ.get("GITHUB_TOKEN")),
+        "search": bool(os.environ.get("TAVILY_API_KEY") or os.environ.get("SERPAPI_API_KEY")),
+    }
+    return {
+        "ok": True,
+        "version": "0.7.0",
+        "branch": branch,
+        "campus_home": campus_home(),
+        "llm": real_llm_status("auto"),
+        "skills": skills,
+        "notion": notion,
+        "mobile": {"ok": any(mobile.values()), "channels": mobile},
+        "providers": providers,
+        "smoke_command": "powershell -ExecutionPolicy Bypass -File .\\scripts\\smoke_demo.ps1",
+    }
 
 
 # ---- life backends (Phase 6) ----
@@ -152,11 +394,20 @@ def _default_daily_log_run() -> dict:
 
 def _default_backends() -> Backends:
     return Backends(
+        demo_a_run=_default_demo_a,
         demo_b_run=_default_demo_b,
+        demo_c_run=_default_demo_c,
+        demo_status=_default_demo_status,
         memory_recall=_default_memory_recall,
         onboarding_run=_default_onboarding,
         list_tasks=_default_tasks,
         push_send=_default_push,
+        research_add_topic=_default_research_add_topic,
+        research_list_topics=_default_research_list_topics,
+        research_refresh=_default_research_refresh,
+        research_runs=_default_research_runs,
+        notion_sync=_default_notion_sync,
+        notes_status=_default_notes_status,
         calendar_add=_default_calendar_add,
         calendar_list=_default_calendar_list,
         calendar_delete=_default_calendar_delete,
@@ -164,6 +415,10 @@ def _default_backends() -> Backends:
         anniv_list=_default_anniv_list,
         daily_log_get=_default_daily_log_get,
         daily_log_run=_default_daily_log_run,
+        agent_run=_default_agent_run,
+        agent_list_runs=_default_agent_list_runs,
+        agent_get_run=_default_agent_get_run,
+        settings_status=_default_settings_status,
     )
 
 
@@ -189,12 +444,39 @@ def create_app(backends: Optional[Backends] = None,
     def demo_b_run(req: DemoBRequest):
         return app.state.backends.demo_b_run(req)
 
+    @app.post("/demo_a/run")
+    def demo_a_run(req: DemoARequest):
+        return app.state.backends.demo_a_run(req)
+
+    @app.post("/demo_c/run")
+    def demo_c_run(req: DemoCRequest):
+        return app.state.backends.demo_c_run(req)
+
+    @app.get("/demo/status")
+    def demo_status():
+        return app.state.backends.demo_status()
+
+    @app.post("/agent/run")
+    def agent_run(req: AgentRunRequest):
+        b = app.state.backends.agent_run
+        return b(req) if b else _default_agent_run(req)
+
+    @app.get("/agent/runs")
+    def agent_runs():
+        b = app.state.backends.agent_list_runs
+        return b() if b else _default_agent_list_runs()
+
+    @app.get("/agent/runs/{run_id}")
+    def agent_get_run(run_id: str):
+        b = app.state.backends.agent_get_run
+        return b(run_id) if b else _default_agent_get_run(run_id)
+
     @app.get("/runs")
     def list_runs():
-        base = os.path.expanduser("~/.campus/runs")
-        if not os.path.isdir(base):
-            return {"runs": []}
-        return {"runs": sorted(os.listdir(base))}
+        b = app.state.backends.agent_list_runs
+        if b:
+            return b()
+        return _default_agent_list_runs()
 
     @app.post("/memory")
     def memory(q: MemoryQuery):
@@ -212,9 +494,145 @@ def create_app(backends: Optional[Backends] = None,
     def tasks():
         return {"tasks": app.state.backends.list_tasks()}
 
+    @app.get("/settings/status")
+    def settings_status():
+        b = app.state.backends.settings_status
+        return b() if b else _default_settings_status()
+
     @app.post("/push")
     def push(req: PushRequest):
         return app.state.backends.push_send(req.channel, req.target, req.message)
+
+    @app.post("/research/topics")
+    def research_add_topic(req: ResearchTopicRequest):
+        b = app.state.backends.research_add_topic
+        return b(req) if b else {"ok": False, "error": "research backend not configured"}
+
+    @app.get("/research/topics")
+    def research_list_topics():
+        b = app.state.backends.research_list_topics
+        return b() if b else {"topics": []}
+
+    @app.post("/research/topics/{topic_id}/refresh")
+    def research_refresh(topic_id: str, req: ResearchRefreshRequest):
+        b = app.state.backends.research_refresh
+        return b(topic_id, req) if b else {"ok": False, "error": "research backend not configured"}
+
+    @app.get("/research/runs")
+    def research_runs():
+        b = app.state.backends.research_runs
+        return b() if b else {"runs": []}
+
+    @app.post("/notes/notion/sync")
+    def notion_sync(req: NotionSyncRequest):
+        b = app.state.backends.notion_sync
+        return b(req) if b else {"ok": False, "error": "notes backend not configured"}
+
+    @app.get("/notes/status")
+    def notes_status():
+        b = app.state.backends.notes_status
+        return b() if b else {"ok": False}
+
+    # ---- Phase 7 product routes ----
+    @app.post("/learning/flashcards")
+    def learning_flashcards(req: FlashcardsRequest):
+        from campus import phase7
+        return phase7.flashcards(req.topic, req.source_text, req.count)
+
+    @app.post("/learning/deadlines")
+    def learning_deadline_add(req: DeadlineRequest):
+        from campus import phase7
+        return phase7.add_deadline(req.title, req.due, req.course, req.note)
+
+    @app.get("/learning/deadlines")
+    def learning_deadlines():
+        from campus import phase7
+        return phase7.list_deadlines()
+
+    @app.post("/learning/quiz/run")
+    def learning_quiz_run(req: QuizRunRequest):
+        from campus import phase7
+        return phase7.quiz_run(req.topic, req.count, req.source_text)
+
+    @app.post("/learning/quiz/grade")
+    def learning_quiz_grade(req: QuizGradeRequest):
+        from campus import phase7
+        return phase7.quiz_grade(req.topic, req.answers)
+
+    @app.get("/learning/dashboard")
+    def learning_dashboard():
+        from campus import phase7
+        return phase7.learning_dashboard()
+
+    @app.post("/research/idea")
+    def research_idea(req: ResearchIdeaRequest):
+        from campus import phase7
+        return phase7.research_idea(req.idea, req.mode)
+
+    @app.post("/research/github/trending")
+    def research_github(req: GithubTrendingRequest):
+        from campus import phase7
+        return phase7.github_trending(req.topic, req.language)
+
+    @app.post("/research/format/check")
+    def research_format(req: FormatCheckRequest):
+        from campus import phase7
+        return phase7.format_check(req.title, req.target, req.manuscript)
+
+    @app.post("/life/health")
+    def life_health(req: HealthRequest):
+        from campus import phase7
+        return phase7.health_record(req.mood, req.sleep_hours, req.exercise, req.note)
+
+    @app.get("/life/health")
+    def life_health_list():
+        from campus import phase7
+        return phase7.health_list()
+
+    @app.post("/life/travel_plan")
+    def life_travel(req: TravelPlanRequest):
+        from campus import phase7
+        return phase7.travel_plan(req.destination, req.days, req.budget, req.preferences)
+
+    @app.get("/life/campus_guide")
+    def life_guide(query: str = ""):
+        from campus import phase7
+        return phase7.campus_guide(query)
+
+    @app.post("/club/meeting_minutes")
+    def club_minutes(req: ClubMinutesRequest):
+        from campus import phase7
+        return phase7.meeting_minutes(req.topic, req.notes)
+
+    @app.post("/club/recruiting_copy")
+    def club_recruiting(req: RecruitingCopyRequest):
+        from campus import phase7
+        return phase7.recruiting_copy(req.org, req.audience, req.tone)
+
+    @app.post("/club/email_draft")
+    def club_email(req: EmailDraftRequest):
+        from campus import phase7
+        return phase7.email_draft(req.purpose, req.recipient, req.context)
+
+    @app.post("/career/jobs/search")
+    def career_jobs_search(req: JobSearchRequest):
+        from campus import phase7
+        return phase7.job_search(req.query, req.city, req.mode)
+
+    @app.post("/career/jobs/save")
+    def career_job_save(req: JobSaveRequest):
+        from campus import phase7
+        return phase7.save_job(req.job)
+
+    @app.get("/career/jobs")
+    def career_jobs():
+        from campus import phase7
+        return phase7.list_jobs()
+
+    @app.post("/career/interview_plan")
+    def career_interview(req: InterviewPlanRequest):
+        from campus import phase7
+        return phase7.interview_plan(req.role, req.days, req.background)
 
     # ---- life routes (Phase 6) ----
     @app.post("/calendar")

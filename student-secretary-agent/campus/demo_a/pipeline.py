@@ -17,6 +17,7 @@ from campus.odyssey.orchestrator import CostTracker, Orchestrator
 from campus.odyssey.supervisor import Supervisor
 from campus.profiles.loader import ProfileLoader
 from campus.runtime.in_memory import InMemoryKanban
+from campus.runtime.paths import runs_dir
 
 from campus.demo_a import checkers
 from campus.demo_a.role_turns import (
@@ -29,7 +30,7 @@ AWAITING = "awaiting_human"
 
 
 def new_run_dir(base: str = None) -> str:
-    base = base or os.path.expanduser("~/.campus/runs")
+    base = base or runs_dir()
     ts = _dt.datetime.now().strftime("%Y%m%d-%H%M%S")
     d = os.path.join(base, f"demo_a-{ts}")
     os.makedirs(d, exist_ok=True)
@@ -109,6 +110,7 @@ def _jsonable(r: RunResult) -> dict:
 
 
 def run_demo_a(sample, brief, *, kanban=None, loader=None, turn=None,
+               turn_factory=None,
                run_dir=None, sup_max_rounds: int = 3,
                url_opener=None, board: str = "campus-demo-a") -> RunResult:
     """Drive the Demo A DAG end-to-end. Returns RunResult.
@@ -131,7 +133,9 @@ def run_demo_a(sample, brief, *, kanban=None, loader=None, turn=None,
         run_dir = new_run_dir()
 
     ctx: dict = {"sample": sample, "brief": brief}
-    if turn is None:
+    if turn_factory is not None:
+        turn = turn_factory(run_dir, ctx)
+    elif turn is None:
         turn = make_demo_a_turn(loader, run_dir, ctx)
 
     cost = CostTracker()

@@ -9,6 +9,29 @@
 
 ## 快速上手
 
+### 0. 5 分钟本地 demo（推荐）
+
+这条路径优先保证“能打开前端、能跑出真实产物”。默认使用离线 demo 模式，不需要真实 LLM；如果 `hermes_cli` 和 provider key 可用，前端会在“Demo 中心”显示 real readiness。
+
+```powershell
+cd C:\Users\Lenovo\Desktop\your_secretary\student-secretary-agent
+powershell -ExecutionPolicy Bypass -File .\scripts\doctor.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\start_demo.ps1
+```
+
+打开：
+
+- 前端：`http://127.0.0.1:5173`
+- API 健康检查：`http://127.0.0.1:8000/health`
+
+服务启动后可跑一键冒烟：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\smoke_demo.ps1
+```
+
+冒烟会验证：`/health`、`/settings/status`、`/agent/run`、Demo A/C offline、科研主题刷新、本地 Markdown 笔记同步、学习 flashcards、生活健康/旅行、社团邮件草稿、职业面试计划。运行产物默认写入仓库内 `.campus-demo/`，不会污染用户主目录。
+
 ### 1. Python 环境（重要）
 
 项目自带的 `.venv/Scripts/python.exe` 在受 **Windows Device Guard** 策略保护的机器上会被拦截（exit 126）。**请改用系统/Anaconda Python 3.10+**：
@@ -80,7 +103,7 @@ npm i -D electron concurrently wait-on
 npm run electron:dev
 ```
 
-页面：仪表盘 / 新手引导 / 讲义复习(Demo B) / **生活(日程·生日·秘书日志)** / 任务看板 / 人格 / 记忆。前端**只**经 `campus/api` 取数，绝不直连 Hermes 内部——Hermes 可自由升级。
+页面：仪表盘 / 秘书 / 学习 / 科研 / 生活 / 社团实践 / 职业 / 任务 / 记忆 / 设置 / 新手引导 / Demo 中心。前端**只**经 `campus/api` 取数，绝不直连 Hermes 内部——Hermes 可自由升级。
 
 ---
 
@@ -126,11 +149,15 @@ frontend/        # React+Vite+TS+Tailwind（+可选 Electron）
 
 ---
 
-## 当前状态（Phase 5 / M5 发布候选）
+## 当前状态（Phase 7 本地产品闭环）
 
-- Demo A / B / C 后端 + 记忆 L4 + Meta-Agent L5 + 人格 L6 + 编排 L2/L3 + API + 移动 + 成本路由 + 前端 全绿。
-- 测试：**206 passed**；phase-5 新模块覆盖率 **91%**（每文件 ≥80%）。
-- 前端 `npm run build` 0 错。
-- 真实 LLM / 真渠道 e2e 为手动验收项（同 phase 1–4 既定纪律）。
+- 无外部 key 时，本地 fallback 可完成学习、科研、生活、社团实践、职业每个域至少一个任务。
+- `/agent/run` 提供自然语言统一入口，并把 run/task/artifact 写入 `CAMPUS_HOME`。
+- `/settings/status` 汇总 LLM、skills、Notion、移动推送、GitHub/search provider readiness。
+- Demo A / C offline、科研主题 digest、本地 Markdown 笔记、前端工作区已跑通。
+- `/demo/status` 会显示真实 LLM readiness；当前 API real 模式走 `hermes_cli` import 路径，不依赖 `hermes` CLI 是否在 PATH。
+- 测试：`tests/api/test_core.py` 当前 **22+ passed**（随 Phase 7 API 覆盖增长）。
+- 前端：`npm.cmd run typecheck` 通过；`npm.cmd run build` 在沙箱内会被 esbuild 读目录权限卡住，沙箱外构建通过。
+- 移动真渠道、Notion 真同步、GitHub/search live provider 仍按手动配置/验收推进；未配置时不阻塞本地 fallback。
 
 更多细节见 [`devplan/phase-5/`](./devplan/phase-5/)（Plan / Status / Verification）。

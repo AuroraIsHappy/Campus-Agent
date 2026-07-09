@@ -3,8 +3,9 @@ from __future__ import annotations
 import argparse, json, os, re, datetime as dt
 from . import researcher, ranker, scheduler, quiz, memory
 from .types import to_dict
+from campus.runtime.paths import runs_dir
 
-RUNS = os.path.expanduser("~/.campus/runs")
+RUNS = runs_dir()
 NL = chr(10)
 
 

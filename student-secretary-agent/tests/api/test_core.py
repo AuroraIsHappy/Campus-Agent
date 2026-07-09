@@ -4,6 +4,7 @@ Deterministic -- no Hermes / no network / no real model. P5-API1.
 """
 import os
 import sys
+import uuid
 
 PKG = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if PKG not in sys.path:
@@ -12,7 +13,7 @@ if PKG not in sys.path:
 from fastapi.testclient import TestClient
 
 from campus.api.server import Backends, create_app
-from campus.api.types import DemoBRequest
+from campus.api.types import DemoARequest, DemoBRequest, DemoCRequest
 
 
 def _fake_backends():
@@ -21,12 +22,24 @@ def _fake_backends():
                 "extraction_rate": 1.0, "kg_nodes": 5, "resource_count": 4,
                 "plan_days": 10}
     return Backends(
+        demo_a_run=lambda req: {"ok": True, "mode": req.mode, "run_dir": "/tmp/demo-a",
+                                "outreach_count": 3, "email_segments": 3},
         demo_b_run=demo_b,
+        demo_c_run=lambda req: {"ok": True, "mode": req.mode, "run_dir": "/tmp/demo-c",
+                                "recommendation": "Official docs", "days": req.days,
+                                "quiz_questions": req.quiz_n},
+        demo_status=lambda: {"ok": True, "vendor": ["academic-search"], "missing_core": []},
         memory_recall=lambda q, k: [{"key": "demo_b/x", "score": 0.9, "snippet": q}],
         onboarding_run=lambda a: {"ok": True, "profile": {"identity": a.get("identity", "stu"),
                                   "major": "cs", "persona": "feynman"}},
         list_tasks=lambda: [{"id": "t1", "title": "demo_b", "status": "done"}],
         push_send=lambda ch, tg, msg: {"ok": True, "channel": ch, "target": tg, "error": ""},
+        research_add_topic=lambda req: {"ok": True, "topic": {"id": "r1", "title": req.title}},
+        research_list_topics=lambda: {"topics": [{"id": "r1", "title": "AI"}]},
+        research_refresh=lambda tid, req: {"ok": True, "topic_id": tid, "papers": [], "summary": "ok"},
+        research_runs=lambda: {"runs": [{"topic_id": "r1", "summary": "ok"}]},
+        notion_sync=lambda req: {"ok": True, "local_path": "/tmp/note.md", "notion_ok": False},
+        notes_status=lambda: {"ok": False, "token_configured": False},
     )
 
 
@@ -46,6 +59,21 @@ def test_demo_b_run():
     assert r.status_code == 200
     j = r.json()
     assert j["ok"] is True and j["kg_nodes"] == 5 and j["plan_days"] == 10
+
+
+def test_demo_a_run():
+    r = client().post("/demo_a/run", json={"topic": "低碳实践", "mode": "offline"})
+    assert r.status_code == 200
+    assert r.json()["ok"] is True and r.json()["outreach_count"] == 3
+
+
+def test_demo_c_run_and_status():
+    c = client()
+    r = c.post("/demo_c/run", json={"goal": "学线性代数", "days": 7, "quiz_n": 2})
+    assert r.status_code == 200
+    assert r.json()["ok"] is True and r.json()["days"] == 7
+    st = c.get("/demo/status")
+    assert st.status_code == 200 and st.json()["ok"] is True
 
 
 def test_memory():
@@ -76,11 +104,51 @@ def test_runs_shape():
     assert "runs" in r.json() and isinstance(r.json()["runs"], list)
 
 
+def test_agent_routes_fake_backend_shape(monkeypatch):
+    base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..",
+                                        ".campus-test", uuid.uuid4().hex))
+    monkeypatch.setenv("CAMPUS_HOME", base)
+    c = client()
+    r = c.post("/agent/run", json={"message": "我想学 Linux，帮我安排 30 天计划"})
+    assert r.status_code == 200
+    j = r.json()
+    assert j["ok"] is True
+    assert j["intent"] == "learning_plan"
+    assert j["domain"] == "learning"
+    assert j["selected_workflow"] == "demo_c_learning_plan"
+    rid = j["run_id"]
+    assert c.get("/agent/runs").json()["runs"]
+    detail = c.get(f"/agent/runs/{rid}").json()
+    assert detail["ok"] is True and detail["id"] == rid
+
+
+def test_settings_status_shape():
+    r = client().get("/settings/status")
+    assert r.status_code == 200
+    j = r.json()
+    assert j["ok"] is True
+    assert "campus_home" in j
+    assert "llm" in j and "skills" in j and "notion" in j
+
+
 def test_push():
     r = client().post("/push", json={"channel": "feishu", "message": "hi"})
     assert r.status_code == 200
     j = r.json()
     assert j["ok"] is True and j["channel"] == "feishu"
+
+
+def test_research_and_notes_routes():
+    c = client()
+    add = c.post("/research/topics", json={"title": "LLM agents", "query": "agent papers"})
+    assert add.status_code == 200 and add.json()["ok"] is True
+    assert c.get("/research/topics").json()["topics"][0]["id"] == "r1"
+    digest = c.post("/research/topics/r1/refresh", json={"mode": "offline"}).json()
+    assert digest["ok"] is True
+    assert c.get("/research/runs").json()["runs"][0]["topic_id"] == "r1"
+    sync = c.post("/notes/notion/sync", json={"digest": digest, "mode": "local"}).json()
+    assert sync["ok"] is True and sync["notion_ok"] is False
+    assert "token_configured" in c.get("/notes/status").json()
 
 
 def test_default_app_module_level():
@@ -205,3 +273,90 @@ def test_with_scheduler_true_starts_thread():
     app = create_app(backends=_fake_backends(), with_scheduler=True)
     assert app.state.scheduler_thread is not None
     stop_scheduler(app)
+
+
+def test_default_backends_offline_demo_smoke(monkeypatch):
+    """Default API backends can run the offline demo chain inside CAMPUS_HOME."""
+    base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..",
+                                        ".campus-test", uuid.uuid4().hex))
+    monkeypatch.setenv("CAMPUS_HOME", base)
+    c = TestClient(create_app(with_scheduler=False))
+    a = c.post("/demo_a/run", json={"topic": "低碳实践", "region": "北京高校社区",
+                                    "mode": "offline"}).json()
+    assert a["ok"] is True
+    assert a["mode"] == "offline"
+    assert os.path.isdir(a["run_dir"])
+    assert any(p.endswith("proposal.md") for p in a["artifacts"])
+
+    b = c.post("/demo_c/run", json={"goal": "入门线性代数", "days": 3,
+                                    "quiz_n": 2, "mode": "offline"}).json()
+    assert b["ok"] is True
+    assert b["mode"] == "offline"
+    assert os.path.isdir(b["run_dir"])
+
+    add = c.post("/research/topics", json={"title": "LLM agents", "query": "agent papers"}).json()
+    digest = c.post(f"/research/topics/{add['topic']['id']}/refresh", json={"mode": "auto"}).json()
+    assert digest["ok"] is True
+    assert digest["source_mode"] in {"real", "fallback_offline", "offline"}
+    assert digest["note_path"] and os.path.exists(digest["note_path"])
+
+
+def test_default_agent_run_writes_foundation_stores(monkeypatch):
+    base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..",
+                                        ".campus-test", uuid.uuid4().hex))
+    monkeypatch.setenv("CAMPUS_HOME", base)
+    c = TestClient(create_app(with_scheduler=False))
+    r = c.post("/agent/run", json={"message": "我想学 Linux，帮我安排 3 天计划",
+                                   "mode": "offline",
+                                   "context": {"days": 3}}).json()
+    assert r["ok"] is True
+    assert r["domain"] == "learning"
+    run_id = r["run_id"]
+    detail = c.get(f"/agent/runs/{run_id}").json()
+    assert detail["ok"] is True
+    assert detail["status"] == "done"
+    names = {a["name"] for a in detail["artifacts"]}
+    assert {"Plan.md", "Status.md", "Verification.md", "run_result.json", "artifact_manifest.json"} <= names
+    assert os.path.exists(os.path.join(base, "state", "runs.json"))
+    tasks = c.get("/tasks").json()["tasks"]
+    assert any(t["run_id"] == run_id for t in tasks)
+
+
+def test_phase7_domain_routes_local_fallback(monkeypatch):
+    base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..",
+                                        ".campus-test", uuid.uuid4().hex))
+    monkeypatch.setenv("CAMPUS_HOME", base)
+    c = TestClient(create_app(with_scheduler=False))
+
+    cards = c.post("/learning/flashcards", json={"topic": "Linux", "count": 3}).json()
+    assert cards["ok"] is True and len(cards["flashcards"]) == 3 and cards["run_id"]
+    assert c.post("/learning/deadlines", json={"title": "交作业", "due": "2026-08-01"}).json()["ok"] is True
+    assert c.get("/learning/dashboard").json()["progress"]["tasks"] >= 1
+    quiz = c.post("/learning/quiz/run", json={"topic": "Linux", "count": 2}).json()
+    assert len(quiz["questions"]) == 2
+    grade = c.post("/learning/quiz/grade", json={"topic": "Linux", "answers": [
+        {"question_id": "q1", "answer": "定义、例子、易错点"}
+    ]}).json()
+    assert grade["ok"] is True and "plan_adjustment" in grade
+
+    idea = c.post("/research/idea", json={"idea": "student secretary agent", "mode": "offline"}).json()
+    assert idea["ok"] is True and idea["note_path"]
+    gh = c.post("/research/github/trending", json={"topic": "student agent"}).json()
+    assert gh["ok"] is True and gh["items"]
+    fmt = c.post("/research/format/check", json={"title": "Paper", "manuscript": "Abstract\nFig. 1\nReferences"}).json()
+    assert fmt["ok"] is True and fmt["items"]
+
+    assert c.post("/life/health", json={"mood": "ok", "sleep_hours": 7}).json()["ok"] is True
+    assert c.get("/life/health").json()["records"]
+    assert c.post("/life/travel_plan", json={"destination": "上海", "days": 2}).json()["itinerary"]
+    assert c.get("/life/campus_guide", params={"query": "借教室"}).json()["guides"]
+
+    assert c.post("/club/meeting_minutes", json={"topic": "例会", "notes": "确定预算。联系老师。"}).json()["minutes"]["todo"]
+    assert c.post("/club/recruiting_copy", json={"org": "AI 社"}).json()["copy"]["headline"]
+    assert "您好" in c.post("/club/email_draft", json={"purpose": "邀请指导"}).json()["email"]
+
+    jobs = c.post("/career/jobs/search", json={"query": "AI 产品", "city": "上海"}).json()
+    assert jobs["jobs"]
+    assert c.post("/career/jobs/save", json={"job": jobs["jobs"][0]}).json()["ok"] is True
+    assert c.get("/career/jobs").json()["jobs"]
+    assert c.post("/career/interview_plan", json={"role": "AI 产品实习生"}).json()["plan"]
