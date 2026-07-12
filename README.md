@@ -7,7 +7,9 @@
 
 **前端地址**：`http://localhost:5173`（开发模式）· `http://localhost:8000`（生产模式，前端 + API 同源）
 
-配套文档：[GOAL.md](./GOAL.md)（目标）· [ACHITECHURE.md](./ACHITECHURE.md)（架构）· [IMPLEMENT.md](./IMPLEMENT.md)（路线图）
+### Jul 12 update: add poetry part (alpha)
+<img width="3058" height="1632" alt="image" src="https://github.com/user-attachments/assets/df55d34f-76ab-4a96-b43d-06e5fbd6429c" />
+
 
 ---
 
