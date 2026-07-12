@@ -2,6 +2,7 @@
 # NOTE: the project .venv python.exe is blocked by Windows Device Guard on some
 # machines -- use a system/conda Python 3.10+ instead (see README).
 fastapi>=0.110
+python-multipart>=0.0.12
 uvicorn>=0.29
 pypdf>=4.3
 pdfplumber>=0.11

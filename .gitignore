@@ -2,6 +2,7 @@
 hermes-agent/
 CLI-Anything/
 OpenHands/
+poetry_agent/
 
 # --- git worktrees (managed via `git worktree`, not committed) ---
 .trees/

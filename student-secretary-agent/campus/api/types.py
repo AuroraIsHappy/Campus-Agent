@@ -41,6 +41,9 @@ class AgentChatRequest(BaseModel):
     mode: str = "auto"            # offline | auto | real
     conversation_id: str = ""     # empty → new conversation
     persona: str = ""             # empty → resolve from onboarding profile
+    agent: str = ""               # "" | secretary | poetry
+    workflow_id: str = ""         # active domain workflow (e.g. poetry session)
+    action: str = "message"       # message | compose | revise | finalize
     context: dict = {}            # extra routing hints (e.g. confirmed_path)
 
 
