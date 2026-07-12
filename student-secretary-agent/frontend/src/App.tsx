@@ -2,107 +2,23 @@ import { useEffect, useState } from "react";
 import { ChatPage } from "./Chat";
 import { TasksView, CalendarView, PersonaView, MemoryView, SettingsView } from "./Views";
 import { OnboardingPage, DashboardPage } from "./pages";
-import { api } from "./api";
+import { api, type ConversationSummary } from "./api";
 
-type View = "chat" | "dashboard" | "tasks" | "calendar" | "persona" | "memory" | "settings" | "onboarding";
-
-interface NavSection {
-  title: string;
-  items: { key: View; label: string; icon: string }[];
-}
-
-const NAV_SECTIONS: NavSection[] = [
-  {
-    title: "对话",
-    items: [
-      { key: "chat", label: "秘书", icon: "💬" },
-    ],
-  },
-  {
-    title: "查看",
-    items: [
-      { key: "tasks", label: "任务", icon: "📋" },
-      { key: "calendar", label: "日历", icon: "📅" },
-      { key: "memory", label: "记忆", icon: "❖" },
-      { key: "dashboard", label: "仪表盘", icon: "◆" },
-    ],
-  },
-  {
-    title: "配置",
-    items: [
-      { key: "persona", label: "人格", icon: "🎭" },
-      { key: "settings", label: "设置", icon: "⚙" },
-    ],
-  },
-  {
-    title: "引导",
-    items: [
-      { key: "onboarding", label: "新手引导", icon: "✦" },
-    ],
-  },
-];
+type AgentKind = "secretary" | "poetry";
+type View = "entry" | "chat" | "dashboard" | "tasks" | "calendar" | "persona" | "memory" | "settings" | "onboarding";
 
 export default function App() {
-  const [view, setView] = useState<View>("chat");
-  const [agentName, setAgentName] = useState("Campus");
+  const [view, setView] = useState<View>("entry");
+  const [agent, setAgent] = useState<AgentKind>("secretary");
+  const [recent, setRecent] = useState<ConversationSummary[]>([]);
+  useEffect(() => { api.conversations().then(r => setRecent(r.conversations.slice(0, 3))).catch(() => {}); }, [view]);
+  const enter = (kind: AgentKind) => { setAgent(kind); setView("chat"); };
 
-  useEffect(() => {
-    api.getAgentName().then((r) => setAgentName(r.name)).catch(() => {});
-  }, []);
+  if (view === "entry") return <Entry recent={recent} enter={enter}/>;
+  if (view === "chat") return <ChatPage initialAgent={agent} onHome={() => setView("entry")} onManage={v => setView(v as View)}/>;
+  return <div className="management-shell"><aside><button className="brand-button" onClick={() => setView("entry")}><span className="brand-orbit">C</span><span><b>Campus</b><small>PERSONAL AGENT OS</small></span></button><button onClick={() => setView("chat")}>← 返回对话</button>{(["dashboard", "tasks", "calendar", "memory", "persona", "settings", "onboarding"] as View[]).map(v => <button key={v} className={view === v ? "active" : ""} onClick={() => setView(v)}>{({ dashboard: "仪表盘", tasks: "任务", calendar: "日历", memory: "记忆", persona: "人格", settings: "设置", onboarding: "新手引导" } as Record<string, string>)[v]}</button>)}</aside><main>{view === "dashboard" && <DashboardPage/>}{view === "tasks" && <TasksView/>}{view === "calendar" && <CalendarView/>}{view === "memory" && <MemoryView/>}{view === "persona" && <PersonaView/>}{view === "settings" && <SettingsView/>}{view === "onboarding" && <OnboardingPage/>}</main></div>;
+}
 
-  const initial = agentName.charAt(0).toUpperCase() || "C";
-  const isChat = view === "chat";
-
-  return (
-    <div className="flex h-screen bg-[#fdf6e3]">
-      <aside className="w-60 shrink-0 border-r border-ink-200 bg-[#fffef9] flex flex-col">
-        <div className="px-5 py-6">
-          <div className="flex items-center gap-2.5">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-campus-400 to-campus-600 font-bold text-white text-lg shadow-sm">{initial}</div>
-            <div>
-              <p className="font-semibold leading-tight text-ink-900">{agentName}</p>
-              <p className="text-xs text-ink-700/60">你的专属秘书</p>
-            </div>
-          </div>
-        </div>
-        <nav className="flex-1 overflow-y-auto px-3">
-          {NAV_SECTIONS.map((section) => (
-            <div key={section.title} className="mb-4">
-              <p className="mb-1.5 px-3 text-xs font-semibold uppercase tracking-wider text-ink-700/40">{section.title}</p>
-              {section.items.map((n) => (
-                <button
-                  key={n.key}
-                  onClick={() => setView(n.key)}
-                  className={`mb-0.5 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
-                    view === n.key ? "bg-campus-100 font-medium text-campus-800 shadow-sm" : "text-ink-700 hover:bg-ink-100"
-                  }`}
-                >
-                  <span className="w-5 text-center">{n.icon}</span>
-                  {n.label}
-                </button>
-              ))}
-            </div>
-          ))}
-        </nav>
-        <div className="border-t border-ink-200 px-5 py-3">
-          <p className="text-xs text-ink-700/50">Phase 9 · v0.9.0</p>
-        </div>
-      </aside>
-      <main className="flex-1 overflow-hidden">
-        {isChat ? (
-          <ChatPage />
-        ) : (
-          <div className="h-full overflow-y-auto">
-            {view === "dashboard" && <DashboardPage />}
-            {view === "tasks" && <TasksView />}
-            {view === "calendar" && <CalendarView />}
-            {view === "persona" && <PersonaView />}
-            {view === "memory" && <MemoryView />}
-            {view === "settings" && <SettingsView />}
-            {view === "onboarding" && <OnboardingPage />}
-          </div>
-        )}
-      </main>
-    </div>
-  );
+function Entry({ recent, enter }: { recent: ConversationSummary[]; enter: (agent: AgentKind) => void }) {
+  return <main className="agent-entry"><header><div className="entry-brand"><span className="brand-orbit">C</span><div><b>Campus</b><small>PERSONAL AGENT OS</small></div></div><span>{new Date().toLocaleDateString("zh-CN", { month: "long", day: "numeric", weekday: "long" })}</span></header><section className="entry-copy"><span className="eyebrow">CHOOSE A COMPANION</span><h1>今天，想和谁<br/>一起完成一件事？</h1><p>每个 Agent 都保留同一份关于你的记忆，但用不同的方式陪你抵达结果。</p></section><section className="agent-cards"><button onClick={() => enter("secretary")}><span className="card-index">01 / GENERALIST</span><i>✦</i><h2>Campus 秘书</h2><p>把学习、生活和长程任务交给一位了解你的行动伙伴。</p><b>开始对话 <em>↗</em></b></button><button className="poetry-card" onClick={() => enter("poetry")}><span className="card-index">02 / POETRY</span><i>羽</i><h2>诗隙</h2><p>从日常的一道缝隙出发，观察、追问，与你共同写一首诗。</p><b>沿着缝隙继续 <em>↗</em></b></button></section>{recent.length > 0 && <section className="recent-strip"><span>最近继续</span>{recent.map(c => <button key={c.id} onClick={() => enter(c.active_agent || "secretary")}><i>{c.active_agent === "poetry" ? "羽" : "✦"}</i><span>{c.title}<small>{c.message_count} 条消息</small></span><b>→</b></button>)}</section>}</main>;
 }

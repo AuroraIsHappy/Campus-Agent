@@ -13,7 +13,7 @@ import json
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile, HTTPException
 
 from campus.api.types import (
     AgentRunRequest, AgentChatRequest, DemoARequest, DemoBRequest, DemoCRequest, MemoryQuery, OnboardingRequest, PushRequest,
@@ -513,6 +513,12 @@ def _default_agent_chat(req: AgentChatRequest) -> dict:
     from campus.conversation.store import ConversationStore
     from campus.conversation.reply import compose_reply, resolve_persona_name
 
+    # Poetry is a stateful native workflow. Explicit selection wins; otherwise
+    # only unambiguous writing intent activates it.
+    from campus.poetry import is_poetry_intent
+    if req.agent == "poetry" or req.workflow_id or is_poetry_intent(req.message):
+        return _default_poetry_chat(req)
+
     # Phase 9: schedule-intent short-circuit (register a job, skip the agent run)
     sched = _try_parse_schedule_intent(req.message)
     if sched:
@@ -623,6 +629,70 @@ def _default_agent_chat(req: AgentChatRequest) -> dict:
         "clarify_options": composed["clarify_options"],
         "error": result.get("error", ""),
     }
+
+
+def _default_poetry_chat(req: AgentChatRequest) -> dict:
+    """Run one turn of the native Poetic Gaps workflow."""
+    from campus.conversation.store import ConversationStore
+    from campus.poetry.service import PoetryService, poem_canvas
+
+    service, store = PoetryService(), ConversationStore()
+    action = req.action if req.action in {"message", "compose", "revise", "finalize"} else "message"
+    workflow_id = req.workflow_id
+    try:
+        if not workflow_id:
+            session = service.create_session(req.message, req.context)
+            workflow_id = session["id"]
+        elif action == "compose":
+            service.compose(workflow_id)
+            session = service.get_session(workflow_id)
+        elif action == "revise":
+            service.revise(workflow_id, req.context.get("content"), req.context.get("instruction", req.message))
+            session = service.get_session(workflow_id)
+        elif action == "finalize":
+            service.finalize(workflow_id, req.context.get("content"), bool(req.context.get("accept_medium_risk")))
+            session = service.get_session(workflow_id)
+        else:
+            session = service.add_message(workflow_id, req.message, bool(req.context.get("skip_question")))
+
+        poem = service.poem_for_session(workflow_id)
+        status = session["status"] if session else "failed"
+        if status == "collecting":
+            reply = session["messages"][-1]["content"]
+            suggested = [{"action": "message", "label": "回答这个问题"}, {"action": "compose", "label": "跳过，直接创作"}]
+        elif status == "ready":
+            reply = "这些细节已经足够。我们可以沿着它，写下一首诗。"
+            suggested = [{"action": "compose", "label": "开始共同创作"}]
+        elif status == "review":
+            reply = f"诗稿《{poem['title']}》已经放在右侧。你可以直接编辑，也可以告诉我希望怎样修改。"
+            suggested = [{"action": "revise", "label": "按要求修改"}, {"action": "finalize", "label": "确认并收入档案"}]
+        elif status == "finalized":
+            reply = f"《{poem['title']}》已经收入你的诗歌档案。"
+            suggested = []
+        else:
+            reply, suggested = "诗隙暂时停在这里。请稍后再试。", []
+
+        now = int(__import__("time").time())
+        user_text = req.message or {"compose": "开始共同创作", "revise": "修改诗稿", "finalize": "确认归档"}.get(action, "继续")
+        added = store.append(conversation_id=req.conversation_id, role="user", content=user_text, now=now)
+        conv_id = added["conversation_id"]
+        store.append(conversation_id=conv_id, role="assistant", content=reply, persona="诗隙", now=now)
+        canvas = poem_canvas(poem, status)
+        store.set_context(conv_id, active_agent="poetry", workflow_id=workflow_id, workflow_status=status, canvas=canvas)
+        return {"ok": True, "reply": reply, "run_id": "", "status": status, "domain": "poetry",
+                "intent": "poetry_creation", "artifacts": [], "multiagent": False,
+                "conversation_id": conv_id, "persona": "诗隙", "source_mode": "poetry_workflow",
+                "needs_clarify": status == "collecting", "clarify_options": [], "error": "",
+                "active_agent": "poetry", "workflow_id": workflow_id, "workflow_status": status,
+                "canvas": canvas, "suggested_actions": suggested}
+    except Exception as exc:
+        return {"ok": False, "reply": "", "run_id": "", "status": "failed", "domain": "poetry",
+                "intent": "poetry_creation", "artifacts": [], "multiagent": False,
+                "conversation_id": req.conversation_id, "persona": "诗隙", "source_mode": "error",
+                "needs_clarify": False, "clarify_options": [], "error": str(exc),
+                "active_agent": "poetry", "workflow_id": workflow_id, "workflow_status": "failed",
+                "canvas": {"type": "empty", "title": "创作暂时停下了", "data": {}, "editable": False, "actions": []},
+                "suggested_actions": []}
 
 
 def _default_conversation_list() -> dict:
@@ -896,6 +966,67 @@ def create_app(backends: Optional[Backends] = None,
     @app.get("/agent/conversations/{conversation_id}")
     def agent_conversation(conversation_id: str):
         return _default_conversation_get(conversation_id)
+
+    # Native Poetic Gaps archive and source management. Creation turns remain
+    # on /agent/chat so every Agent shares one conversation protocol.
+    @app.get("/poetry/poems")
+    def poetry_poems():
+        from campus.poetry import PoetryService
+        return {"poems": PoetryService().list_poems()}
+
+    @app.get("/poetry/poems/{poem_id}")
+    def poetry_poem(poem_id: str):
+        from campus.poetry import PoetryService
+        try:
+            return PoetryService().get_poem(poem_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc))
+
+    @app.get("/poetry/poets")
+    def poetry_poets():
+        from campus.poetry import PoetryService
+        return {"poets": PoetryService().list_profiles()}
+
+    @app.post("/poetry/poets")
+    def poetry_poet_create(payload: dict):
+        from campus.poetry import PoetryService
+        return PoetryService().save_profile(str(payload.get("name", "")), active=bool(payload.get("active")))
+
+    @app.patch("/poetry/poets/{profile_id}")
+    def poetry_poet_update(profile_id: str, payload: dict):
+        from campus.poetry import PoetryService
+        try:
+            return PoetryService().save_profile(str(payload.get("name", "")), profile_id, bool(payload.get("active")))
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc))
+
+    @app.delete("/poetry/poets/{profile_id}")
+    def poetry_poet_delete(profile_id: str):
+        from campus.poetry import PoetryService
+        if not PoetryService().delete_profile(profile_id):
+            raise HTTPException(status_code=404, detail="诗人资料不存在")
+        return {"deleted": True}
+
+    @app.get("/poetry/documents")
+    def poetry_documents():
+        from campus.poetry import PoetryService
+        return {"documents": PoetryService().list_documents()}
+
+    @app.post("/poetry/documents")
+    async def poetry_document_upload(file: UploadFile = File(...)):
+        from campus.poetry import PoetryService
+        try:
+            return PoetryService().ingest_document(file.filename or "document.txt", await file.read())
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+
+    @app.delete("/poetry/documents/{document_id}")
+    def poetry_document_delete(document_id: str):
+        from campus.poetry import PoetryService
+        deleted = PoetryService().delete_document(document_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail="文档不存在")
+        return {"deleted": True}
 
     @app.get("/runs")
     def list_runs():

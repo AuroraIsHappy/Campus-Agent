@@ -114,6 +114,19 @@ export interface ChatReply {
   clarify_options?: string[];
   error: string;
   job?: Record<string, unknown>;
+  active_agent?: "secretary" | "poetry";
+  workflow_id?: string;
+  workflow_status?: string;
+  canvas?: CanvasPayload;
+  suggested_actions?: { action: "message" | "compose" | "revise" | "finalize"; label: string }[];
+}
+
+export interface CanvasPayload {
+  type: "empty" | "poem" | "markdown" | "mindmap" | "artifact-list" | string;
+  title: string;
+  data: Record<string, any>;
+  editable: boolean;
+  actions: string[];
 }
 
 export interface ConversationSummary {
@@ -122,6 +135,10 @@ export interface ConversationSummary {
   created_at: number;
   updated_at: number;
   message_count: number;
+  active_agent?: "secretary" | "poetry";
+  workflow_id?: string;
+  workflow_status?: string;
+  canvas?: CanvasPayload;
 }
 
 export interface Conversation extends ConversationSummary {
@@ -189,7 +206,7 @@ export const api = {
   agentRuns: () => jget<{ runs: RunRecord[] }>("/agent/runs"),
   agentRunDetail: (id: string) => jget<RunRecord & { ok: boolean }>(`/agent/runs/${id}`),
   // Phase 9: chat-first endpoint
-  agentChat: (body: { message: string; mode?: string; conversation_id?: string; persona?: string; context?: Record<string, unknown> }) =>
+  agentChat: (body: { message: string; mode?: string; conversation_id?: string; persona?: string; agent?: "secretary" | "poetry"; workflow_id?: string; action?: "message" | "compose" | "revise" | "finalize"; context?: Record<string, unknown> }) =>
     jpost<ChatReply>("/agent/chat", body),
   conversations: () => jget<{ conversations: ConversationSummary[] }>("/agent/conversations"),
   conversation: (id: string) => jget<Conversation>(`/agent/conversations/${id}`),

@@ -75,6 +75,10 @@ class ConversationStore:
                 "created_at": r.get("created_at", 0),
                 "updated_at": r.get("updated_at", 0),
                 "message_count": len(r.get("messages", [])),
+                "active_agent": r.get("active_agent", "secretary"),
+                "workflow_id": r.get("workflow_id", ""),
+                "workflow_status": r.get("workflow_status", ""),
+                "canvas": r.get("canvas", None),
             })
         return out
 
@@ -118,6 +122,17 @@ class ConversationStore:
             conv["title"] = content[:60]
         self._save(data)
         return {"conversation_id": conversation_id}
+
+    def set_context(self, conversation_id: str, **context: Any) -> None:
+        """Attach resumable workflow/canvas state to a conversation."""
+        data = self._all()
+        if conversation_id not in data:
+            return
+        for key, value in context.items():
+            if value is not None:
+                data[conversation_id][key] = value
+        data[conversation_id]["updated_at"] = int(time.time())
+        self._save(data)
 
     def delete(self, conversation_id: str) -> bool:
         data = self._all()
